@@ -8,35 +8,46 @@ import 'package:goal_master_admin/features/auth/presentation/view/login_view.dar
 import 'package:goal_master_admin/features/auth/presentation/view/new_password_view.dart';
 import 'package:goal_master_admin/features/auth/presentation/view/otp_view.dart';
 import 'package:goal_master_admin/features/auth/presentation/view/register_view.dart';
-import 'package:goal_master_admin/features/home/presentation/view/home_view.dart';
+import 'package:goal_master_admin/features/layout/layout_view.dart';
+import 'package:goal_master_admin/features/notification/presentation/view/notifaction_view.dart';
 import 'package:goal_master_admin/features/onbording/presentation/manager/onboarding_cubit.dart';
 import 'package:goal_master_admin/features/onbording/presentation/view/onboarding_view.dart'
     show OnboardingView;
 import 'package:goal_master_admin/features/profail/presentation/view/change_password_view.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/profile_view.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/update_profile_view.dart';
-import 'package:goal_master_admin/features/splach/presentation/view/splash_view.dart'
-    show SplashView;
 
 import 'app_router.dart';
 
 List<RouteBase> appRoutes = [
+  //DashboardScreen
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kHome,
+    pageBuilder:
+        (context, state) => buildPageWithDefaultTransition<void>(
+          context: context,
+          state: state,
+          child: LayoutView(),
+        ),
+  ),
+
   // StatefulShellRoute.indexedStack(
   //   builder: (context, state, navigationShell) {
   //     return MainNavigationBar(navigationShell: navigationShell);
   //   },
   //   branches: routesBranches,
   // ),
-  GoRoute(
-    parentNavigatorKey: parentKey,
-    path: RoutesKeys.kSplashView,
-    pageBuilder:
-        (context, state) => buildPageWithDefaultTransition<void>(
-          context: context,
-          state: state,
-          child: const SplashView(),
-        ),
-  ),
+  // GoRoute(
+  //   parentNavigatorKey: parentKey,
+  //   path: RoutesKeys.kSplashView,
+  //   pageBuilder:
+  //       (context, state) => buildPageWithDefaultTransition<void>(
+  //         context: context,
+  //         state: state,
+  //         child: const SplashView(),
+  //       ),
+  // ),
   GoRoute(
     parentNavigatorKey: parentKey,
     path: RoutesKeys.kOnboarding,
@@ -50,16 +61,16 @@ List<RouteBase> appRoutes = [
           ),
         ),
   ),
-  GoRoute(
-    parentNavigatorKey: parentKey,
-    path: RoutesKeys.kHome,
-    pageBuilder:
-        (context, state) => buildPageWithDefaultTransition<void>(
-          context: context,
-          state: state,
-          child: const HomeView(),
-        ),
-  ),
+  // GoRoute(
+  //   parentNavigatorKey: parentKey,
+  //   path: RoutesKeys.kHome,
+  //   pageBuilder:
+  //       (context, state) => buildPageWithDefaultTransition<void>(
+  //         context: context,
+  //         state: state,
+  //         child: const HomeView(),
+  //       ),
+  // ),
   // //kLogin
   GoRoute(
     parentNavigatorKey: parentKey,
@@ -135,6 +146,17 @@ List<RouteBase> appRoutes = [
           context: context,
           state: state,
           child: const UpdateProfileView(),
+        ),
+  ),
+  //NotificationView
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kNotification,
+    pageBuilder:
+        (context, state) => buildPageWithDefaultTransition<void>(
+          context: context,
+          state: state,
+          child: const NotificationView(),
         ),
   ),
   //ChangePasswordView

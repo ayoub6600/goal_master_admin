@@ -25,7 +25,7 @@ abstract class AppColors {
   static Color blueBorder = HexColor('#1F80AA');
   static Color success = HexColor('#00AF6C');
   static Color lightSuccess = HexColor('#E5FAF2');
-  static Color danger = HexColor('#F55157');
+  static Color danger = HexColor('#DFF5E166');
   static Color dangerLight1 = HexColor('#F9E7E8');
 
   //# text

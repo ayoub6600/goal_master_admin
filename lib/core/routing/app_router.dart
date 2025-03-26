@@ -1,8 +1,13 @@
 import 'package:chucker_flutter/chucker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:goal_master_admin/core/components/keys_values.dart';
+import 'package:goal_master_admin/core/components/preference_utility.dart';
+import 'package:goal_master_admin/core/routing/route_utils.dart';
 import 'package:goal_master_admin/core/routing/routes_keys.dart'
     show RoutesKeys;
+import 'package:flutter_native_splash/flutter_native_splash.dart';
+
 import 'routes.dart';
 
 final GlobalKey<NavigatorState> parentKey = GlobalKey<NavigatorState>();
@@ -30,6 +35,26 @@ abstract class AppRouter {
     observers: [ChuckerFlutter.navigatorObserver],
     navigatorKey: parentKey,
     routes: appRoutes,
-    initialLocation: RoutesKeys.kSplashView,
+    initialLocation: RoutesKeys.kLogin,
+    redirect: (context, state) async {
+      // إزالة السبيلاش بعد تحميل SharedPreferences
+      FlutterNativeSplash.remove();
+
+      // جلب حالة تسجيل الدخول
+      var result = SharedPreferenceUtil.getString(PrefKey.login);
+
+      if (result.isEmpty) {
+        print("----->$result");
+        return RoutesKeys.kOnboarding;
+        // pushReplacement(RoutesKeys.kOnboarding, context);
+      } else if (result == 'true') {
+        print("----->$result");
+        return RoutesKeys.kLogin;
+        //pushReplacement(RoutesKeys.kLogin, context);
+      } else {
+        print("----->$result");
+        return RoutesKeys.kHome;
+      }
+    },
   );
 }

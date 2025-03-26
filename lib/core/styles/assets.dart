@@ -50,6 +50,14 @@ class Assets {
   /// assets/images/png_image/danger.png
   static const String imagesPngImageDanger = "assets/images/png_image/danger.png";
 
+  /// Assets for imagesPngImageElement4
+  /// assets/images/png_image/element-4.png
+  static const String imagesPngImageElement4 = "assets/images/png_image/element-4.png";
+
+  /// Assets for imagesPngImageEmptyWalletTime
+  /// assets/images/png_image/empty-wallet-time.png
+  static const String imagesPngImageEmptyWalletTime = "assets/images/png_image/empty-wallet-time.png";
+
   /// Assets for imagesPngImageGlobalRefresh
   /// assets/images/png_image/global-refresh.png
   static const String imagesPngImageGlobalRefresh = "assets/images/png_image/global-refresh.png";
@@ -129,6 +137,10 @@ class Assets {
   /// Assets for imagesPngImageSoccerBall
   /// assets/images/png_image/Soccer_Ball.png
   static const String imagesPngImageSoccerBall = "assets/images/png_image/Soccer_Ball.png";
+
+  /// Assets for imagesPngImageSplashScreen2
+  /// assets/images/png_image/splash_screen2.png
+  static const String imagesPngImageSplashScreen2 = "assets/images/png_image/splash_screen2.png";
 
   /// Assets for imagesPngImageStar
   /// assets/images/png_image/star.png
