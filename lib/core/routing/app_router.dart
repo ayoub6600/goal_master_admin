@@ -7,7 +7,6 @@ import 'package:goal_master_admin/core/routing/route_utils.dart';
 import 'package:goal_master_admin/core/routing/routes_keys.dart'
     show RoutesKeys;
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-
 import 'routes.dart';
 
 final GlobalKey<NavigatorState> parentKey = GlobalKey<NavigatorState>();
@@ -36,25 +35,26 @@ abstract class AppRouter {
     navigatorKey: parentKey,
     routes: appRoutes,
     initialLocation: RoutesKeys.kLogin,
-    redirect: (context, state) async {
-      // إزالة السبيلاش بعد تحميل SharedPreferences
-      FlutterNativeSplash.remove();
 
-      // جلب حالة تسجيل الدخول
-      var result = SharedPreferenceUtil.getString(PrefKey.login);
+    // redirect: (context, state) async {
+    //   // إزالة السبيلاش بعد تحميل SharedPreferences
+    //   FlutterNativeSplash.remove();
 
-      if (result.isEmpty) {
-        print("----->$result");
-        return RoutesKeys.kOnboarding;
-        // pushReplacement(RoutesKeys.kOnboarding, context);
-      } else if (result == 'true') {
-        print("----->$result");
-        return RoutesKeys.kLogin;
-        //pushReplacement(RoutesKeys.kLogin, context);
-      } else {
-        print("----->$result");
-        return RoutesKeys.kHome;
-      }
-    },
+    //   // جلب حالة تسجيل الدخول
+    //   var result = SharedPreferenceUtil.getString(PrefKey.login);
+
+    //   if (result.isEmpty) {
+    //     print("----->$result");
+    //     return RoutesKeys.kOnboarding;
+    //     // pushReplacement(RoutesKeys.kOnboarding, context);
+    //   } else if (result == 'true') {
+    //     print("----->$result");
+    //     return RoutesKeys.kLogin;
+    //     //pushReplacement(RoutesKeys.kLogin, context);
+    //   } else {
+    //     print("----->$result");
+    //     return RoutesKeys.kHome;
+    //   }
+    // },
   );
 }

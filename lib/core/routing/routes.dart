@@ -8,7 +8,7 @@ import 'package:goal_master_admin/features/auth/presentation/view/login_view.dar
 import 'package:goal_master_admin/features/auth/presentation/view/new_password_view.dart';
 import 'package:goal_master_admin/features/auth/presentation/view/otp_view.dart';
 import 'package:goal_master_admin/features/auth/presentation/view/register_view.dart';
-import 'package:goal_master_admin/features/layout/layout_view.dart';
+import 'package:goal_master_admin/features/home/presentation/view/home_view.dart';
 import 'package:goal_master_admin/features/notification/presentation/view/notifaction_view.dart';
 import 'package:goal_master_admin/features/onbording/presentation/manager/onboarding_cubit.dart';
 import 'package:goal_master_admin/features/onbording/presentation/view/onboarding_view.dart'
@@ -24,12 +24,11 @@ List<RouteBase> appRoutes = [
   GoRoute(
     parentNavigatorKey: parentKey,
     path: RoutesKeys.kHome,
-    pageBuilder:
-        (context, state) => buildPageWithDefaultTransition<void>(
-          context: context,
-          state: state,
-          child: LayoutView(),
-        ),
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: HomeView(),
+    ),
   ),
 
   // StatefulShellRoute.indexedStack(
@@ -51,15 +50,14 @@ List<RouteBase> appRoutes = [
   GoRoute(
     parentNavigatorKey: parentKey,
     path: RoutesKeys.kOnboarding,
-    pageBuilder:
-        (context, state) => buildPageWithDefaultTransition<void>(
-          context: context,
-          state: state,
-          child: BlocProvider(
-            create: (context) => OnboardingCubit(),
-            child: const OnboardingView(),
-          ),
-        ),
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: BlocProvider(
+        create: (context) => OnboardingCubit(),
+        child: const OnboardingView(),
+      ),
+    ),
   ),
   // GoRoute(
   //   parentNavigatorKey: parentKey,
@@ -75,100 +73,91 @@ List<RouteBase> appRoutes = [
   GoRoute(
     parentNavigatorKey: parentKey,
     path: RoutesKeys.kLogin,
-    pageBuilder:
-        (context, state) => buildPageWithDefaultTransition<void>(
-          context: context,
-          state: state,
-          child: const LoginView(),
-        ),
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const LoginView(),
+    ),
   ),
   // //RegisterView
   GoRoute(
     parentNavigatorKey: parentKey,
     path: RoutesKeys.kRegister,
-    pageBuilder:
-        (context, state) => buildPageWithDefaultTransition<void>(
-          context: context,
-          state: state,
-          child: const RegisterView(),
-        ),
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const RegisterView(),
+    ),
   ),
   // //ForgotPasswordView
   GoRoute(
     parentNavigatorKey: parentKey,
     path: RoutesKeys.kForgotPassword,
-    pageBuilder:
-        (context, state) => buildPageWithDefaultTransition<void>(
-          context: context,
-          state: state,
-          child: const ForgotPasswordView(),
-        ),
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const ForgotPasswordView(),
+    ),
   ),
   // //OtpView
   GoRoute(
     parentNavigatorKey: parentKey,
     path: RoutesKeys.kOtp,
-    pageBuilder:
-        (context, state) => buildPageWithDefaultTransition<void>(
-          context: context,
-          state: state,
-          child: const OtpView(),
-        ),
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const OtpView(),
+    ),
   ),
   // //NewPasswordView
   GoRoute(
     parentNavigatorKey: parentKey,
     path: RoutesKeys.kNewPassword,
-    pageBuilder:
-        (context, state) => buildPageWithDefaultTransition<void>(
-          context: context,
-          state: state,
-          child: const NewPasswordView(),
-        ),
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const NewPasswordView(),
+    ),
   ),
   // //ProfileView
   GoRoute(
     parentNavigatorKey: parentKey,
     path: RoutesKeys.kProfile,
-    pageBuilder:
-        (context, state) => buildPageWithDefaultTransition<void>(
-          context: context,
-          state: state,
-          child: const ProfileView(),
-        ),
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const ProfileView(),
+    ),
   ),
   // //UpdateProfileView
   GoRoute(
     parentNavigatorKey: parentKey,
     path: RoutesKeys.kUpdateProfile,
-    pageBuilder:
-        (context, state) => buildPageWithDefaultTransition<void>(
-          context: context,
-          state: state,
-          child: const UpdateProfileView(),
-        ),
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const UpdateProfileView(),
+    ),
   ),
   //NotificationView
   GoRoute(
     parentNavigatorKey: parentKey,
     path: RoutesKeys.kNotification,
-    pageBuilder:
-        (context, state) => buildPageWithDefaultTransition<void>(
-          context: context,
-          state: state,
-          child: const NotificationView(),
-        ),
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const NotificationView(),
+    ),
   ),
   //ChangePasswordView
   GoRoute(
     parentNavigatorKey: parentKey,
     path: RoutesKeys.kChangePassword,
-    pageBuilder:
-        (context, state) => buildPageWithDefaultTransition<void>(
-          context: context,
-          state: state,
-          child: const ChangePasswordView(),
-        ),
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const ChangePasswordView(),
+    ),
   ),
   // //ContactView
   // GoRoute(

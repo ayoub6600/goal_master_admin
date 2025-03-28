@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'package:goal_master_admin/core/components/preference_utility.dart'
     show SharedPreferenceUtil;
 import 'package:goal_master_admin/core/routing/app_router.dart' show AppRouter;
 
 void main() async {
+  GoogleFonts.config.allowRuntimeFetching = false; // Disable online fetching
+
   WidgetsFlutterBinding.ensureInitialized(); // ✅ حل المشكلة
   await SharedPreferenceUtil.getInstance();
   runApp(const MyApp());
@@ -35,7 +38,7 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           locale: const Locale('ar'),
           supportedLocales: const [
-            Locale('ar'), // دعم اللغة العربية
+            Locale('ar'),
           ],
           localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,
@@ -43,7 +46,6 @@ class MyApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
           routerConfig: AppRouter.router,
-          // home: const Text('Flutter Demo Home Page'),
         ),
       ),
     );
