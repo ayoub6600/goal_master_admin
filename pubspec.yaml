@@ -68,6 +68,8 @@ dev_dependencies:
   percent_indicator: ^4.2.4
   tab_indicator_styler: ^2.0.0
   fl_chart: ^0.70.2
+  get_it: ^8.0.3
+ 
 
 
   # The "flutter_lints" package below contains a set of recommended lints to
