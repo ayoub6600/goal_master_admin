@@ -6,6 +6,8 @@ import 'package:goal_master_admin/core/routing/routes_keys.dart'
 import 'package:goal_master_admin/core/services/service_locator.dart';
 import 'package:goal_master_admin/features/auth/data/repo/auth_repo_imp.dart';
 import 'package:goal_master_admin/features/auth/presentation/manager/login_cubit/login_cubit.dart';
+import 'package:goal_master_admin/features/auth/presentation/manager/register_cubit/register_cubit.dart';
+import 'package:goal_master_admin/features/auth/presentation/manager/verify_email_cubit/verify_email_cubit.dart';
 import 'package:goal_master_admin/features/auth/presentation/view/forgot_password_view.dart';
 import 'package:goal_master_admin/features/auth/presentation/view/login_view.dart';
 import 'package:goal_master_admin/features/auth/presentation/view/new_password_view.dart';
@@ -92,7 +94,12 @@ List<RouteBase> appRoutes = [
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
       state: state,
-      child: const RegisterView(),
+      child: BlocProvider(
+        create: (context) => RegisterCubit(
+          getIt<AuthRepoImpl>(),
+        ),
+        child: const RegisterView(),
+      ),
     ),
   ),
   // //ForgotPasswordView
@@ -102,19 +109,41 @@ List<RouteBase> appRoutes = [
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
       state: state,
-      child: const ForgotPasswordView(),
+      child: BlocProvider(
+        create: (context) => VerifyEmailCubit(
+          getIt<AuthRepoImpl>(),
+          '',
+          forget: true,
+        ),
+        child: const ForgotPasswordView(),
+      ),
     ),
   ),
   // //OtpView
   GoRoute(
     parentNavigatorKey: parentKey,
     path: RoutesKeys.kOtp,
-    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
-      context: context,
-      state: state,
-      child: const OtpView(),
-    ),
+    pageBuilder: (context, state) {
+      final Map<String, dynamic> extraData =
+          state.extra as Map<String, dynamic>;
+      final phone = extraData['phone'] as String;
+      final forget = extraData['forget'] as bool;
+
+      return buildPageWithDefaultTransition<void>(
+        context: context,
+        state: state,
+        child: BlocProvider(
+          create: (context) => VerifyEmailCubit(
+            getIt<AuthRepoImpl>(),
+            phone,
+            forget: forget,
+          ),
+          child: const OtpView(),
+        ),
+      );
+    },
   ),
+
   // //NewPasswordView
   GoRoute(
     parentNavigatorKey: parentKey,
