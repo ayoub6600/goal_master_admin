@@ -35,25 +35,23 @@ abstract class AppRouter {
     navigatorKey: parentKey,
     routes: appRoutes,
     initialLocation: RoutesKeys.kLogin,
-
     // redirect: (context, state) async {
     //   // إزالة السبيلاش بعد تحميل SharedPreferences
     //   FlutterNativeSplash.remove();
 
-    //   // جلب حالة تسجيل الدخول
-    //   var result = SharedPreferenceUtil.getString(PrefKey.login);
+    //   // جلب حالة تسجيل الدخول من SharedPreferences
+    //   final result = SharedPreferenceUtil.getString(PrefKey.login);
 
+    //   // طباعة نتيجة الحالة (لأغراض التتبع)
+    //   print("SharedPref login result: $result");
+
+    //   // التوجيه حسب الحالة
     //   if (result.isEmpty) {
-    //     print("----->$result");
     //     return RoutesKeys.kOnboarding;
-    //     // pushReplacement(RoutesKeys.kOnboarding, context);
     //   } else if (result == 'true') {
-    //     print("----->$result");
-    //     return RoutesKeys.kLogin;
-    //     //pushReplacement(RoutesKeys.kLogin, context);
-    //   } else {
-    //     print("----->$result");
     //     return RoutesKeys.kHome;
+    //   } else {
+    //     return RoutesKeys.kLogin;
     //   }
     // },
   );

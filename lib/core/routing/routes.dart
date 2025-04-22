@@ -13,11 +13,32 @@ import 'package:goal_master_admin/features/auth/presentation/view/login_view.dar
 import 'package:goal_master_admin/features/auth/presentation/view/new_password_view.dart';
 import 'package:goal_master_admin/features/auth/presentation/view/otp_view.dart';
 import 'package:goal_master_admin/features/auth/presentation/view/register_view.dart';
+import 'package:goal_master_admin/features/booking/data/repo/booking_repo_imp.dart';
+import 'package:goal_master_admin/features/booking/presentation/manager/add_booking_cubit/add_booking_cubit.dart';
+import 'package:goal_master_admin/features/booking/presentation/manager/calendar_cubit/calendar_cubit.dart';
+import 'package:goal_master_admin/features/booking/presentation/manager/category_cubit/category_cubit.dart';
+import 'package:goal_master_admin/features/booking/presentation/manager/employee_cubit/employee_cubit.dart';
+import 'package:goal_master_admin/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
+import 'package:goal_master_admin/features/booking/presentation/manager/service_cubit/service_cubit.dart';
+import 'package:goal_master_admin/features/booking/presentation/manager/zone_cubit/zone_cubit.dart';
+import 'package:goal_master_admin/features/booking/presentation/view/add_booking.dart';
+import 'package:goal_master_admin/features/home/data/model/booking_slots_response.dart';
+import 'package:goal_master_admin/features/home/data/repo/analysis_repo_imp.dart';
+import 'package:goal_master_admin/features/booking/presentation/manager/club_cubit/club_cubit.dart';
+import 'package:goal_master_admin/features/home/presentation/manager/filter_cubit/filter_cubit.dart';
+import 'package:goal_master_admin/features/home/presentation/manager/page_view_new_booking_cubit/page_view_new_booking_cubit.dart';
+import 'package:goal_master_admin/features/home/presentation/view/fillter_view.dart';
 import 'package:goal_master_admin/features/home/presentation/view/home_view.dart';
+import 'package:goal_master_admin/features/home/presentation/view/widgets/booking_item.dart';
+import 'package:goal_master_admin/features/home/presentation/view/widgets/show_all_resulat_filtter.dart';
+import 'package:goal_master_admin/features/layout/presentation/view/home_layout_view.dart';
 import 'package:goal_master_admin/features/notification/presentation/view/notifaction_view.dart';
 import 'package:goal_master_admin/features/onbording/presentation/manager/onboarding_cubit.dart';
 import 'package:goal_master_admin/features/onbording/presentation/view/onboarding_view.dart'
     show OnboardingView;
+import 'package:goal_master_admin/features/profail/data/repo/profile_repo_imp.dart';
+import 'package:goal_master_admin/features/profail/presentation/manager/reset_password_cubit/reset_password_cubit.dart';
+import 'package:goal_master_admin/features/profail/presentation/manager/update_profile_cubit/update_profile_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/change_password_view.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/profile_view.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/update_profile_view.dart';
@@ -25,33 +46,6 @@ import 'package:goal_master_admin/features/profail/presentation/view/update_prof
 import 'app_router.dart';
 
 List<RouteBase> appRoutes = [
-  //DashboardScreen
-  GoRoute(
-    parentNavigatorKey: parentKey,
-    path: RoutesKeys.kHome,
-    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
-      context: context,
-      state: state,
-      child: HomeView(),
-    ),
-  ),
-
-  // StatefulShellRoute.indexedStack(
-  //   builder: (context, state, navigationShell) {
-  //     return MainNavigationBar(navigationShell: navigationShell);
-  //   },
-  //   branches: routesBranches,
-  // ),
-  // GoRoute(
-  //   parentNavigatorKey: parentKey,
-  //   path: RoutesKeys.kSplashView,
-  //   pageBuilder:
-  //       (context, state) => buildPageWithDefaultTransition<void>(
-  //         context: context,
-  //         state: state,
-  //         child: const SplashView(),
-  //       ),
-  // ),
   GoRoute(
     parentNavigatorKey: parentKey,
     path: RoutesKeys.kOnboarding,
@@ -102,6 +96,20 @@ List<RouteBase> appRoutes = [
       ),
     ),
   ),
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kUpdateProfile,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: BlocProvider(
+        create: (context) => UpdateProfileCubit(
+          getIt<ProfileRepoImp>(),
+        ),
+        child: const UpdateProfileView(),
+      ),
+    ),
+  ),
   // //ForgotPasswordView
   GoRoute(
     parentNavigatorKey: parentKey,
@@ -143,6 +151,15 @@ List<RouteBase> appRoutes = [
       );
     },
   ),
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kHome,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const HomeLayoutView(),
+    ),
+  ),
 
   // //NewPasswordView
   GoRoute(
@@ -164,16 +181,7 @@ List<RouteBase> appRoutes = [
       child: const ProfileView(),
     ),
   ),
-  // //UpdateProfileView
-  GoRoute(
-    parentNavigatorKey: parentKey,
-    path: RoutesKeys.kUpdateProfile,
-    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
-      context: context,
-      state: state,
-      child: const UpdateProfileView(),
-    ),
-  ),
+
   //NotificationView
   GoRoute(
     parentNavigatorKey: parentKey,
@@ -191,7 +199,142 @@ List<RouteBase> appRoutes = [
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
       state: state,
-      child: const ChangePasswordView(),
+      child: BlocProvider(
+        create: (context) => ResetPasswordCubit(
+          getIt<ProfileRepoImp>(),
+        ),
+        child: const ChangePasswordView(),
+      ),
+    ),
+  ),
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kFilter,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => ZoneCubitCubit(
+              getIt<BookingRepoImp>(),
+            )..listZone(),
+          ),
+          //ClubCubit
+          BlocProvider(
+              create: (context) => ClubCubit(
+                    getIt<BookingRepoImp>(),
+                  )),
+          //CategoryCubit
+          BlocProvider(
+              create: (context) => CategoryCubit(
+                    getIt<BookingRepoImp>(),
+                  )),
+          //FilterCubit
+          BlocProvider(
+            create: (context) => FilterCubit(
+              getIt<AnalysisRepoImp>(),
+            ),
+          ),
+        ],
+        child: const FilterView(),
+      ),
+    ),
+  ),
+  //AddNewBooking
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kAddNewBooking,
+    pageBuilder: (context, state) {
+      final booking = state.extra as BookingSlot;
+
+      return buildPageWithDefaultTransition<void>(
+        context: context,
+        state: state,
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => EmployeeCubit(getIt<BookingRepoImp>()),
+            ),
+            BlocProvider(
+              create: (context) => AddBookingCubit(getIt<BookingRepoImp>()),
+            ),
+            BlocProvider(
+              create: (context) => PageViewNewBookingCubit(),
+            ),
+          ],
+          child: AddNewBooking(booking: booking), // ✅ pass the booking here
+        ),
+      );
+    },
+  ),
+
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kAddBooking,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => ZoneCubitCubit(
+              getIt<BookingRepoImp>(),
+            )..listZone(),
+          ),
+          //ClubCubit
+          BlocProvider(
+              create: (context) => ClubCubit(
+                    getIt<BookingRepoImp>(),
+                  )),
+          //CategoryCubit
+          BlocProvider(
+              create: (context) => CategoryCubit(
+                    getIt<BookingRepoImp>(),
+                  )),
+          //ServiceCubit
+          BlocProvider(
+              create: (context) => ServiceCubit(
+                    getIt<BookingRepoImp>(),
+                  )),
+          //EmployeeCubit
+          BlocProvider(
+            create: (context) => EmployeeCubit(
+              getIt<BookingRepoImp>(),
+            ),
+          ),
+          //AddBookingCubit
+          BlocProvider(
+            create: (context) => AddBookingCubit(
+              getIt<BookingRepoImp>(),
+            ),
+          ),
+          BlocProvider(
+            create: (context) => CalendarCubit(
+              getIt<BookingRepoImp>(),
+            ),
+          ),
+          BlocProvider(
+            create: (context) => PageViewCubit(),
+          ),
+        ],
+        child: const AddBookingView(),
+      ),
+    ),
+  ),
+
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kShowAllResulatFiltter,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: BlocProvider(
+        create: (context) => FilterCubit(
+          getIt<AnalysisRepoImp>(),
+        ),
+        child: ShowAllResulatFiltter(),
+      ),
     ),
   ),
   // //ContactView

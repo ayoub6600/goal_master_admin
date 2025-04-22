@@ -58,6 +58,10 @@ class Assets {
   /// assets/images/png_image/empty-wallet-time.png
   static const String imagesPngImageEmptyWalletTime = "assets/images/png_image/empty-wallet-time.png";
 
+  /// Assets for imagesPngImageFiltter
+  /// assets/images/png_image/filtter.png
+  static const String imagesPngImageFiltter = "assets/images/png_image/filtter.png";
+
   /// Assets for imagesPngImageGlobalRefresh
   /// assets/images/png_image/global-refresh.png
   static const String imagesPngImageGlobalRefresh = "assets/images/png_image/global-refresh.png";
@@ -90,6 +94,10 @@ class Assets {
   /// assets/images/png_image/lockers-svgrepo-com.png
   static const String imagesPngImageLockersSvgrepoCom = "assets/images/png_image/lockers-svgrepo-com.png";
 
+  /// Assets for imagesPngImageLogo
+  /// assets/images/png_image/logo.jpeg
+  static const String imagesPngImageLogo = "assets/images/png_image/logo.jpeg";
+
   /// Assets for imagesPngImageLogout
   /// assets/images/png_image/logout.png
   static const String imagesPngImageLogout = "assets/images/png_image/logout.png";
@@ -110,6 +118,10 @@ class Assets {
   /// assets/images/png_image/on3.png
   static const String imagesPngImageOn3 = "assets/images/png_image/on3.png";
 
+  /// Assets for imagesPngImagePaper
+  /// assets/images/png_image/paper.png
+  static const String imagesPngImagePaper = "assets/images/png_image/paper.png";
+
   /// Assets for imagesPngImageProfailIcon
   /// assets/images/png_image/profailIcon.png
   static const String imagesPngImageProfailIcon = "assets/images/png_image/profailIcon.png";
@@ -121,6 +133,10 @@ class Assets {
   /// Assets for imagesPngImageReceiptEdit
   /// assets/images/png_image/receipt-edit.png
   static const String imagesPngImageReceiptEdit = "assets/images/png_image/receipt-edit.png";
+
+  /// Assets for imagesPngImageSearchNormal
+  /// assets/images/png_image/search-normal.png
+  static const String imagesPngImageSearchNormal = "assets/images/png_image/search-normal.png";
 
   /// Assets for imagesPngImageSend2
   /// assets/images/png_image/send-2.png
@@ -137,6 +153,10 @@ class Assets {
   /// Assets for imagesPngImageSoccerBall
   /// assets/images/png_image/Soccer_Ball.png
   static const String imagesPngImageSoccerBall = "assets/images/png_image/Soccer_Ball.png";
+
+  /// Assets for imagesPngImageSoccerPlayer
+  /// assets/images/png_image/soccer-player.png
+  static const String imagesPngImageSoccerPlayer = "assets/images/png_image/soccer-player.png";
 
   /// Assets for imagesPngImageSplashScreen2
   /// assets/images/png_image/splash_screen2.png
