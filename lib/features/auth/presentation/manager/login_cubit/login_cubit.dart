@@ -49,7 +49,7 @@ class LoginCubit extends Cubit<LoginState> {
         PrefKey.email, userData.user?.username ?? "");
     await SharedPreferenceUtil.putString(
         PrefKey.phone, userData.user?.phoneNumber ?? "");
-    SharedPreferenceUtil.putString(PrefKey.login, "false");
+    SharedPreferenceUtil.putString(PrefKey.login, "true");
   }
 
   bool _validate(String name, String password) {

@@ -9,6 +9,7 @@ import 'package:goal_master_admin/core/styles/assets.dart';
 import 'package:goal_master_admin/core/styles/spaces.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/widgets/profile_header.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/widgets/profile_item.dart';
+import 'package:go_router/go_router.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -48,7 +49,9 @@ class ProfileView extends StatelessWidget {
                     title: "تغيير معلوماتك الشخصية",
                     icon: Assets.imagesPngImageMagicpen,
                     onTap: () {
-                      push(RoutesKeys.kUpdateProfile, context);
+                      GoRouter.of(context).push(RoutesKeys.kUpdateProfile);
+
+                      //     push(RoutesKeys.kUpdateProfile, context);
                     },
                   ),
 
