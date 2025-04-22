@@ -1,51 +1,55 @@
 class EndPoints {
   //********  base url
-  static const String baserUrl = 'https://autismvc-stg-api.wakeb.io/api/';
-  static const String patient = 'patient';
-  static const String parent = 'parent';
+  static const String baserUrl = 'https://web.goalmasters.online/api/';
 
   //******* routes
   static const String id = 'id'; //! example route, remove this
-  static const String articles = '$patient/blogs';
-  static const String profilePatient = '$patient/profile';
-  static String article(int id) => '$patient/blogs/$id';
-  static String toggleBlogFavorite(int id) =>
-      '$patient/blogs/$id/toggle/favorities';
-  static const String reservations = 'reservations';
-  static String reservation(int id) => 'reservation/$id';
-  static String ratesDetails(int id) => 'rates/$id';
-  static const String notifications = 'notifications';
-  // static const String home = 'home';
-  static const String rates = 'rates';
-  static const String serviceProvidersSearch = 'serviceProvidersSearch';
-  static const String ariRecords = 'ariRecords';
-  static const String attachedFiles = '$patient/profile/attachments';
-  static String deleteAttachments(int id) => '$patient/profile/attachments/$id';
-  static const String patientBills = 'patientBills';
-  static const String patientMedicalHistory = 'patientMedicalHistory';
-  static String patientBillDetails(int id) => 'reservation/$id';
-
-  static String addPatient = 'addPatient';
-  static String updatePatient = 'updatePatient';
-  static String helpCenter = 'helpCenter';
-  static String favoritesArticles = 'favoritesArticles';
-  static String favoritesDoctors = 'favoritesDoctors';
-  static String doctor(int id) => 'doctor/$id';
-  static String services = '$patient/services';
-  static String paymenthistory = '';
-  static String termsandconditions = '';
 
   //# parent
-  static String login = '$parent/login';
-  static String register = '$parent/register';
-  static String resetPassword = '$parent/reset';
-  static String sendOTP = '$parent/send-otp';
-  static String verifyOTP = '$parent/verify-otp';
-  static const String profile = '$parent/profile';
+  static String login = 'login';
 
-  //# patient
-  static const String specialties = '$patient/specialities';
-  static const String topDoctors = '$patient/doctors/top-ratings';
+  static String sendOTP = 'resend-otp';
+
+  static String verifyOTP = 'verify';
+
+  static String update = 'user/update';
+
+  static String register = 'register';
+
+  static String changePassword = 'change-password';
+
+  static String changePasswordUser = 'user/change-password-user';
+
+  static String refresh = 'user/refresh';
+
+  static String profile = 'user/profile';
+  static String analysis = 'user/analysis';
+  static String bookingHistory(int id) => 'user/booking/history?page=$id';
+
+  static String cancelBooking = 'user/booking/cancel-booking';
+
+  static String listZone = 'list/zone';
+  static String listClub = 'list/club';
+
+  static String listCategory = 'list/category';
+
+  static String listService = 'list/service';
+
+  static String listEmployee = 'list/booking';
+
+  static String listTimeslot = 'list/timeslot';
+
+  static String addBooking = 'user/booking/store-booking';
+
+  static String charge = 'user/card/charge';
+  //user/card/balance
+
+  static String balance = 'user/card/balance';
+
+  ///user/booking/fillter-new-booking?page=5
+
+  static String fillterNewBooking(int id) =>
+      'user/booking/fillter-new-booking?page=$id';
 }
 
 //doctors/top-ratings

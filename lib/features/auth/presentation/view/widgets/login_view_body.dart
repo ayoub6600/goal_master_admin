@@ -1,37 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:goal_master_admin/core/components/button_app.dart'
-    show ButtonApp;
-import 'package:goal_master_admin/core/components/custom_text_field/custom_app_form_text_field.dart'
-    show CustomTextField;
-import 'package:goal_master_admin/core/routing/route_utils.dart' show push;
-import 'package:goal_master_admin/core/routing/routes_keys.dart'
-    show RoutesKeys;
+import 'package:go_router/go_router.dart';
+import 'package:goal_master_admin/core/components/button_app.dart';
+import 'package:goal_master_admin/core/components/custom_failure_toast.dart';
+import 'package:goal_master_admin/core/components/custom_text_field/custom_app_form_text_field.dart';
+import 'package:goal_master_admin/core/routing/route_utils.dart';
+import 'package:goal_master_admin/core/routing/routes_keys.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
-import 'package:goal_master_admin/core/styles/app_text_styles.dart'
-    show AppTextStyles;
-import 'package:goal_master_admin/core/styles/assets.dart' show Assets;
+import 'package:goal_master_admin/core/styles/app_text_styles.dart';
+
+import 'package:goal_master_admin/core/styles/assets.dart';
 import 'package:goal_master_admin/core/styles/spaces.dart';
+import 'package:goal_master_admin/features/auth/presentation/manager/login_cubit/login_cubit.dart';
 
 class LoginViewBody extends StatelessWidget {
-  const LoginViewBody({super.key});
+  const LoginViewBody({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
+    var cubit = context.read<LoginCubit>();
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(Assets.imagesPngImageBackgroundLogin),
+            image: AssetImage(
+              Assets.imagesPngImageBackgroundLogin,
+            ),
             fit: BoxFit.cover,
           ),
         ),
         child: Container(
           // width: 336.w,
           // height: 558.h,
-          margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 100.h),
+          margin: EdgeInsets.symmetric(
+            horizontal: 16.w,
+            vertical: 100.h,
+          ),
           padding: EdgeInsets.fromLTRB(16, 46, 16, 46),
           decoration: BoxDecoration(
             //color: Color(0x1AD9D9D9),
@@ -54,7 +63,9 @@ class LoginViewBody extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  margin: EdgeInsets.symmetric(horizontal: 40.w),
+                  margin: EdgeInsets.symmetric(
+                    horizontal: 40.w,
+                  ),
                   child: Column(
                     children: [
                       Text(
@@ -75,25 +86,29 @@ class LoginViewBody extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  "اسم المستخدم",
-                  style: AppTextStyles.font16Bold.copyWith(color: Colors.white),
+                  "الاسم ",
+                  style: AppTextStyles.font16Bold.copyWith(
+                    color: Colors.white,
+                  ),
                 ),
                 HeightSpace(8.h),
                 CustomTextField(
-                  hint: "اسم المستخدم",
-                  //   controller: cubit.emailController,
+                  hint: "اكتب اسمك",
+                  controller: cubit.emailController,
                   inputType: TextInputType.emailAddress,
                 ),
                 HeightSpace(14.h),
                 Text(
                   "كلمة السر",
-                  style: AppTextStyles.font16Bold.copyWith(color: Colors.white),
+                  style: AppTextStyles.font16Bold.copyWith(
+                    color: Colors.white,
+                  ),
                 ),
                 HeightSpace(8.h),
                 CustomTextField(
                   hint: "ضع كلمة السر",
                   password: true,
-                  // controller: cubit.passwordController,
+                  controller: cubit.passwordController,
                 ),
                 HeightSpace(8.h),
                 GestureDetector(
@@ -108,11 +123,26 @@ class LoginViewBody extends StatelessWidget {
                   ),
                 ),
                 HeightSpace(50.h),
-                ButtonApp(
-                  text: "تسجيل الدخول",
-                  backGround: AppColors.primary,
-                  textColor: Colors.white,
-                  onTap: () => push(RoutesKeys.kHome, context),
+                BlocConsumer<LoginCubit, LoginState>(
+                  listener: (context, state) {
+                    if (state is LoginSuccess) {
+                      GoRouter.of(context).go(RoutesKeys.kHome);
+                    } else if (state is LoginError) {
+                      showCustomFailureToast(state.errMessage);
+                    } else if (state is LoginLoading) {
+                      CircularProgressIndicator();
+                    }
+                  },
+                  builder: (context, state) {
+                    return ButtonApp(
+                      text: "تسجيل الدخول",
+                      backGround: AppColors.primary,
+                      textColor: Colors.white,
+                      onTap: () {
+                        cubit.login();
+                      },
+                    );
+                  },
                 ),
                 HeightSpace(29.h),
                 Row(

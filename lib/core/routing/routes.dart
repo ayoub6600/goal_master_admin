@@ -3,6 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:goal_master_admin/core/components/build_page_with_default_transition.dart';
 import 'package:goal_master_admin/core/routing/routes_keys.dart'
     show RoutesKeys;
+import 'package:goal_master_admin/core/services/service_locator.dart';
+import 'package:goal_master_admin/features/auth/data/repo/auth_repo_imp.dart';
+import 'package:goal_master_admin/features/auth/presentation/manager/login_cubit/login_cubit.dart';
 import 'package:goal_master_admin/features/auth/presentation/view/forgot_password_view.dart';
 import 'package:goal_master_admin/features/auth/presentation/view/login_view.dart';
 import 'package:goal_master_admin/features/auth/presentation/view/new_password_view.dart';
@@ -76,7 +79,10 @@ List<RouteBase> appRoutes = [
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
       state: state,
-      child: const LoginView(),
+      child: BlocProvider(
+        create: (context) => LoginCubit(getIt<AuthRepoImpl>()),
+        child: const LoginView(),
+      ),
     ),
   ),
   // //RegisterView
