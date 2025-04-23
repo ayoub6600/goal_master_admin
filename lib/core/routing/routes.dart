@@ -37,9 +37,11 @@ import 'package:goal_master_admin/features/onbording/presentation/manager/onboar
 import 'package:goal_master_admin/features/onbording/presentation/view/onboarding_view.dart'
     show OnboardingView;
 import 'package:goal_master_admin/features/profail/data/repo/profile_repo_imp.dart';
+import 'package:goal_master_admin/features/profail/presentation/manager/customer_cubit/customer_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/reset_password_cubit/reset_password_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/update_profile_cubit/update_profile_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/change_password_view.dart';
+import 'package:goal_master_admin/features/profail/presentation/view/customer_view.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/profile_view.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/update_profile_view.dart';
 
@@ -181,7 +183,21 @@ List<RouteBase> appRoutes = [
       child: const ProfileView(),
     ),
   ),
-
+//CustomerView
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kCustomerView,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: BlocProvider(
+        create: (context) => CustomerCubit(
+          bookingRepo: getIt<ProfileRepoImp>(),
+        ),
+        child: const CustomerView(),
+      ),
+    ),
+  ),
   //NotificationView
   GoRoute(
     parentNavigatorKey: parentKey,

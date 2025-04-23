@@ -17,4 +17,5 @@ class RoutesKeys {
   static const kAddBooking = '/kAddBooking';
   static const kAddNewBooking = "/kAddNewBooking";
   static const kShowAllResulatFiltter = '/kShowAllResulatFiltter';
+  static const kCustomerView = '/kCustomerView';
 }

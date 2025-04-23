@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master_admin/core/services/service_locator.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/core/styles/assets.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/booking_view.dart';
+import 'package:goal_master_admin/features/home/data/repo/analysis_repo_imp.dart';
+import 'package:goal_master_admin/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
 import 'package:goal_master_admin/features/home/presentation/view/home_view.dart';
 import 'package:goal_master_admin/features/layout/presentation/manager/layout_cubit.dart';
 import 'package:goal_master_admin/features/layout/presentation/manager/layout_state.dart';
@@ -33,13 +36,14 @@ class _HomeLayoutViewState extends State<HomeLayoutView> {
         builder: (context, state) {
           return Stack(
             children: [
-              if (state.activeScreen == NavBarElement.home) HomeView(),
-              // BlocProvider(
-              //   create: (context) => AnalysisCubit(
-              //     getIt<AnalysisRepoImp>(),
-              //   )..getAnalysis(),
-              //   child: const HomeView(),
-              // ),
+              if (state.activeScreen == NavBarElement.home)
+                //HomeView(),
+                BlocProvider(
+                  create: (context) => AnalysisCubit(
+                    getIt<AnalysisRepoImp>(),
+                  )..getAnalysis(),
+                  child: const HomeView(),
+                ),
               if (state.activeScreen == NavBarElement.booking) BookingView(),
               // MultiBlocProvider(
               //   providers: [

@@ -68,6 +68,19 @@ class ProfileView extends StatelessWidget {
                       push(RoutesKeys.kChangePassword, context);
                     },
                   ),
+                  Container(
+                    width: double.infinity,
+                    color: Color(0xffDADEE3),
+                    height: 1.h,
+                  ),
+                  HeightSpace(8.h),
+                  ProfileItem(
+                    title: "العملاء",
+                    icon: Assets.imagesPngImageProfile,
+                    onTap: () {
+                      push(RoutesKeys.kCustomerView, context);
+                    },
+                  ),
 
                   // Container(
                   //   width: double.infinity,

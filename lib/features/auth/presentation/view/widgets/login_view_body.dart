@@ -76,8 +76,17 @@ class LoginViewBody extends StatelessWidget {
                       ),
                       HeightSpace(24.h),
                       Text(
-                        "سجّل حسابك واحجز ملعبك في لحظات",
-                        style: AppTextStyles.font16Medium.copyWith(
+                        "للتسجيل في جول ماستر تواصل معنا عبر ",
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.font14Bold.copyWith(
+                          color: Colors.white,
+                        ),
+                      ),
+                      HeightSpace(8.h),
+                      Text(
+                        "0916771600",
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.font18Bold.copyWith(
                           color: Colors.white,
                         ),
                       ),
@@ -145,30 +154,30 @@ class LoginViewBody extends StatelessWidget {
                   },
                 ),
                 HeightSpace(29.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      "ليس لديك حساب؟",
-                      style: AppTextStyles.font14SemiBold.copyWith(
-                        color: Colors.black,
-                      ),
-                    ),
-                    WidthSpace(5.w),
-                    InkWell(
-                      onTap: () {
-                        push(RoutesKeys.kRegister, context);
-                      },
-                      child: Text(
-                        "انشئ حساب",
-                        style: AppTextStyles.font14SemiBold.copyWith(
-                          color: AppColors.primaryBlueLight,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.center,
+                //   crossAxisAlignment: CrossAxisAlignment.center,
+                //   children: [
+                //     Text(
+                //       "ليس لديك حساب؟",
+                //       style: AppTextStyles.font14SemiBold.copyWith(
+                //         color: Colors.black,
+                //       ),
+                //     ),
+                //     WidthSpace(5.w),
+                //     InkWell(
+                //       onTap: () {
+                //         push(RoutesKeys.kRegister, context);
+                //       },
+                //       child: Text(
+                //         "انشئ حساب",
+                //         style: AppTextStyles.font14SemiBold.copyWith(
+                //           color: AppColors.primaryBlueLight,
+                //         ),
+                //       ),
+                //     ),
+                //   ],
+                // ),
               ],
             ),
           ),

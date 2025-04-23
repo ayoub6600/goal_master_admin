@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
+import 'package:goal_master_admin/features/home/data/model/dash_board_response.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/items_home_view_list.dart';
 import 'package:tab_indicator_styler/tab_indicator_styler.dart';
 
 class StatusTabsHome extends StatelessWidget {
-  final List<String> statuses = [
-    "المكتمل",
-    "الموافق عليه",
-    "الملغي",
-    "الانتظار"
-  ];
-
-  StatusTabsHome({super.key});
+  final List<BookingInfo> todayBooking;
+  final List<BookingInfo> totalBookings;
+  StatusTabsHome(
+      {super.key, required this.todayBooking, required this.totalBookings});
 
   @override
   Widget build(BuildContext context) {
+    final statuses =
+        todayBooking.map((e) => e.statusText ?? '').toSet().toList();
+    final total = totalBookings.map((e) => e.statusText ?? '').toSet().toList();
     return Expanded(
       // height: 120,
       child: DefaultTabController(
@@ -38,7 +38,10 @@ class StatusTabsHome extends StatelessWidget {
             Expanded(
               child: TabBarView(
                 children: statuses
-                    .map((status) => ItemsHomeViewList(title: status))
+                    .map((status) => ItemsHomeViewList(
+                        title: status,
+                        bookingInfo: todayBooking.firstWhere(
+                            (element) => element.statusText == status)))
                     .toList(),
               ),
             ),

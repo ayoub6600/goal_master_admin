@@ -4,19 +4,19 @@ import 'package:goal_master_admin/core/databases/api/api_consumer_extension.dart
 import 'package:goal_master_admin/core/databases/api/end_points.dart';
 import 'package:goal_master_admin/core/errors/failure.dart';
 import 'package:goal_master_admin/features/home/data/model/booking_slots_response.dart';
+import 'package:goal_master_admin/features/home/data/model/dash_board_response.dart';
 import 'package:goal_master_admin/features/home/data/repo/analysis_repo.dart';
-
 
 class AnalysisRepoImp extends AnalysisRepo {
   final ApiConsumer consumer;
   AnalysisRepoImp(this.consumer);
-  // @override
-  // Future<Either<Failure, Analysis>> getAnalysis() {
-  //   return consumer.handleRequest(
-  //     () => consumer.get(EndPoints.analysis),
-  //     (data) => Analysis.fromJson(data["data"]),
-  //   );
-  // }
+  @override
+  Future<Either<Failure, DashboardResponse>> getAnalysis() {
+    return consumer.handleRequest(
+      () => consumer.get(EndPoints.analysis),
+      (data) => DashboardResponse.fromJson(data),
+    );
+  }
 
   @override
   Future<Either<Failure, BookingSlotsResponse>> filterBooking(
@@ -41,4 +41,3 @@ class AnalysisRepoImp extends AnalysisRepo {
     );
   }
 }
-

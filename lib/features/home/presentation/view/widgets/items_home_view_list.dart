@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/core/styles/app_text_styles.dart';
 import 'package:goal_master_admin/core/styles/spaces.dart';
+import 'package:goal_master_admin/features/home/data/model/dash_board_response.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
 class ItemsHomeViewList extends StatelessWidget {
-  const ItemsHomeViewList({super.key, required this.title});
+  const ItemsHomeViewList(
+      {super.key, required this.title, required this.bookingInfo});
   final String title;
+  final BookingInfo bookingInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +22,7 @@ class ItemsHomeViewList extends StatelessWidget {
           Column(
             children: [
               Text(
-                "إجمالي المكتمل",
+                "إجمالي ${bookingInfo.statusText}",
                 style: AppTextStyles.font16Medium.copyWith(
                   color: AppColors.primary,
                 ),
@@ -40,7 +43,7 @@ class ItemsHomeViewList extends StatelessWidget {
                   ),
                   WidthSpace(20),
                   Text(
-                    "4",
+                    bookingInfo.serviceCount.toString(),
                     style: AppTextStyles.font16Medium.copyWith(
                       color: AppColors.black,
                     ),

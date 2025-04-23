@@ -28,7 +28,11 @@ class ProfileItem extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Image.asset(icon, fit: BoxFit.cover),
+            Image.asset(
+              icon,
+              fit: BoxFit.cover,
+              color: AppColors.primary,
+            ),
             WidthSpace(16.w),
             Expanded(
               child: Text(
@@ -42,9 +46,9 @@ class ProfileItem extends StatelessWidget {
             child != null
                 ? SizedBox()
                 : Image.asset(
-                  Assets.imagesPngImageArrowLeft,
-                  fit: BoxFit.cover,
-                ),
+                    Assets.imagesPngImageArrowLeft,
+                    fit: BoxFit.cover,
+                  ),
           ],
         ),
       ),
