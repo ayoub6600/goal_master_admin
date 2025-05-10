@@ -32,11 +32,15 @@ import 'package:goal_master_admin/features/home/presentation/view/home_view.dart
 import 'package:goal_master_admin/features/home/presentation/view/widgets/booking_item.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/show_all_resulat_filtter.dart';
 import 'package:goal_master_admin/features/layout/presentation/view/home_layout_view.dart';
+import 'package:goal_master_admin/features/monthly_booking/data/repo/monthly_booking_repo_imp.dart';
+import 'package:goal_master_admin/features/monthly_booking/presentation/manager/monthly_booking_cubit/monthly_booking_cubit.dart';
+import 'package:goal_master_admin/features/monthly_booking/presentation/view/monthly_booking.dart';
 import 'package:goal_master_admin/features/notification/presentation/view/notifaction_view.dart';
 import 'package:goal_master_admin/features/onbording/presentation/manager/onboarding_cubit.dart';
 import 'package:goal_master_admin/features/onbording/presentation/view/onboarding_view.dart'
     show OnboardingView;
 import 'package:goal_master_admin/features/profail/data/repo/profile_repo_imp.dart';
+import 'package:goal_master_admin/features/profail/presentation/manager/allowed_amount_cubit/allowed_amount_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/customer_cubit/customer_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/reset_password_cubit/reset_password_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/update_profile_cubit/update_profile_cubit.dart';
@@ -45,6 +49,7 @@ import 'package:goal_master_admin/features/profail/presentation/view/customer_vi
 import 'package:goal_master_admin/features/profail/presentation/view/profile_view.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/update_profile_view.dart';
 
+import '../../features/profail/presentation/view/allowed_amount_view.dart';
 import 'app_router.dart';
 
 List<RouteBase> appRoutes = [
@@ -80,6 +85,21 @@ List<RouteBase> appRoutes = [
       child: BlocProvider(
         create: (context) => LoginCubit(getIt<AuthRepoImpl>()),
         child: const LoginView(),
+      ),
+    ),
+  ),
+  //AllowedAmountView
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kAllowedAmount,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: BlocProvider(
+        create: (context) => AllowedAmountCubit(
+          repo: getIt<ProfileRepoImp>(),
+        ),
+        child: const AllowedAmountView(),
       ),
     ),
   ),
@@ -353,6 +373,21 @@ List<RouteBase> appRoutes = [
       ),
     ),
   ),
+  //kMonthlyBookingView
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kMonthlyBookingView,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: BlocProvider(
+        create: (context) => MonthlyBookingCubit(
+          bookingRepo: getIt<MonthlyBookingRepoImp>(),
+        ),
+        child: const MonthlyBookingView(),
+      ),
+    ),
+  )
   // //ContactView
   // GoRoute(
   //   parentNavigatorKey: parentKey,

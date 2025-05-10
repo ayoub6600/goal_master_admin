@@ -3,6 +3,7 @@ import 'package:goal_master_admin/core/databases/api/api_consumer.dart';
 import 'package:goal_master_admin/core/databases/api/api_consumer_extension.dart';
 import 'package:goal_master_admin/core/databases/api/end_points.dart';
 import 'package:goal_master_admin/core/errors/failure.dart';
+import 'package:goal_master_admin/features/profail/data/model/allowed_amount_response.dart';
 import 'package:goal_master_admin/features/profail/data/model/customer_list_response.dart';
 import 'package:goal_master_admin/features/profail/data/repo/profile_repo.dart';
 import 'package:goal_master_admin/features/auth/data/model/login_model/user.dart';
@@ -77,5 +78,32 @@ class ProfileRepoImp extends ProfileRepo {
         return UserData.fromJson(data["data"]);
       },
     );
-  } //
+  }
+
+  @override
+  Future<Either<Failure, AllowedAmountResponse>> getAllowedAmount(
+    int page,
+  ) {
+    return consumer.handleRequest(
+      () => consumer.get(EndPoints.getForgivingGenerous(page)),
+      (res) {
+        return AllowedAmountResponse.fromJson(res);
+      },
+    );
+  }
+
+  @override
+  Future<Either<Failure, String>> updateMonthlyBooking(
+      {required String serviceDate, required String id}) {
+    return consumer.handleRequest(
+      () => consumer.post(
+        EndPoints.updateMonthlyBooking,
+        isFormData: false,
+        data: {'service_date': serviceDate, 'id': id},
+      ),
+      (data) {
+        return data["message"];
+      },
+    );
+  }
 }

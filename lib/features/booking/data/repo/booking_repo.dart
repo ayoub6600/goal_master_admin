@@ -1,17 +1,21 @@
 import 'package:dartz/dartz.dart';
+import 'package:goal_master_admin/core/components/paginated_response.dart';
 import 'package:goal_master_admin/core/errors/failure.dart';
+import 'package:goal_master_admin/features/booking/data/model/booking_all_list_response.dart';
+import 'package:goal_master_admin/features/booking/data/model/booking_history_response.dart';
 import 'package:goal_master_admin/features/booking/data/model/category_model.dart';
 import 'package:goal_master_admin/features/booking/data/model/club_responce.dart';
 import 'package:goal_master_admin/features/booking/data/model/employe/employe.dart';
 import 'package:goal_master_admin/features/booking/data/model/location_reponse.dart';
 import 'package:goal_master_admin/features/booking/data/model/service_model.dart';
 import 'package:goal_master_admin/features/booking/data/model/timeslot.dart';
+import 'package:goal_master_admin/features/home/presentation/view/widgets/booking_item.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 abstract class BookingRepo {
-  // Future<Either<Failure, PaginatedResponse<Booking>>> getBooking(
-  //   int page,
-  //   bool now,
-  // );
+  Future<Either<Failure, PaginatedResponse<BookingItemResponce>>> getBooking(
+    int page,
+  );
   // Future<Either<Failure, CancelBookingResponse>> cancelBooking(
   //   int id,
   // );

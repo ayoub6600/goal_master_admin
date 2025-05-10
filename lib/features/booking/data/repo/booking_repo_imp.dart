@@ -1,7 +1,10 @@
 import 'package:dartz/dartz.dart';
+import 'package:goal_master_admin/core/components/paginated_response.dart';
 import 'package:goal_master_admin/core/databases/api/api_consumer.dart';
 import 'package:goal_master_admin/core/databases/api/api_consumer_extension.dart';
 import 'package:goal_master_admin/core/databases/api/end_points.dart';
+import 'package:goal_master_admin/features/booking/data/model/booking_all_list_response.dart';
+import 'package:goal_master_admin/features/booking/data/model/booking_history_response.dart';
 import 'package:goal_master_admin/features/booking/data/repo/booking_repo.dart';
 import 'package:goal_master_admin/core/errors/failure.dart';
 import 'package:goal_master_admin/features/booking/data/model/category_model.dart';
@@ -10,30 +13,34 @@ import 'package:goal_master_admin/features/booking/data/model/employe/employe.da
 import 'package:goal_master_admin/features/booking/data/model/location_reponse.dart';
 import 'package:goal_master_admin/features/booking/data/model/service_model.dart';
 import 'package:goal_master_admin/features/booking/data/model/timeslot.dart';
+import 'package:goal_master_admin/features/home/presentation/view/widgets/booking_item.dart';
 
 class BookingRepoImp extends BookingRepo {
   final ApiConsumer apiConsumer;
 
   BookingRepoImp(this.apiConsumer);
 
-  // @override
-  // Future<Either<Failure, PaginatedResponse<Booking>>> getBooking(
-  //     int page, bool now) async {
-  //   return apiConsumer.handleRequest(
-  //     () => apiConsumer.get(
-  //       EndPoints.bookingHistory(page),
-  //       queryParameters: {
-  //         'pageSize': 10,
-  //         'page': page,
-  //         'now': now,
-  //       },
-  //     ),
-  //     (data) => PaginatedResponse<Booking>.fromJson(
-  //       data['data'],
-  //       (json) => Booking.fromJson(json),
-  //     ),
-  //   );
-  // }
+  @override
+  Future<Either<Failure, PaginatedResponse<BookingItemResponce>>> getBooking(
+    int page,
+  ) async {
+    return apiConsumer.handleRequest(
+      () => apiConsumer.get(
+        EndPoints.bookingHistory(page),
+        queryParameters: {
+          'pageSize': 10,
+          'page': page,
+          // "dateFrom": "2025-01-01",
+          // "dateTo": "2025-03-30",
+          "branchId": 12,
+        },
+      ),
+      (data) => PaginatedResponse<BookingItemResponce>.fromJson(
+        data,
+        BookingItemResponce.fromJson,
+      ),
+    );
+  }
 
   // @override
   // Future<Either<Failure, CancelBookingResponse>> cancelBooking(int id) {

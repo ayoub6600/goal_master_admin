@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master_admin/core/services/service_locator.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/core/styles/assets.dart';
+import 'package:goal_master_admin/features/booking/data/repo/booking_repo_imp.dart';
+import 'package:goal_master_admin/features/booking/presentation/manager/booking_cubit/booking_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/booking_view.dart';
 import 'package:goal_master_admin/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master_admin/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
@@ -44,7 +46,23 @@ class _HomeLayoutViewState extends State<HomeLayoutView> {
                   )..getAnalysis(),
                   child: const HomeView(),
                 ),
-              if (state.activeScreen == NavBarElement.booking) BookingView(),
+              if (state.activeScreen == NavBarElement.booking)
+                MultiBlocProvider(
+                  providers: [
+                    BlocProvider(
+                      create: (context) => BookingCubit(
+                        bookingRepo: getIt<BookingRepoImp>(),
+                      ),
+                    ),
+                    //CancelBookingCubit
+                    // BlocProvider(
+                    //   create: (context) => CancelBookingCubit(
+                    //     getIt<BookingRepoImp>(),
+                    //   ),
+                    // ),
+                  ],
+                  child: BookingView(),
+                ),
               // MultiBlocProvider(
               //   providers: [
               //     BlocProvider(

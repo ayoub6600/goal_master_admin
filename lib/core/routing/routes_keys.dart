@@ -18,4 +18,6 @@ class RoutesKeys {
   static const kAddNewBooking = "/kAddNewBooking";
   static const kShowAllResulatFiltter = '/kShowAllResulatFiltter';
   static const kCustomerView = '/kCustomerView';
+  static const kMonthlyBookingView = '/kMonthlyBookingView';
+  static const kAllowedAmount = '/kAllowedAmount';
 }

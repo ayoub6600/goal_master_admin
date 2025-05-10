@@ -17,6 +17,8 @@ class EndPoints {
   static String register = 'register';
 
   static String changePassword = 'change-password';
+  static String getForgivingGenerous(int id) =>
+      'user/booking/get-forgiving-generous?page=$id';
 
   static String changePasswordUser = 'user/change-password-user';
 
@@ -24,7 +26,10 @@ class EndPoints {
 
   static String profile = 'user/profile';
   static String analysis = "manager/dashboard/analysis";
-  static String bookingHistory(int id) => 'user/booking/history?page=$id';
+  static String bookingHistory(int id) => "user/booking/all?page=$id";
+
+  static String listMonthlyBooking(int id) =>
+      'user/booking/getMonthlyBookingList?page=$id';
 
   static String cancelBooking = 'user/booking/cancel-booking';
 
@@ -46,6 +51,9 @@ class EndPoints {
 
   static String balance = 'user/card/balance';
   static String listCustomer = "list/customers";
+  //user/booking/updateMonthlyBooking
+
+  static String updateMonthlyBooking = 'user/booking/updateMonthlyBooking';
 
   ///user/booking/fillter-new-booking?page=5
 

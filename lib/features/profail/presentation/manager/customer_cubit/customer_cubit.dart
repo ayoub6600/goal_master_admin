@@ -8,28 +8,6 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 part 'customer_state.dart';
 
-// class CustomerCubit extends Cubit<CustomerState> {
-//   final ProfileRepo repo;
-
-//   CustomerCubit(this.repo) : super(CustomerInitial());
-
-//   Future<void> fetchCustomers() async {
-//     emit(CustomerLoading());
-//     final result = await repo.getCustomer();
-//     result.fold(
-//       (failure) => emit(CustomerError(failure.errMessage)),
-//       (data) => emit(CustomerLoaded(data)),
-//     );
-//   }
-//}
-// import 'package:bloc/bloc.dart';
-// import 'package:equatable/equatable.dart';
-// import 'package:goal_master/features/booking/data/model/booking_history_response.dart';
-// import 'package:goal_master/features/booking/data/repo/booking_repo.dart';
-// import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
-
-// part 'booking_state.dart';
-
 class CustomerCubit extends Cubit<CustomerState> {
   final ProfileRepo bookingRepo;
   late final PagingController<int, Customer> _pagingController;

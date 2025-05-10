@@ -9,7 +9,7 @@ class DashboardResponse {
 
   factory DashboardResponse.fromJson(Map<String, dynamic> json) {
     return DashboardResponse(
-      status: json['status'] == "true",
+      status: json['status'].toString().toLowerCase() == 'true',
       data: DashboardData.fromJson(json['data']),
     );
   }
@@ -75,9 +75,9 @@ class BookingInfo {
 
   factory BookingInfo.fromJson(Map<String, dynamic> json) {
     return BookingInfo(
-      status: json['status'],
-      statusText: json['status_text'],
-      serviceCount: json['serviceCount'],
+      status: _parseInt(json['status']),
+      statusText: json['status_text'].toString(),
+      serviceCount: _parseInt(json['serviceCount']),
     );
   }
 }
@@ -101,7 +101,7 @@ class IncomAndOtherStatistics {
       todayPaidBy: (json['todayPaidBy'] as List)
           .map((e) => TodayPaidBy.fromJson(e))
           .toList(),
-      totalAllowedAmountToday: json['totalAllowedAmountToday'],
+      totalAllowedAmountToday: _parseInt(json['totalAllowedAmountToday']),
     );
   }
 }
@@ -121,10 +121,10 @@ class TodayPaidAndDue {
 
   factory TodayPaidAndDue.fromJson(Map<String, dynamic> json) {
     return TodayPaidAndDue(
-      paymentStatus: json['payment_status'],
-      status: json['status'],
-      paidAmount: json['paid_amount'],
-      serviceAmount: json['service_amount'],
+      paymentStatus: _parseInt(json['payment_status']),
+      status: _parseInt(json['status']),
+      paidAmount: json['paid_amount'].toString(),
+      serviceAmount: json['service_amount'].toString(),
     );
   }
 }
@@ -142,9 +142,9 @@ class TodayPaidBy {
 
   factory TodayPaidBy.fromJson(Map<String, dynamic> json) {
     return TodayPaidBy(
-      type: json['type'],
-      paymentBy: json['PaymentBy'],
-      paidAmount: json['paid_amount'],
+      type: _parseInt(json['type']),
+      paymentBy: json['PaymentBy'].toString(),
+      paidAmount: json['paid_amount'].toString(),
     );
   }
 }
@@ -162,16 +162,16 @@ class TopService {
 
   factory TopService.fromJson(Map<String, dynamic> json) {
     return TopService(
-      schServiceId: json['sch_service_id'],
-      title: json['title'],
-      serviceCount: json['service_count'],
+      schServiceId: _parseInt(json['sch_service_id']),
+      title: json['title'].toString(),
+      serviceCount: _parseInt(json['service_count']),
     );
   }
 }
 
 class TotalForgevin {
-  final int dailyTotal;
-  final int total;
+  final double dailyTotal;
+  final double total;
 
   TotalForgevin({
     required this.dailyTotal,
@@ -180,8 +180,22 @@ class TotalForgevin {
 
   factory TotalForgevin.fromJson(Map<String, dynamic> json) {
     return TotalForgevin(
-      dailyTotal: json['dailyTotal'],
-      total: json['total'],
+      dailyTotal: _parseDouble(json['dailyTotal']),
+      total: _parseDouble(json['total']),
     );
   }
+}
+
+// 🔧 Helper functions
+int _parseInt(dynamic value) {
+  if (value is int) return value;
+  if (value is String) return int.tryParse(value) ?? 0;
+  return 0;
+}
+
+double _parseDouble(dynamic value) {
+  if (value is double) return value;
+  if (value is int) return value.toDouble();
+  if (value is String) return double.tryParse(value) ?? 0.0;
+  return 0.0;
 }

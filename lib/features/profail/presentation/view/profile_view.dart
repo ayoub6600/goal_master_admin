@@ -81,6 +81,32 @@ class ProfileView extends StatelessWidget {
                       push(RoutesKeys.kCustomerView, context);
                     },
                   ),
+                  Container(
+                    width: double.infinity,
+                    color: Color(0xffDADEE3),
+                    height: 1.h,
+                  ),
+                  HeightSpace(8.h),
+                  ProfileItem(
+                    title: "المسامح كريم",
+                    icon: Assets.imagesPngImageProfile,
+                    onTap: () {
+                      push(RoutesKeys.kAllowedAmount, context);
+                    },
+                  ),
+                  Container(
+                    width: double.infinity,
+                    color: Color(0xffDADEE3),
+                    height: 1.h,
+                  ),
+                  HeightSpace(8.h),
+                  ProfileItem(
+                    title: "الحجز الشهري",
+                    icon: Assets.imagesPngImageProfile,
+                    onTap: () {
+                      push(RoutesKeys.kMonthlyBookingView, context);
+                    },
+                  ),
 
                   // Container(
                   //   width: double.infinity,
