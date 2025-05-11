@@ -4,7 +4,6 @@ import 'package:goal_master_admin/core/databases/api/api_consumer.dart';
 import 'package:goal_master_admin/core/databases/api/api_consumer_extension.dart';
 import 'package:goal_master_admin/core/databases/api/end_points.dart';
 import 'package:goal_master_admin/features/booking/data/model/booking_all_list_response.dart';
-import 'package:goal_master_admin/features/booking/data/model/booking_history_response.dart';
 import 'package:goal_master_admin/features/booking/data/repo/booking_repo.dart';
 import 'package:goal_master_admin/core/errors/failure.dart';
 import 'package:goal_master_admin/features/booking/data/model/category_model.dart';
@@ -13,7 +12,6 @@ import 'package:goal_master_admin/features/booking/data/model/employe/employe.da
 import 'package:goal_master_admin/features/booking/data/model/location_reponse.dart';
 import 'package:goal_master_admin/features/booking/data/model/service_model.dart';
 import 'package:goal_master_admin/features/booking/data/model/timeslot.dart';
-import 'package:goal_master_admin/features/home/presentation/view/widgets/booking_item.dart';
 
 class BookingRepoImp extends BookingRepo {
   final ApiConsumer apiConsumer;
@@ -23,17 +21,41 @@ class BookingRepoImp extends BookingRepo {
   @override
   Future<Either<Failure, PaginatedResponse<BookingItemResponce>>> getBooking(
     int page,
+    String? startDate,
+    String? endDate,
+    String? branchId,
+    String? employeeId,
+    String? customerId,
+    String? serviceStatus,
   ) async {
+    final queryParams = <String, dynamic>{
+      'pageSize': 10,
+      'page': page,
+    };
+
+    if (startDate != null && startDate.isNotEmpty) {
+      queryParams['dateFrom'] = startDate;
+    }
+    if (endDate != null && endDate.isNotEmpty) {
+      queryParams['dateTo'] = endDate;
+    }
+    if (branchId != null && branchId.isNotEmpty) {
+      queryParams['branchId'] = int.tryParse(branchId);
+    }
+    if (employeeId != null && employeeId.isNotEmpty) {
+      queryParams['employeeId'] = int.tryParse(employeeId);
+    }
+    if (customerId != null && customerId.isNotEmpty) {
+      queryParams['customerId'] = int.tryParse(customerId);
+    }
+    if (serviceStatus != null && serviceStatus.isNotEmpty) {
+      queryParams['serviceStatus'] = int.tryParse(serviceStatus);
+    }
+
     return apiConsumer.handleRequest(
       () => apiConsumer.get(
         EndPoints.bookingHistory(page),
-        queryParameters: {
-          'pageSize': 10,
-          'page': page,
-          // "dateFrom": "2025-01-01",
-          // "dateTo": "2025-03-30",
-          "branchId": 12,
-        },
+        queryParameters: queryParams,
       ),
       (data) => PaginatedResponse<BookingItemResponce>.fromJson(
         data,

@@ -51,9 +51,10 @@ class _HomeLayoutViewState extends State<HomeLayoutView> {
                   providers: [
                     BlocProvider(
                       create: (context) => BookingCubit(
-                        bookingRepo: getIt<BookingRepoImp>(),
-                      ),
+                        getIt<BookingRepoImp>(),
+                      )..filterBooking(),
                     ),
+
                     //CancelBookingCubit
                     // BlocProvider(
                     //   create: (context) => CancelBookingCubit(
