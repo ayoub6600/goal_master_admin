@@ -16,6 +16,7 @@ class EndPoints {
 
   static String register = 'register';
 
+  static String getBookingInfo(int id) => 'user/booking/get-info/?id=$id';
   static String changePassword = 'change-password';
   static String getForgivingGenerous(int id) =>
       'user/booking/get-forgiving-generous?page=$id';
@@ -59,6 +60,9 @@ class EndPoints {
 
   static String fillterNewBooking(int id) =>
       'user/booking/fillter-new-booking?page=$id';
+
+  static String updateStatusBooking =
+      'manager/booking/change-service-booking-status';
 }
 
 //doctors/top-ratings

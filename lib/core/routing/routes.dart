@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:goal_master_admin/core/components/build_page_with_default_transition.dart';
-import 'package:goal_master_admin/core/routing/routes_keys.dart'
-    show RoutesKeys;
+import 'package:goal_master_admin/core/routing/routes_keys.dart';
+
 import 'package:goal_master_admin/core/services/service_locator.dart';
 import 'package:goal_master_admin/features/auth/data/repo/auth_repo_imp.dart';
 import 'package:goal_master_admin/features/auth/presentation/manager/login_cubit/login_cubit.dart';
@@ -14,21 +14,24 @@ import 'package:goal_master_admin/features/auth/presentation/view/new_password_v
 import 'package:goal_master_admin/features/auth/presentation/view/otp_view.dart';
 import 'package:goal_master_admin/features/auth/presentation/view/register_view.dart';
 import 'package:goal_master_admin/features/booking/data/repo/booking_repo_imp.dart';
+import 'package:goal_master_admin/features/booking/presentation/manager/%20booking_details_cubit/booking_details_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/add_booking_cubit/add_booking_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/calendar_cubit/calendar_cubit.dart';
+import 'package:goal_master_admin/features/booking/presentation/manager/cancel_booking_cubit/cancel_booking_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/category_cubit/category_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/employee_cubit/employee_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/service_cubit/service_cubit.dart';
+import 'package:goal_master_admin/features/booking/presentation/manager/update_booking_status_cubit/update_booking_status_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/zone_cubit/zone_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/add_booking.dart';
+import 'package:goal_master_admin/features/booking/presentation/view/widgets/booking_items_details.dart.dart';
 import 'package:goal_master_admin/features/home/data/model/booking_slots_response.dart';
 import 'package:goal_master_admin/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/club_cubit/club_cubit.dart';
 import 'package:goal_master_admin/features/home/presentation/manager/filter_cubit/filter_cubit.dart';
 import 'package:goal_master_admin/features/home/presentation/manager/page_view_new_booking_cubit/page_view_new_booking_cubit.dart';
 import 'package:goal_master_admin/features/home/presentation/view/fillter_view.dart';
-import 'package:goal_master_admin/features/home/presentation/view/home_view.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/booking_item.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/show_all_resulat_filtter.dart';
 import 'package:goal_master_admin/features/layout/presentation/view/home_layout_view.dart';
@@ -37,8 +40,8 @@ import 'package:goal_master_admin/features/monthly_booking/presentation/manager/
 import 'package:goal_master_admin/features/monthly_booking/presentation/view/monthly_booking.dart';
 import 'package:goal_master_admin/features/notification/presentation/view/notifaction_view.dart';
 import 'package:goal_master_admin/features/onbording/presentation/manager/onboarding_cubit.dart';
-import 'package:goal_master_admin/features/onbording/presentation/view/onboarding_view.dart'
-    show OnboardingView;
+import 'package:goal_master_admin/features/onbording/presentation/view/onboarding_view.dart';
+
 import 'package:goal_master_admin/features/profail/data/repo/profile_repo_imp.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/allowed_amount_cubit/allowed_amount_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/customer_cubit/customer_cubit.dart';
@@ -173,6 +176,42 @@ List<RouteBase> appRoutes = [
       );
     },
   ),
+  //kBookingItemsDetails
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kBookingItemsDetails,
+    pageBuilder: (context, state) {
+      final bookingId = state.extra as int;
+
+      return buildPageWithDefaultTransition<void>(
+        context: context,
+        state: state,
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => BookingDetailsCubit(
+                getIt<BookingRepoImp>(),
+                bookingId,
+              )..getBookingInfo(),
+            ),
+            BlocProvider(
+              create: (context) => CancelBookingCubit(
+                getIt<BookingRepoImp>(),
+              ),
+            ),
+            //UpdateBookingStatusCubit
+            BlocProvider(
+              create: (context) => UpdateBookingStatusCubit(
+                getIt<BookingRepoImp>(),
+              ),
+            ),
+          ],
+          child: BookingItemsDetails(),
+        ),
+      );
+    },
+  ),
+
   GoRoute(
     parentNavigatorKey: parentKey,
     path: RoutesKeys.kHome,

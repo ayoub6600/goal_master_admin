@@ -166,6 +166,10 @@ class Assets {
   /// assets/images/png_image/star.png
   static const String imagesPngImageStar = "assets/images/png_image/star.png";
 
+  /// Assets for imagesPngImageWallet2
+  /// assets/images/png_image/wallet2.png
+  static const String imagesPngImageWallet2 = "assets/images/png_image/wallet2.png";
+
   /// Assets for imagesSvgImageEyeSlash
   /// assets/images/svg_image/eye-slash.svg
   static const String imagesSvgImageEyeSlash = "assets/images/svg_image/eye-slash.svg";

@@ -1,13 +1,9 @@
 import 'package:chucker_flutter/chucker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:goal_master_admin/core/components/keys_values.dart';
-import 'package:goal_master_admin/core/components/preference_utility.dart';
-import 'package:goal_master_admin/core/routing/route_utils.dart';
-import 'package:goal_master_admin/core/routing/routes_keys.dart'
-    show RoutesKeys;
-import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'routes.dart';
+import 'package:goal_master_admin/core/routing/routes.dart';
+
+import 'package:goal_master_admin/core/routing/routes_keys.dart';
 
 final GlobalKey<NavigatorState> parentKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> shellKey = GlobalKey<NavigatorState>();
@@ -29,6 +25,7 @@ extension GoRouterExtension on GoRouter {
   }
 }
 
+// ignore: avoid_classes_with_only_static_members
 abstract class AppRouter {
   static final router = GoRouter(
     observers: [ChuckerFlutter.navigatorObserver],
