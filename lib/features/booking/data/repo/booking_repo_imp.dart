@@ -4,6 +4,8 @@ import 'package:goal_master_admin/core/databases/api/api_consumer.dart';
 import 'package:goal_master_admin/core/databases/api/api_consumer_extension.dart';
 import 'package:goal_master_admin/core/databases/api/end_points.dart';
 import 'package:goal_master_admin/features/booking/data/model/booking_all_list_response.dart';
+import 'package:goal_master_admin/features/booking/data/model/booking_details.dart';
+import 'package:goal_master_admin/features/booking/data/model/cancel_booking_response.dart';
 import 'package:goal_master_admin/features/booking/data/repo/booking_repo.dart';
 import 'package:goal_master_admin/core/errors/failure.dart';
 import 'package:goal_master_admin/features/booking/data/model/category_model.dart';
@@ -64,18 +66,18 @@ class BookingRepoImp extends BookingRepo {
     );
   }
 
-  // @override
-  // Future<Either<Failure, CancelBookingResponse>> cancelBooking(int id) {
-  //   return apiConsumer.handleRequest(
-  //     () => apiConsumer.post(
-  //       EndPoints.cancelBooking,
-  //       data: {
-  //         'id': id,
-  //       },
-  //     ),
-  //     (data) => CancelBookingResponse.fromJson(data),
-  //   );
-  // }
+  @override
+  Future<Either<Failure, CancelBookingResponse>> cancelBooking(int id) {
+    return apiConsumer.handleRequest(
+      () => apiConsumer.post(
+        EndPoints.cancelBooking,
+        data: {
+          'id': id,
+        },
+      ),
+      (data) => CancelBookingResponse.fromJson(data),
+    );
+  }
 
   @override
   Future<Either<Failure, List<Location>>> listZone() {
@@ -232,6 +234,29 @@ class BookingRepoImp extends BookingRepo {
 
         // fallback: return something useful (e.g., success message or booking ID)
         return data['data'].toString();
+      },
+    );
+  }
+
+  @override
+  Future<Either<Failure, BookingDetails>> getBookingInfo(int id) {
+    return apiConsumer.handleRequest(
+      () => apiConsumer.post(
+        EndPoints.getBookingInfo(id),
+      ),
+      (data) {
+        return BookingDetails.fromJson(data['data'] as Map<String, dynamic>);
+      },
+    );
+  }
+
+  @override
+  Future<Either<Failure, String>> updateStatusBooking(int id, String status) {
+    return apiConsumer.handleRequest(
+      () => apiConsumer.post(EndPoints.updateStatusBooking,
+          queryParameters: {'status': status, 'booking_id': id}),
+      (data) {
+        return data['message'];
       },
     );
   }

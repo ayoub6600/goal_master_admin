@@ -2,6 +2,8 @@ import 'package:dartz/dartz.dart';
 import 'package:goal_master_admin/core/components/paginated_response.dart';
 import 'package:goal_master_admin/core/errors/failure.dart';
 import 'package:goal_master_admin/features/booking/data/model/booking_all_list_response.dart';
+import 'package:goal_master_admin/features/booking/data/model/booking_details.dart';
+import 'package:goal_master_admin/features/booking/data/model/cancel_booking_response.dart';
 import 'package:goal_master_admin/features/booking/data/model/category_model.dart';
 import 'package:goal_master_admin/features/booking/data/model/club_responce.dart';
 import 'package:goal_master_admin/features/booking/data/model/employe/employe.dart';
@@ -19,9 +21,17 @@ abstract class BookingRepo {
     String? customerId,
     String? serviceStatus,
   );
-  // Future<Either<Failure, CancelBookingResponse>> cancelBooking(
-  //   int id,
-  // );
+  //user/booking/get-info/?id=178
+  Future<Either<Failure, BookingDetails>> getBookingInfo(
+    int id,
+  );
+  Future<Either<Failure, CancelBookingResponse>> cancelBooking(
+    int id,
+  );
+  Future<Either<Failure, String>> updateStatusBooking(
+    int id,
+    String status,
+  );
   Future<Either<Failure, List<Location>>> listZone();
   Future<Either<Failure, List<ClubResponce>>> listClub(
     int zoneId,

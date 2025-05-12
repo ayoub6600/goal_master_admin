@@ -3,6 +3,7 @@ import 'package:goal_master_admin/core/components/bottom_sheet/base_bottom_sheet
 import 'package:goal_master_admin/core/components/button_app.dart';
 import 'package:goal_master_admin/core/components/custom_drop_down_shimmer_items.dart';
 import 'package:goal_master_admin/core/components/custom_text_field/custom_app_form_text_field.dart';
+import 'package:goal_master_admin/core/services/service_locator.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/core/styles/app_text_styles.dart';
 import 'package:goal_master_admin/core/styles/assets.dart';
@@ -10,6 +11,9 @@ import 'package:goal_master_admin/core/styles/spaces.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/booking_cubit/booking_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/booking_list.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master_admin/features/profail/data/model/allowed_amount_response.dart';
+import 'package:goal_master_admin/features/profail/data/repo/profile_repo_imp.dart';
+import 'package:goal_master_admin/features/profail/presentation/manager/customer_cubit/customer_cubit.dart';
 import 'package:intl/intl.dart';
 //fltterblo
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -35,8 +39,13 @@ class BookingViewBody extends StatelessWidget {
                 title: "بحث",
                 context: context,
                 hideNavBar: false,
-                child: BookingViewBodyBottomSheet(
-                  cubitContext: parentContext,
+                child: BlocProvider(
+                  create: (context) => CustomerCubit(
+                    bookingRepo: getIt<ProfileRepoImp>(),
+                  ),
+                  child: BookingViewBodyBottomSheet(
+                    cubitContext: parentContext,
+                  ),
                 ));
           },
           child: Container(
@@ -206,10 +215,11 @@ class _BookingViewBodyBottomSheetState
                       inputType: TextInputType.number,
                     ),
                     HeightSpace(8.h),
-                    CustomTextField(
-                      hint: "رقم العميل",
-                      controller: customerIdController,
-                      inputType: TextInputType.number,
+                    CustomerDropdown(
+                      selectedCustomerId: cubit.customerId,
+                      onChanged: (id) {
+                        cubit.updateCustomerId(id ?? '');
+                      },
                     ),
                     HeightSpace(8.h),
                   ],
@@ -240,6 +250,45 @@ class _BookingViewBodyBottomSheetState
           ),
         ],
       ),
+    );
+  }
+}
+
+class CustomerDropdown extends StatefulWidget {
+  final Function(String?) onChanged;
+  final String? selectedCustomerId;
+
+  const CustomerDropdown({
+    Key? key,
+    required this.onChanged,
+    this.selectedCustomerId,
+  }) : super(key: key);
+
+  @override
+  _CustomerDropdownState createState() => _CustomerDropdownState();
+}
+
+class _CustomerDropdownState extends State<CustomerDropdown> {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<CustomerCubit, CustomerState>(
+      builder: (context, state) {
+        final cubit = context.read<CustomerCubit>();
+        final customers = cubit.customers;
+
+        return DropdownButtonFormField<String>(
+          isExpanded: true,
+          value: widget.selectedCustomerId,
+          hint: Text("اختر العميل"),
+          items: customers
+              .map((customer) => DropdownMenuItem<String>(
+                    value: customer.id.toString(),
+                    child: Text(customer.fullName),
+                  ))
+              .toList(),
+          onChanged: widget.onChanged,
+        );
+      },
     );
   }
 }
