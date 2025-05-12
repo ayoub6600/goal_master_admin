@@ -13,6 +13,8 @@ import 'package:goal_master_admin/features/home/presentation/view/home_view.dart
 import 'package:goal_master_admin/features/layout/presentation/manager/layout_cubit.dart';
 import 'package:goal_master_admin/features/layout/presentation/manager/layout_state.dart';
 import 'package:goal_master_admin/features/layout/presentation/view/widget/home_bottom_nav_bar.dart';
+import 'package:goal_master_admin/features/profail/data/repo/profile_repo_imp.dart';
+import 'package:goal_master_admin/features/profail/presentation/manager/customer_cubit/customer_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/profile_view.dart';
 
 class HomeLayoutView extends StatefulWidget {
@@ -54,16 +56,16 @@ class _HomeLayoutViewState extends State<HomeLayoutView> {
                         getIt<BookingRepoImp>(),
                       )..filterBooking(),
                     ),
-
-                    //CancelBookingCubit
-                    // BlocProvider(
-                    //   create: (context) => CancelBookingCubit(
-                    //     getIt<BookingRepoImp>(),
-                    //   ),
-                    // ),
+                    //CustomerCubit
+                    BlocProvider(
+                      create: (context) => CustomerCubit(
+                        bookingRepo: getIt<ProfileRepoImp>(),
+                      ),
+                    ),
                   ],
                   child: BookingView(),
                 ),
+
               // MultiBlocProvider(
               //   providers: [
               //     BlocProvider(
