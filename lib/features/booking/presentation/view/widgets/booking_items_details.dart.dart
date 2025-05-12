@@ -36,16 +36,25 @@ class BookingItemsDetails extends StatelessWidget {
             if (state is BookingDetailsSuccess) {
               final booking = state.bookingDetails;
 
-              return SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const BuildHeaderImage(),
-                    BuildDetailsSection(
-                      booking: booking,
+              return Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          const BuildHeaderImage(),
+                          BuildDetailsSection(
+                            booking: booking,
+                          ),
+                        ],
+                      ),
                     ),
-                    Column(
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
                       children: [
                         Row(
                           children: [
@@ -61,8 +70,8 @@ class BookingItemsDetails extends StatelessWidget {
                         ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               );
             }
 
