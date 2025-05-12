@@ -12,7 +12,7 @@ class CustomerCubit extends Cubit<CustomerState> {
   final ProfileRepo bookingRepo;
   late final PagingController<int, Customer> _pagingController;
   bool _now = true; // <--- add this
-
+  final List<Customer> customers = [];
   CustomerCubit({
     required this.bookingRepo,
   }) : super(CustomerInitial()) {
@@ -35,6 +35,8 @@ class CustomerCubit extends Cubit<CustomerState> {
           emit(CustomerError(failure.errMessage));
         },
         (response) {
+          final fetchedCustomers = response.data ?? [];
+          customers.addAll(fetchedCustomers);
           final booking = response.data ?? [];
           final isLastPage = pageKey >= (response.lastPage ?? 1);
 
@@ -59,6 +61,7 @@ class CustomerCubit extends Cubit<CustomerState> {
   }
 
   void refresh() {
+    customers.clear();
     _pagingController.refresh();
   }
 
