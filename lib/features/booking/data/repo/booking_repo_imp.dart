@@ -265,4 +265,20 @@ class BookingRepoImp extends BookingRepo {
       },
     );
   }
+
+  @override
+  Future<Either<Failure, BookingDetails>> depositBookingPayment(
+      int id, String due, String status, String extraInput) {
+    return apiConsumer.handleRequest(
+      () => apiConsumer.post(EndPoints.depositBookingPayment, queryParameters: {
+        'booking_id': id,
+        'due': due,
+        'payment_status': status,
+        'extra_input': extraInput
+      }),
+      (data) {
+        return BookingDetails.fromJson(data['data'] as Map<String, dynamic>);
+      },
+    );
+  }
 }

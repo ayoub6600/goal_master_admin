@@ -22,7 +22,7 @@ abstract class BookingRepo {
     String? serviceStatus,
     String? bookingId,
   );
-  //user/booking/get-info/?id=178
+
   Future<Either<Failure, BookingDetails>> getBookingInfo(
     int id,
   );
@@ -32,6 +32,12 @@ abstract class BookingRepo {
   Future<Either<Failure, String>> updateStatusBooking(
     int id,
     String status,
+  );
+  Future<Either<Failure, BookingDetails>> depositBookingPayment(
+    int id,
+    String due,
+    String status,
+    String extraInput,
   );
   Future<Either<Failure, List<Location>>> listZone();
   Future<Either<Failure, List<ClubResponce>>> listClub(

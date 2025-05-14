@@ -1,3 +1,4 @@
+// ignore: avoid_classes_with_only_static_members
 class EndPoints {
   //********  base url
   static const String baserUrl = 'https://web.goalmasters.online/api/';
@@ -63,6 +64,8 @@ class EndPoints {
 
   static String updateStatusBooking =
       'manager/booking/change-service-booking-status';
+
+  static String depositBookingPayment = 'manager/booking/depoist-money';
 }
 
 //doctors/top-ratings
