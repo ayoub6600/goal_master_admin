@@ -27,7 +27,12 @@ class LoginCubit extends Cubit<LoginState> {
         emit(LoginError(error.errMessage));
       },
       (user) {
-        emit(LoginSuccess());
+        if (user.user?.userType == 1) {
+          emit(LoginSuccess());
+        } else {
+          emit(LoginError(" لا يمكن تسجيل الدخول بتلك البيانات"));
+        }
+
         print("---->token ${SharedPreferenceUtil.getString(PrefKey.fcmToken)}");
         //save user
 

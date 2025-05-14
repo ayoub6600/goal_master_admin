@@ -20,6 +20,7 @@ abstract class BookingRepo {
     String? employeeId,
     String? customerId,
     String? serviceStatus,
+    String? bookingId,
   );
   //user/booking/get-info/?id=178
   Future<Either<Failure, BookingDetails>> getBookingInfo(

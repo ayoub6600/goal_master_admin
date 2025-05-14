@@ -1,4 +1,3 @@
-// customer_cubit.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master_admin/features/profail/data/model/customer_list_response.dart';
 import 'package:goal_master_admin/core/errors/failure.dart';
@@ -11,11 +10,10 @@ part 'customer_state.dart';
 class CustomerCubit extends Cubit<CustomerState> {
   final ProfileRepo bookingRepo;
   late final PagingController<int, Customer> _pagingController;
-  bool _now = true; // <--- add this
   final List<Customer> customers = [];
-  CustomerCubit({
-    required this.bookingRepo,
-  }) : super(CustomerInitial()) {
+  bool _now = true;
+
+  CustomerCubit({required this.bookingRepo}) : super(CustomerInitial()) {
     _pagingController = PagingController<int, Customer>(firstPageKey: 1);
     _pagingController.addPageRequestListener((pageKey) {
       _fetchPage(pageKey);
@@ -23,11 +21,19 @@ class CustomerCubit extends Cubit<CustomerState> {
     emit(CustomerLoaded(pagingController: _pagingController));
   }
 
+  Future<void> loadFirstPageManually() async {
+    if (customers.isEmpty) {
+      emit(CustomerLoading()); // ✅ Loading state
+
+      await _fetchPage(1);
+      emit(CustomerLoaded(
+          pagingController: _pagingController)); // ✅ Back to Loaded
+    }
+  }
+
   Future<void> _fetchPage(int pageKey) async {
     try {
-      final result = await bookingRepo.getCustomer(
-        pageKey,
-      );
+      final result = await bookingRepo.getCustomer(pageKey);
 
       result.fold(
         (failure) {
@@ -37,14 +43,13 @@ class CustomerCubit extends Cubit<CustomerState> {
         (response) {
           final fetchedCustomers = response.data ?? [];
           customers.addAll(fetchedCustomers);
-          final booking = response.data ?? [];
+
           final isLastPage = pageKey >= (response.lastPage ?? 1);
 
           if (isLastPage) {
-            _pagingController.appendLastPage(booking);
+            _pagingController.appendLastPage(fetchedCustomers);
           } else {
-            final nextPageKey = pageKey + 1;
-            _pagingController.appendPage(booking, nextPageKey);
+            _pagingController.appendPage(fetchedCustomers, pageKey + 1);
           }
         },
       );

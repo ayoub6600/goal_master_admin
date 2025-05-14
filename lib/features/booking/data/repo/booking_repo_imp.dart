@@ -29,6 +29,7 @@ class BookingRepoImp extends BookingRepo {
     String? employeeId,
     String? customerId,
     String? serviceStatus,
+    String? bookingId,
   ) async {
     final queryParams = <String, dynamic>{
       'pageSize': 10,
@@ -41,8 +42,12 @@ class BookingRepoImp extends BookingRepo {
     if (endDate != null && endDate.isNotEmpty) {
       queryParams['dateTo'] = endDate;
     }
+
     if (branchId != null && branchId.isNotEmpty) {
       queryParams['branchId'] = int.tryParse(branchId);
+    }
+    if (bookingId != null && bookingId.isNotEmpty) {
+      queryParams['bookingId'] = int.tryParse(bookingId.toString());
     }
     if (employeeId != null && employeeId.isNotEmpty) {
       queryParams['employeeId'] = int.tryParse(employeeId);

@@ -58,7 +58,7 @@ class BookingItems extends StatelessWidget {
                     padding:
                         EdgeInsets.symmetric(vertical: 6.h, horizontal: 12.w),
                     decoration: BoxDecoration(
-                      color: _getStatusColor(booking.status).withOpacity(0.1),
+                      color: _getStatusColor(booking.status),
                       border:
                           Border.all(color: _getStatusColor(booking.status)),
                       borderRadius: BorderRadius.circular(8.r),
@@ -66,7 +66,7 @@ class BookingItems extends StatelessWidget {
                     child: Text(
                       _getStatusText(booking.status),
                       style: AppTextStyles.font14Bold.copyWith(
-                        color: _getStatusColor(booking.status),
+                        color: Colors.white,
                       ),
                     ),
                   ),

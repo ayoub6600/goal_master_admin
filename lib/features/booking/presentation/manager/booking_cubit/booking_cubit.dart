@@ -25,14 +25,19 @@ class BookingCubit extends Cubit<BookingStateNew> {
   String? branchId;
   String? employeeId;
   String? customerId;
+  String? bookingId;
   String? status;
 
   void updateBookingStart(String date) => bookingStart = date;
   void updateBookingEnd(String date) => bookingEnd = date;
+  void updateBookingId(String id) => bookingId = id;
   void updateStartTime(String time) => startTime = time;
   void updateEndTime(String time) => endTime = time;
   void updateBranchId(String id) => branchId = id;
-  void updateEmployeeId(String id) => employeeId = id;
+  void updateEmployeeId(String id) {
+    employeeId = id;
+  }
+
   void updateCustomerId(String id) => customerId = id;
   void updateStatus(String val) => status = val;
 
@@ -44,6 +49,7 @@ class BookingCubit extends Cubit<BookingStateNew> {
     branchId = null;
     employeeId = null;
     customerId = null;
+    bookingId = null;
     status = null;
   }
 
@@ -69,7 +75,7 @@ class BookingCubit extends Cubit<BookingStateNew> {
   }
 
   Future<void> _fetchPage(int pageKey) async {
-    print("status $status");
+    print("pageKey: $bookingId");
     try {
       final result = await bookingRepo.getBooking(
         pageKey,
@@ -79,6 +85,7 @@ class BookingCubit extends Cubit<BookingStateNew> {
         employeeId,
         customerId,
         status,
+        bookingId,
       );
 
       result.fold(
