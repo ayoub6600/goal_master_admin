@@ -9,6 +9,8 @@ import 'package:goal_master_admin/features/booking/presentation/manager/page_vie
 import 'package:goal_master_admin/features/booking/presentation/manager/service_cubit/service_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/step_title.dart';
 
+import 'package:cached_network_image/cached_network_image.dart';
+
 class ServiceSelection extends StatelessWidget {
   final PageController controller;
 
@@ -37,39 +39,92 @@ class ServiceSelection extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Container(
-                        padding: EdgeInsets.all(16.w),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              service.title,
-                              style: AppTextStyles.font16Bold,
-                              textDirection: TextDirection.ltr,
-                            ),
-                            HeightSpace(8.h),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "سعر الحجز : ",
-                                  style: AppTextStyles.font14Medium,
+                      child: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12.r),
+                            child: CachedNetworkImage(
+                              imageUrl: service.image,
+                              height: 100.h,
+                              width: 100.w,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                height: 100.h,
+                                width: 100.w,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(12.r),
                                 ),
-                                WidthSpace(8.w),
-                                Text(
-                                  "${service.price} دينار",
-                                  style: AppTextStyles.font16Bold.copyWith(
-                                    color: AppColors.primary,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      AppColors.primary.withOpacity(0.6),
+                                    ),
                                   ),
                                 ),
-                              ],
-                            )
-                          ],
-                        ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                height: 100.h,
+                                width: 100.w,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                                child: Icon(
+                                  Icons.error_outline,
+                                  color: Colors.grey[400],
+                                  size: 30.r,
+                                ),
+                              ),
+                              fadeInDuration: const Duration(milliseconds: 300),
+                              fadeInCurve: Curves.easeInOut,
+                              memCacheHeight: (100.h *
+                                      MediaQuery.of(context).devicePixelRatio)
+                                  .round(),
+                              memCacheWidth: (100.w *
+                                      MediaQuery.of(context).devicePixelRatio)
+                                  .round(),
+                            ),
+                          ),
+                          Expanded(
+                            child: Container(
+                              padding: EdgeInsets.all(16.w),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    service.title,
+                                    style: AppTextStyles.font16Bold,
+                                    textDirection: TextDirection.ltr,
+                                  ),
+                                  HeightSpace(8.h),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "سعر الحجز : ",
+                                        style: AppTextStyles.font14Medium,
+                                      ),
+                                      WidthSpace(8.w),
+                                      Text(
+                                        "${service.price} دينار",
+                                        style:
+                                            AppTextStyles.font16Bold.copyWith(
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     onTap: () {

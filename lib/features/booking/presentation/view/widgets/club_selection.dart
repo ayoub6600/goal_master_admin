@@ -9,6 +9,7 @@ import 'package:goal_master_admin/features/booking/presentation/view/widgets/ste
 import 'package:goal_master_admin/features/booking/presentation/manager/club_cubit/club_cubit.dart';
 
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ClubSelection extends StatelessWidget {
   final PageController controller;
@@ -84,6 +85,36 @@ class ClubSelection extends StatelessWidget {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
+                                        ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          child: CachedNetworkImage(
+                                            imageUrl: club.imageUrl ??
+                                                'https://via.placeholder.com/120',
+                                            width: double.infinity,
+                                            height: 150,
+                                            fit: BoxFit.cover,
+                                            placeholder: (context, url) =>
+                                                Container(
+                                              width: double.infinity,
+                                              height: 150,
+                                              color: Colors.grey[200],
+                                              child: Center(
+                                                  child:
+                                                      CircularProgressIndicator()),
+                                            ),
+                                            errorWidget:
+                                                (context, url, error) =>
+                                                    Container(
+                                              width: 120,
+                                              height: 150,
+                                              color: Colors.grey[300],
+                                              child: Icon(Icons.broken_image,
+                                                  size: 48, color: Colors.grey),
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(height: 16),
                                         Text(
                                           club.name,
                                           style: TextStyle(

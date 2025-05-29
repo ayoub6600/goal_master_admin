@@ -112,7 +112,10 @@ class _AddBookingViewState extends State<AddBookingView> {
                                 if (state is AddBookingSuccess) {
                                   showCustomSuccessToast(
                                       "تم اضافة الحجز بنجاح");
-                                  pushReplacement(RoutesKeys.kHome, context);
+                                  pushReplacement(
+                                    RoutesKeys.kHome,
+                                    context,
+                                  );
                                 } else if (state is AddBookingFailure) {
                                   showCustomFailureToast(state.massage);
                                 }

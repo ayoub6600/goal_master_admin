@@ -10,6 +10,7 @@ class ClubResponce {
   final int? updatedBy; // updatedBy can be null
   final String createdAt;
   final String updatedAt;
+  final String? imageUrl;
   final String lat;
   final String long;
   final int zoneId;
@@ -23,6 +24,7 @@ class ClubResponce {
     required this.order,
     required this.status,
     required this.createdBy,
+    this.imageUrl,
     this.updatedBy, // nullable
     required this.createdAt,
     required this.updatedAt,
@@ -41,6 +43,7 @@ class ClubResponce {
       address: json['address'],
       order: json['order'],
       status: json['status'],
+      imageUrl: json['image'],
       createdBy: json['created_by'],
       updatedBy: json['updated_by'], // handle nullable updatedBy
       createdAt: json['created_at'],
@@ -65,6 +68,7 @@ class ClubResponce {
       'updated_by': updatedBy, // it can be null
       'created_at': createdAt,
       'updated_at': updatedAt,
+      'image': imageUrl,
       'lat': lat,
       'long': long,
       'zone_id': zoneId,
