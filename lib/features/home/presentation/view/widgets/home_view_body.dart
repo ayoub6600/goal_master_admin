@@ -11,9 +11,8 @@ import 'package:goal_master_admin/core/styles/assets.dart';
 import 'package:goal_master_admin/core/styles/spaces.dart';
 import 'package:goal_master_admin/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/analysis_view.dart';
-import 'package:goal_master_admin/features/home/presentation/view/widgets/stat_card.dart';
+import 'package:goal_master_admin/features/home/presentation/view/widgets/app_drawer.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/top_service_section.dart';
-import 'package:goal_master_admin/features/profail/presentation/view/widgets/profile_item.dart';
 
 class HomeViewBody extends StatelessWidget {
   const HomeViewBody({super.key});
@@ -127,34 +126,34 @@ class HomeViewBody extends StatelessWidget {
                           ),
                         ),
                         HeightSpace(16),
-                        SizedBox(
-                          height: 150,
-                          child: ListView(
-                            scrollDirection: Axis.horizontal,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            children: [
-                              StatCard(
-                                title: "إجمالي اليوم",
-                                value:
-                                    "${incomeStats.totalAllowedAmountToday} ر.س",
-                                icon: Icons.attach_money_rounded,
-                                color: Colors.greenAccent.shade100,
-                              ),
-                              StatCard(
-                                title: "غرامات اليوم",
-                                value: "${totalForgevin.dailyTotal} ر.س",
-                                icon: Icons.warning_amber_rounded,
-                                color: Colors.orange.shade100,
-                              ),
-                              StatCard(
-                                title: "إجمالي الغرامات",
-                                value: "${totalForgevin.total} ر.س",
-                                icon: Icons.account_balance_wallet_outlined,
-                                color: Colors.red.shade100,
-                              ),
-                            ],
-                          ),
-                        ),
+                        // SizedBox(
+                        //   height: 150,
+                        //   child: ListView(
+                        //     scrollDirection: Axis.horizontal,
+                        //     padding: const EdgeInsets.symmetric(horizontal: 16),
+                        //     children: [
+                        //       StatCard(
+                        //         title: "إجمالي اليوم",
+                        //         value:
+                        //             "${incomeStats.totalAllowedAmountToday} ر.س",
+                        //         icon: Icons.attach_money_rounded,
+                        //         color: Colors.greenAccent.shade100,
+                        //       ),
+                        //       StatCard(
+                        //         title: "غرامات اليوم",
+                        //         value: "${totalForgevin.dailyTotal} ر.س",
+                        //         icon: Icons.warning_amber_rounded,
+                        //         color: Colors.orange.shade100,
+                        //       ),
+                        //       StatCard(
+                        //         title: "إجمالي الغرامات",
+                        //         value: "${totalForgevin.total} ر.س",
+                        //         icon: Icons.account_balance_wallet_outlined,
+                        //         color: Colors.red.shade100,
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
                         HeightSpace(16),
                       ],
                     );
@@ -182,69 +181,6 @@ class DrawerButton extends StatelessWidget {
     return IconButton(
       icon: const Icon(Icons.menu),
       onPressed: onTap,
-    );
-  }
-}
-
-class AppDrawer extends StatelessWidget {
-  const AppDrawer({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Drawer(
-      backgroundColor: AppColors.white,
-      child: ListView(
-        padding: EdgeInsets.only(
-          top: 50.h,
-          left: 16.w,
-          right: 16.w,
-        ),
-        children: [
-          Container(
-            width: 60.w,
-            height: 60.h,
-            decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                    image: AssetImage(Assets.imagesPngImageLogo),
-                    fit: BoxFit.contain)),
-          ),
-          HeightSpace(20.h),
-          ProfileItem(
-            title: "العملاء",
-            icon: Assets.imagesPngImageProfile,
-            onTap: () {
-              push(RoutesKeys.kCustomerView, context);
-            },
-          ),
-          Container(
-            width: double.infinity,
-            color: Color(0xffDADEE3),
-            height: 1.h,
-          ),
-          HeightSpace(8.h),
-          ProfileItem(
-            title: "المسامح كريم",
-            icon: Assets.imagesPngImageProfile,
-            onTap: () {
-              push(RoutesKeys.kAllowedAmount, context);
-            },
-          ),
-          Container(
-            width: double.infinity,
-            color: Color(0xffDADEE3),
-            height: 1.h,
-          ),
-          HeightSpace(8.h),
-          ProfileItem(
-            title: "الحجز الشهري",
-            icon: Assets.imagesPngImageProfile,
-            onTap: () {
-              push(RoutesKeys.kMonthlyBookingView, context);
-            },
-          ),
-        ],
-      ),
     );
   }
 }
