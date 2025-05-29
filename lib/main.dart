@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:goal_master_admin/core/components/keys_values.dart';
 import 'package:goal_master_admin/core/components/preference_utility.dart';
 import 'package:goal_master_admin/core/routing/app_router.dart';
+import 'package:goal_master_admin/core/routing/routes_keys.dart';
 import 'package:goal_master_admin/core/services/service_locator.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/features/layout/presentation/manager/layout_cubit.dart';
@@ -13,36 +15,47 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // ✅ حل المشكلة
+  WidgetsFlutterBinding.ensureInitialized();
   await SharedPreferenceUtil.getInstance();
   setupServiceLocator();
-  runApp(const MyApp());
+
+  final onboardingSeen = SharedPreferenceUtil.getBool(PrefKey.onboardingSeen);
+  final isLoggedIn = SharedPreferenceUtil.getString(PrefKey.login) == 'true';
+
+  String initialLocation;
+  if (!onboardingSeen) {
+    initialLocation = RoutesKeys.kOnboarding;
+  } else if (isLoggedIn) {
+    initialLocation = RoutesKeys.kHome;
+  } else {
+    initialLocation = RoutesKeys.kLogin;
+  }
+
+  runApp(MyApp(initialRoute: initialLocation));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String initialRoute;
+
+  const MyApp({required this.initialRoute, super.key});
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider(create: (context) => LayoutCubit()),
         BlocProvider(
-          create: (context) => LayoutCubit(),
-        ),
-        BlocProvider(
-          create: (context) => ProfileCubit(
-            getIt<ProfileRepoImp>(),
-          )..getProfile(),
+          create: (context) =>
+              ProfileCubit(getIt<ProfileRepoImp>())..getProfile(),
         ),
       ],
       child: ScreenUtilInit(
         designSize: const Size(390, 844),
         child: GestureDetector(
           onTap: () {
-            FocusScopeNode currentFocus = FocusScope.of(context);
+            final currentFocus = FocusScope.of(context);
             if (!currentFocus.hasPrimaryFocus) {
               currentFocus.unfocus();
-              FocusManager.instance.primaryFocus?.unfocus();
             }
           },
           child: OKToast(
@@ -56,15 +69,13 @@ class MyApp extends StatelessWidget {
               ),
               debugShowCheckedModeBanner: false,
               locale: const Locale('ar'),
-              supportedLocales: const [
-                Locale('ar'),
-              ],
+              supportedLocales: const [Locale('ar')],
               localizationsDelegates: const [
                 GlobalMaterialLocalizations.delegate,
                 GlobalWidgetsLocalizations.delegate,
                 GlobalCupertinoLocalizations.delegate,
               ],
-              routerConfig: AppRouter.router,
+              routerConfig: AppRouter.createRouter(initialRoute),
             ),
           ),
         ),
