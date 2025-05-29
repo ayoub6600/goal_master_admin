@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';
 
+// ignore: avoid_classes_with_only_static_members
 abstract class AppColors {
   //# widgets
   static const Color successGreen = Color(0xFF00ADA8);

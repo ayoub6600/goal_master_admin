@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:goal_master_admin/core/styles/app_text_styles.dart';
 import 'package:goal_master_admin/core/styles/spaces.dart';
 import 'package:goal_master_admin/features/profail/data/model/allowed_amount_response.dart';
-import 'package:goal_master_admin/features/profail/presentation/view/customer_view.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/widgets/allowed_amount_dialog.dart';
+import 'package:goal_master_admin/features/profail/presentation/view/widgets/launch_phone_call.dart';
 
 class AllowedAmountCard extends StatelessWidget {
   final AllowedAmountData item;
@@ -14,8 +14,6 @@ class AllowedAmountCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final booking = item.booking;
     final customer = booking.customer;
-    final service = booking.service;
-    final branch = booking.branch;
 
     return InkWell(
       onTap: () => showDialog(

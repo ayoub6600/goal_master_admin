@@ -4,7 +4,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:goal_master_admin/core/components/button_app.dart';
 import 'package:goal_master_admin/core/components/custom_failure_toast.dart';
+import 'package:goal_master_admin/core/components/custom_success_toast.dart';
 import 'package:goal_master_admin/core/components/custom_text_field/custom_app_form_text_field.dart';
+import 'package:goal_master_admin/core/components/keys_values.dart';
+import 'package:goal_master_admin/core/components/preference_utility.dart';
+import 'package:goal_master_admin/core/routing/app_router.dart';
 import 'package:goal_master_admin/core/routing/route_utils.dart';
 import 'package:goal_master_admin/core/routing/routes_keys.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
@@ -133,9 +137,21 @@ class LoginViewBody extends StatelessWidget {
                 ),
                 HeightSpace(50.h),
                 BlocConsumer<LoginCubit, LoginState>(
-                  listener: (context, state) {
+                  listener: (context, state) async {
                     if (state is LoginSuccess) {
+                      // ✅ حفظ حالة الدخول
+                      await SharedPreferenceUtil.putString(
+                          PrefKey.login, "true");
+
+                      // ✅ تحديث GoRouter redirect
+                      AppRouter.authNotifier.refresh();
+
+                      // ✅ إظهار نجاح والانتقال
+                      showCustomSuccessToast("تم تسجيل الدخول بنجاح");
                       GoRouter.of(context).go(RoutesKeys.kHome);
+                      // showCustomSuccessToast("تم تسجيل الدخول بنجاح");
+                      //pushReplacement(RoutesKeys.kHome, context);
+                      // GoRouter.of(context).go(RoutesKeys.kHome);
                     } else if (state is LoginError) {
                       showCustomFailureToast(state.errMessage);
                     } else if (state is LoginLoading) {
@@ -143,16 +159,22 @@ class LoginViewBody extends StatelessWidget {
                     }
                   },
                   builder: (context, state) {
-                    return ButtonApp(
-                      text: "تسجيل الدخول",
-                      backGround: AppColors.primary,
-                      textColor: Colors.white,
-                      onTap: () {
-                        cubit.login();
-                      },
-                    );
+                    if (state is LoginLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    return state is! LoginLoading
+                        ? ButtonApp(
+                            text: "تسجيل الدخول",
+                            backGround: AppColors.primary,
+                            textColor: Colors.white,
+                            onTap: () {
+                              cubit.login();
+                            },
+                          )
+                        : const Center(child: CircularProgressIndicator());
                   },
                 ),
+
                 HeightSpace(29.h),
                 // Row(
                 //   mainAxisAlignment: MainAxisAlignment.center,

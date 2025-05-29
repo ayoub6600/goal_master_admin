@@ -24,53 +24,61 @@ class BookingViewBody extends StatelessWidget {
     return Column(
       children: [
         HeightSpace(16),
-        GestureDetector(
-          onTap: () {
-            final parentContext = context; // ده اللي فيه BlocProvider
-
-            baseBottomSheet(
-                title: "بحث",
-                context: context,
-                hideNavBar: false,
-                child: MultiBlocProvider(
-                  providers: [
-                    BlocProvider(
-                      create: (context) =>
-                          EmployeeCubit(getIt<BookingRepoImp>())
-                            ..listEmployee(12),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "قائمة الحجوزات",
+                      style: AppTextStyles.font24Bold.copyWith(
+                        color: AppColors.fontColor,
+                      ),
                     ),
-                    BlocProvider(
-                      create: (context) => CustomerCubit(
-                        bookingRepo: getIt<ProfileRepoImp>(),
-                      )..loadFirstPageManually(),
+                    HeightSpace(4.h),
+                    Text(
+                      "يمكنك هنا استعراض جميع الحجوزات",
+                      style: AppTextStyles.font16Medium.copyWith(
+                        color: AppColors.fontColor,
+                      ),
                     ),
                   ],
-                  child: BookingViewBodyBottomSheet(
-                    cubitContext: parentContext,
-                  ),
-                ));
-          },
-          child: Container(
-            width: 300.w,
-            height: 40.h,
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(8.r),
-              border: Border.all(
-                width: 1,
-                color: const Color(0xffDADEE3),
+                ),
               ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("ابحث",
-                    style: AppTextStyles.font14Medium
-                        .copyWith(color: AppColors.fontColor)),
-                Image.asset(Assets.imagesPngImageSearchNormal),
-              ],
-            ),
+              GestureDetector(
+                onTap: () {
+                  final parentContext = context; // ده اللي فيه BlocProvider
+
+                  baseBottomSheet(
+                      title: "بحث",
+                      context: context,
+                      hideNavBar: false,
+                      child: MultiBlocProvider(
+                        providers: [
+                          BlocProvider(
+                            create: (context) =>
+                                EmployeeCubit(getIt<BookingRepoImp>())
+                                  ..listEmployee(12),
+                          ),
+                          BlocProvider(
+                            create: (context) => CustomerCubit(
+                              bookingRepo: getIt<ProfileRepoImp>(),
+                            )..loadFirstPageManually(),
+                          ),
+                        ],
+                        child: BookingViewBodyBottomSheet(
+                          cubitContext: parentContext,
+                        ),
+                      ));
+                },
+                child: Image.asset(
+                  Assets.imagesPngImageFiltter,
+                ),
+              ),
+            ],
           ),
         ),
         HeightSpace(16.h),

@@ -33,8 +33,9 @@ class OnboardingPreviousPageButton extends StatelessWidget {
             bool done = cubit.increment(context);
             if (!done) {
               pushReplacement(RoutesKeys.kLogin, context);
+              SharedPreferenceUtil.putBool(PrefKey.onboardingSeen, true);
+              SharedPreferenceUtil.putString(PrefKey.login, "false");
 
-              SharedPreferenceUtil.putString(PrefKey.login, "true");
               print("----->$done");
             }
           },

@@ -15,7 +15,7 @@ class TokenInterceptor extends Interceptor {
   void _redirectToLogin() async {
     await SharedPreferenceUtil.clear();
 
-    SharedPreferenceUtil.putString(PrefKey.login, "true");
+    SharedPreferenceUtil.putString(PrefKey.login, "false");
     AppRouter.router.go(RoutesKeys.kLogin);
   }
 

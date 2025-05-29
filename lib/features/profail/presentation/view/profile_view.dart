@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master_admin/core/components/button_app.dart';
+import 'package:goal_master_admin/core/components/keys_values.dart';
 import 'package:goal_master_admin/core/components/page_wrapper.dart';
+import 'package:goal_master_admin/core/components/preference_utility.dart';
 import 'package:goal_master_admin/core/routing/route_utils.dart';
 import 'package:goal_master_admin/core/routing/routes_keys.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
@@ -54,7 +57,6 @@ class ProfileView extends StatelessWidget {
                       //     push(RoutesKeys.kUpdateProfile, context);
                     },
                   ),
-
                   Container(
                     width: double.infinity,
                     color: Color(0xffDADEE3),
@@ -75,56 +77,72 @@ class ProfileView extends StatelessWidget {
                   ),
                   HeightSpace(8.h),
                   ProfileItem(
-                    title: "العملاء",
-                    icon: Assets.imagesPngImageProfile,
-                    onTap: () {
-                      push(RoutesKeys.kCustomerView, context);
-                    },
-                  ),
-                  Container(
-                    width: double.infinity,
-                    color: Color(0xffDADEE3),
-                    height: 1.h,
-                  ),
-                  HeightSpace(8.h),
-                  ProfileItem(
-                    title: "المسامح كريم",
-                    icon: Assets.imagesPngImageProfile,
-                    onTap: () {
-                      push(RoutesKeys.kAllowedAmount, context);
-                    },
-                  ),
-                  Container(
-                    width: double.infinity,
-                    color: Color(0xffDADEE3),
-                    height: 1.h,
-                  ),
-                  HeightSpace(8.h),
-                  ProfileItem(
-                    title: "الحجز الشهري",
-                    icon: Assets.imagesPngImageProfile,
-                    onTap: () {
-                      push(RoutesKeys.kMonthlyBookingView, context);
-                    },
-                  ),
+                    title: "خروج",
+                    icon: Assets.imagesPngImageLogout,
+                    onTap: () async {
+                      showModalBottomSheet(
+                        context: context,
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(16)),
+                        ),
+                        builder: (context) {
+                          return Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  "تسجيل الخروج",
+                                  style: AppTextStyles.font16Bold,
+                                ),
+                                HeightSpace(16.h),
+                                Text(
+                                  "هل أنت متأكد أنك تريد تسجيل الخروج؟",
+                                  style: AppTextStyles.font14Medium.copyWith(
+                                    color: AppColors.fontColor,
+                                  ),
+                                ),
+                                HeightSpace(16.h),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: ButtonApp(
+                                          text: "تسجيل الخروج",
+                                          onTap: () async {
+                                            Navigator.pop(
+                                                context); // Close the sheet
+                                            await SharedPreferenceUtil.clear();
 
-                  // Container(
-                  //   width: double.infinity,
-                  //   color: Color(0xffDADEE3),
-                  //   height: 1.h,
-                  // ),
-                  // HeightSpace(8.h),
-                  // ProfileItem(
-                  //   title: "خروج",
-                  //   icon: Assets.imagesPngImageLogout,
-                  //   onTap: () {},
-                  //   child: SizedBox(),
-                  // ),
-                  // Container(
-                  //   width: double.infinity,
-                  //   color: Color(0xffDADEE3),
-                  //   height: 1.h,
-                  // ),
+                                            SharedPreferenceUtil.putString(
+                                                PrefKey.login, "false");
+                                            SharedPreferenceUtil.putBool(
+                                                PrefKey.onboardingSeen, true);
+                                            pushReplacement(
+                                                RoutesKeys.kLogin, context);
+                                          }),
+                                    ),
+                                    WidthSpace(16.w),
+                                    Expanded(
+                                      child: ButtonApp(
+                                          textColor: Colors.white,
+                                          backGround: Colors.red,
+                                          text: "الغاء",
+                                          onTap: () {
+                                            Navigator.pop(
+                                                context); // Close the sheet
+                                          }),
+                                    )
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    child: SizedBox(),
+                  ),
                 ],
               ),
             ),

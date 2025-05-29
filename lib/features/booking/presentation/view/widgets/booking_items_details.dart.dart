@@ -9,6 +9,7 @@ import 'package:goal_master_admin/features/booking/presentation/view/widgets/bui
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/build_header_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/cancel_booking_button.dart';
+import 'package:goal_master_admin/features/booking/presentation/view/widgets/deposit_booking_button.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/update_booking_status_view.dart';
 
 class BookingItemsDetails extends StatelessWidget {
@@ -56,6 +57,13 @@ class BookingItemsDetails extends StatelessWidget {
                     padding: const EdgeInsets.all(8.0),
                     child: Column(
                       children: [
+                        //  if (booking.status == 3)
+                        Row(
+                          children: [
+                            DepositBookingButton(bookingDetails: booking),
+                          ],
+                        ),
+                        HeightSpace(16.h),
                         Row(
                           children: [
                             if (booking.status != 3)

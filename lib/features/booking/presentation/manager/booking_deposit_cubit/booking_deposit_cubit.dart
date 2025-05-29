@@ -1,6 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:dartz/dartz.dart';
-import 'package:goal_master_admin/core/errors/failure.dart';
 import 'package:goal_master_admin/features/booking/data/model/booking_details.dart';
 import 'package:goal_master_admin/features/booking/data/repo/booking_repo.dart';
 import 'package:meta/meta.dart';
@@ -16,10 +14,21 @@ class BookingDepositCubit extends Cubit<BookingDepositState> {
 
   Future<void> depositBookingPayment({
     required String due,
-    required String paymentStatus,
-    required String extraInput,
+    required int toleranceType,
+    String? extraInputValue,
   }) async {
     emit(BookingDepositLoading());
+
+    String paymentStatus;
+    String extraInput;
+
+    if (toleranceType == 0) {
+      paymentStatus = '0';
+      extraInput = '0';
+    } else {
+      paymentStatus = '1';
+      extraInput = extraInputValue ?? '0';
+    }
 
     final result = await bookingRepo.depositBookingPayment(
       bookingId,

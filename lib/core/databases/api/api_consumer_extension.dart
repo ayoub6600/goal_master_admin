@@ -4,8 +4,7 @@ import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:goal_master_admin/core/databases/api/api_consumer.dart';
-import 'package:goal_master_admin/core/errors/exceptions.dart'
-    show ServerFailure;
+import 'package:goal_master_admin/core/errors/exceptions.dart';
 import 'package:goal_master_admin/core/errors/failure.dart';
 
 extension ApiConsumerExtension on ApiConsumer {
@@ -15,19 +14,10 @@ extension ApiConsumerExtension on ApiConsumer {
   ) async {
     try {
       var response = await request();
-
       return right(fromJson(response));
-    } catch (e, s) {
-      // logger.e(e);
-      // logger.e(s);
-
+    } catch (e) {
       if (e is DioException) {
-        String? msg = e.response?.data['message'];
-        return left(
-          msg != null
-              ? Failure(errMessage: msg)
-              : ServerFailure.fromDioException(e),
-        );
+        return left(ServerFailure.fromDioException(e));
       }
       return left(ServerFailure(errMessage: e.toString()));
     }
@@ -39,19 +29,10 @@ extension ApiConsumerExtension on ApiConsumer {
   ) async {
     try {
       var response = await request();
-
       return right(await fromJson(response));
-    } catch (e, s) {
-      // logger.e(e);
-      // logger.e(s);
-
+    } catch (e) {
       if (e is DioException) {
-        String? msg = e.response?.data['message'];
-        return left(
-          msg != null
-              ? Failure(errMessage: msg)
-              : ServerFailure.fromDioException(e),
-        );
+        return left(ServerFailure.fromDioException(e));
       }
       return left(ServerFailure(errMessage: e.toString()));
     }
