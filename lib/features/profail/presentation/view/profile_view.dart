@@ -4,6 +4,7 @@ import 'package:goal_master_admin/core/components/button_app.dart';
 import 'package:goal_master_admin/core/components/keys_values.dart';
 import 'package:goal_master_admin/core/components/page_wrapper.dart';
 import 'package:goal_master_admin/core/components/preference_utility.dart';
+import 'package:goal_master_admin/core/routing/app_router.dart';
 import 'package:goal_master_admin/core/routing/route_utils.dart';
 import 'package:goal_master_admin/core/routing/routes_keys.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
@@ -52,9 +53,7 @@ class ProfileView extends StatelessWidget {
                     title: "تغيير معلوماتك الشخصية",
                     icon: Assets.imagesPngImageMagicpen,
                     onTap: () {
-                      GoRouter.of(context).push(RoutesKeys.kUpdateProfile);
-
-                      //     push(RoutesKeys.kUpdateProfile, context);
+                      push(RoutesKeys.kUpdateProfile, context);
                     },
                   ),
                   Container(

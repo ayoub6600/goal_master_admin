@@ -48,6 +48,7 @@ class _UpdateProfileBodyState extends State<UpdateProfileBody> {
               hint: SharedPreferenceUtil.getString(PrefKey.email),
               controller: cubit.usernameController,
               inputType: TextInputType.emailAddress,
+              enabled: false,
             ),
             HeightSpace(16.h),
             Text(
