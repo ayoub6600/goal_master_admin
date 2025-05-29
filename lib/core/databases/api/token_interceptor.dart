@@ -16,7 +16,7 @@ class TokenInterceptor extends Interceptor {
     await SharedPreferenceUtil.clear();
 
     SharedPreferenceUtil.putString(PrefKey.login, "false");
-    AppRouter.router.go(RoutesKeys.kLogin);
+    // AppRouter.router.go(RoutesKeys.kLogin);
   }
 
   @override

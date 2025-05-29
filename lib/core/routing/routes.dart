@@ -31,6 +31,7 @@ import 'package:goal_master_admin/features/booking/presentation/view/widgets/boo
 import 'package:goal_master_admin/features/home/data/model/booking_slots_response.dart';
 import 'package:goal_master_admin/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/club_cubit/club_cubit.dart';
+import 'package:goal_master_admin/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
 import 'package:goal_master_admin/features/home/presentation/manager/filter_cubit/filter_cubit.dart';
 import 'package:goal_master_admin/features/home/presentation/manager/page_view_new_booking_cubit/page_view_new_booking_cubit.dart';
 import 'package:goal_master_admin/features/home/presentation/view/fillter_view.dart';
@@ -63,7 +64,7 @@ import 'app_router.dart';
 
 List<RouteBase> appRoutes = [
   GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
+    parentNavigatorKey: parentKey,
     path: RoutesKeys.kOnboarding,
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
@@ -74,18 +75,13 @@ List<RouteBase> appRoutes = [
       ),
     ),
   ),
-  // GoRoute(
-  //   parentNavigatorKey: AppRouter.parentKey,
-  //   path: RoutesKeys.kHome,
-  //   pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
-  //     context: context,
-  //     state: state,
-  //     child: const HomeView(),
-  //   ),
-  // ),
+  GoRoute(
+    path: RoutesKeys.kHome,
+    builder: (context, state) => const HomeLayoutView(),
+  ),
   // //kLogin
   GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
+    parentNavigatorKey: parentKey,
     path: RoutesKeys.kLogin,
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
@@ -98,7 +94,7 @@ List<RouteBase> appRoutes = [
   ),
   //AllowedAmountView
   GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
+    parentNavigatorKey: parentKey,
     path: RoutesKeys.kAllowedAmount,
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
@@ -113,7 +109,7 @@ List<RouteBase> appRoutes = [
   ),
   // //RegisterView
   GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
+    parentNavigatorKey: parentKey,
     path: RoutesKeys.kRegister,
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
@@ -127,7 +123,7 @@ List<RouteBase> appRoutes = [
     ),
   ),
   GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
+    parentNavigatorKey: parentKey,
     path: RoutesKeys.kUpdateProfile,
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
@@ -142,7 +138,7 @@ List<RouteBase> appRoutes = [
   ),
   // //ForgotPasswordView
   GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
+    parentNavigatorKey: parentKey,
     path: RoutesKeys.kForgotPassword,
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
@@ -159,7 +155,7 @@ List<RouteBase> appRoutes = [
   ),
   // //OtpView
   GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
+    parentNavigatorKey: parentKey,
     path: RoutesKeys.kOtp,
     pageBuilder: (context, state) {
       final Map<String, dynamic> extraData =
@@ -183,7 +179,7 @@ List<RouteBase> appRoutes = [
   ),
   //kItemsUserDetainsView
   GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
+    parentNavigatorKey: parentKey,
     path: RoutesKeys.kItemsUserDetainsView,
     pageBuilder: (context, state) {
       final data = state.extra as Map<String, dynamic>;
@@ -210,7 +206,7 @@ List<RouteBase> appRoutes = [
 
   //kBookingItemsDetails
   GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
+    parentNavigatorKey: parentKey,
     path: RoutesKeys.kBookingItemsDetails,
     pageBuilder: (context, state) {
       final bookingId = state.extra as int;
@@ -251,19 +247,19 @@ List<RouteBase> appRoutes = [
     },
   ),
 
-  GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
-    path: RoutesKeys.kHome,
-    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
-      context: context,
-      state: state,
-      child: const HomeLayoutView(),
-    ),
-  ),
+  // GoRoute(
+  //   parentNavigatorKey: parentKey,
+  //   path: RoutesKeys.kHome,
+  //   pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+  //     context: context,
+  //     state: state,
+  //     child: const HomeLayoutView(),
+  //   ),
+  // ),
 
   // //NewPasswordView
   GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
+    parentNavigatorKey: parentKey,
     path: RoutesKeys.kNewPassword,
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
@@ -273,7 +269,7 @@ List<RouteBase> appRoutes = [
   ),
   // //ProfileView
   GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
+    parentNavigatorKey: parentKey,
     path: RoutesKeys.kProfile,
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
@@ -283,7 +279,7 @@ List<RouteBase> appRoutes = [
   ),
 //CustomerView
   GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
+    parentNavigatorKey: parentKey,
     path: RoutesKeys.kCustomerView,
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
@@ -298,7 +294,7 @@ List<RouteBase> appRoutes = [
   ),
   //NotificationView
   GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
+    parentNavigatorKey: parentKey,
     path: RoutesKeys.kNotification,
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
@@ -308,7 +304,7 @@ List<RouteBase> appRoutes = [
   ),
   //ChangePasswordView
   GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
+    parentNavigatorKey: parentKey,
     path: RoutesKeys.kChangePassword,
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
@@ -322,7 +318,7 @@ List<RouteBase> appRoutes = [
     ),
   ),
   GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
+    parentNavigatorKey: parentKey,
     path: RoutesKeys.kFilter,
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
@@ -357,7 +353,7 @@ List<RouteBase> appRoutes = [
   ),
   //AddNewBooking
   GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
+    parentNavigatorKey: parentKey,
     path: RoutesKeys.kAddNewBooking,
     pageBuilder: (context, state) {
       final booking = state.extra as BookingSlot;
@@ -384,7 +380,7 @@ List<RouteBase> appRoutes = [
   ),
 
   GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
+    parentNavigatorKey: parentKey,
     path: RoutesKeys.kAddBooking,
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
@@ -438,7 +434,7 @@ List<RouteBase> appRoutes = [
   ),
 
   GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
+    parentNavigatorKey: parentKey,
     path: RoutesKeys.kShowAllResulatFiltter,
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
@@ -453,7 +449,7 @@ List<RouteBase> appRoutes = [
   ),
   //kMonthlyBookingView
   GoRoute(
-    parentNavigatorKey: AppRouter.parentKey,
+    parentNavigatorKey: parentKey,
     path: RoutesKeys.kMonthlyBookingView,
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
@@ -468,7 +464,7 @@ List<RouteBase> appRoutes = [
   )
   // //ContactView
   // GoRoute(
-  //   parentNavigatorKey: AppRouter.parentKey,
+  //   parentNavigatorKey: parentKey,
   //   path: RoutesKeys.kContact,
   //   pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
   //     context: context,
@@ -478,7 +474,7 @@ List<RouteBase> appRoutes = [
   // ),
   // //BookingView
   // GoRoute(
-  //   parentNavigatorKey: AppRouter.parentKey,
+  //   parentNavigatorKey: parentKey,
   //   path: RoutesKeys.kBooking,
   //   pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
   //     context: context,
@@ -487,7 +483,7 @@ List<RouteBase> appRoutes = [
   //   ),
   // ),
   // GoRoute(
-  //   parentNavigatorKey: AppRouter.parentKey,
+  //   parentNavigatorKey: parentKey,
   //   path: RoutesKeys.kHome,
   //   pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
   //     context: context,

@@ -16,6 +16,7 @@ class EndPoints {
   static String update = 'user/update';
 
   static String register = 'register';
+  static String deleteAccount = 'user/delete';
 
   static String getBookingInfo(int id) => 'user/booking/get-info/?id=$id';
   static String changePassword = 'change-password';
