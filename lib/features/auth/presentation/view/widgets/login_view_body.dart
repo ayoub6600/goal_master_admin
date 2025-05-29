@@ -144,7 +144,7 @@ class LoginViewBody extends StatelessWidget {
                           PrefKey.login, "true");
 
                       // ✅ تحديث GoRouter redirect
-                      AppRouter.authNotifier.refresh();
+                      //AppRouter.authNotifier.refresh();
 
                       // ✅ إظهار نجاح والانتقال
                       showCustomSuccessToast("تم تسجيل الدخول بنجاح");

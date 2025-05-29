@@ -15,6 +15,18 @@ class AuthRepoImpl implements AuthRepo {
   final ApiConsumer consumer;
   AuthRepoImpl(this.consumer);
   @override
+  @override
+  Future<Either<Failure, Unit>> deleteAccount() {
+    return consumer.handleRequest(
+      () => consumer.delete(
+        EndPoints.deleteAccount,
+      ),
+      (p0) {
+        return unit;
+      },
+    );
+  }
+
   Future<Either<Failure, UserData>> login({
     required String email,
     required String password,

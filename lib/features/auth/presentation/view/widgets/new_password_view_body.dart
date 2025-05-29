@@ -74,7 +74,10 @@ class NewPasswordViewBody extends StatelessWidget {
               listener: (context, state) {
                 if (state is ChangePasswordSuccess) {
                   showCustomSuccessToast(state.message);
-                  pushReplacement(RoutesKeys.kLogin, context);
+                  pushReplacement(
+                    RoutesKeys.kLogin,
+                    context,
+                  );
                 } else if (state is ChangePasswordError) {
                   showCustomSuccessToast(state.message);
                 }

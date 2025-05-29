@@ -9,7 +9,7 @@ abstract class AuthRepo {
   // Future<Either<Failure, UserModel>> profile();
   Future<Either<Failure, Unit>> logout();
   Future<Either<Failure, UserData>> login({
-    required String email ,
+    required String email,
     required String password,
   });
   Future<Either<Failure, String>> sendOTP({
@@ -38,4 +38,5 @@ abstract class AuthRepo {
     required String token,
   });
   Future<Either<Failure, String>> profile();
+  Future<Either<Failure, Unit>> deleteAccount();
 }
