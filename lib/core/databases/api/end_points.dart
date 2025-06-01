@@ -12,10 +12,16 @@ class EndPoints {
   static String sendOTP = 'resend-otp';
 
   static String verifyOTP = 'verify';
+  static String markNotificationAsRead(String notificationId) =>
+      'user/notifications/read-notification/$notificationId';
+
+  static String markAllNotificationsAsRead =
+      'user/notifications/read-all-notification';
 
   static String update = 'user/update';
 
   static String register = 'register';
+  static String notification = 'user/notifications/get-notification';
   static String deleteAccount = 'user/delete';
 
   static String getBookingInfo(int id) => 'user/booking/get-info/?id=$id';

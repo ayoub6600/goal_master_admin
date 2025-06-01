@@ -5,23 +5,23 @@ abstract class UpdateMonthlyBookingState extends Equatable {
   List<Object> get props => [];
 }
 
-class MonthlyBookingInitial extends UpdateMonthlyBookingState {}
+class UpdateMonthlyBookingInitial extends UpdateMonthlyBookingState {}
 
-class MonthlyBookingLoading extends UpdateMonthlyBookingState {}
+class UpdateMonthlyBookingLoading extends UpdateMonthlyBookingState {}
 
-class MonthlyBookingSuccess extends UpdateMonthlyBookingState {
+class UpdateMonthlyBookingSuccess extends UpdateMonthlyBookingState {
   final String message;
 
-  MonthlyBookingSuccess(this.message);
+  UpdateMonthlyBookingSuccess(this.message);
 
   @override
   List<Object> get props => [message];
 }
 
-class MonthlyBookingFailure extends UpdateMonthlyBookingState {
+class UpdateMonthlyBookingFailure extends UpdateMonthlyBookingState {
   final String error;
 
-  MonthlyBookingFailure(this.error);
+  UpdateMonthlyBookingFailure(this.error);
 
   @override
   List<Object> get props => [error];

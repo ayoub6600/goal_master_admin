@@ -9,6 +9,7 @@ part 'allowed_amount_state.dart';
 class AllowedAmountCubit extends Cubit<AllowedAmountState> {
   final ProfileRepo repo;
   late final PagingController<int, AllowedAmountData> pagingController;
+  bool _isDisposed = false;
 
   AllowedAmountCubit({required this.repo}) : super(AllowedAmountInitial()) {
     pagingController = PagingController(firstPageKey: 1);
@@ -20,15 +21,20 @@ class AllowedAmountCubit extends Cubit<AllowedAmountState> {
   }
 
   Future<void> _fetchPage(int pageKey) async {
+    if (_isDisposed) return;
+
     try {
       final result = await repo.getAllowedAmount(pageKey);
+      if (_isDisposed) return;
 
       result.fold(
         (failure) {
+          if (_isDisposed) return;
           pagingController.error = failure.errMessage;
           emit(AllowedAmountError(failure.errMessage));
         },
         (response) {
+          if (_isDisposed) return;
           final items = response.data;
           final isLastPage = pageKey >= response.pagination.lastPage;
 
@@ -41,17 +47,20 @@ class AllowedAmountCubit extends Cubit<AllowedAmountState> {
         },
       );
     } catch (error) {
+      if (_isDisposed) return;
       pagingController.error = error.toString();
       emit(AllowedAmountError(error.toString()));
     }
   }
 
   void refresh() {
+    if (_isDisposed) return;
     pagingController.refresh();
   }
 
   @override
   Future<void> close() {
+    _isDisposed = true;
     pagingController.dispose();
     return super.close();
   }

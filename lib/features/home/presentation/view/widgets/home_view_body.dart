@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master_admin/core/components/button_app.dart';
-import 'package:goal_master_admin/core/components/page_wrapper.dart';
 import 'package:goal_master_admin/core/routing/route_utils.dart';
 import 'package:goal_master_admin/core/routing/routes_keys.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
@@ -24,149 +23,147 @@ class HomeViewBody extends StatelessWidget {
     return Scaffold(
       key: scaffoldKey,
       drawer: const AppDrawer(),
-      body: PageWrapper(
-        allowBack: false,
-        title: "لوحة التحكم",
-        leading: DrawerButton(onTap: () {
-          scaffoldKey.currentState?.openDrawer();
-        }),
-        child: CustomScrollView(
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.all(16),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  HeightSpace(20),
-                  Row(
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                HeightSpace(30.h),
+                Row(
+                  children: [
+                    IconButton(
+                        onPressed: () => scaffoldKey.currentState?.openDrawer(),
+                        icon: const Icon(Icons.menu)),
+                    WidthSpace(8.w),
+                    CircleAvatar(
+                      radius: 24.r,
+                      backgroundImage: const AssetImage(
+                        Assets.imagesPngImageLogo,
+                      ),
+                      backgroundColor: AppColors.primary,
+                    ),
+                    WidthSpace(8.w),
+                    Text(
+                      "Goal Master",
+                      textAlign: TextAlign.start,
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const Spacer(),
+                    GestureDetector(
+                      onTap: () => push(RoutesKeys.kNotification, context),
+                      child: Image.asset(
+                        Assets.imagesPngImageNotification,
+                        width: 24.w,
+                        height: 24.h,
+                      ),
+                    ),
+                  ],
+                ),
+                HeightSpace(20),
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => push(RoutesKeys.kFilter, context),
+                      child: Container(
+                        width: 300.w,
+                        height: 40.h,
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(8.r),
+                          border: Border.all(
+                            width: 1,
+                            color: const Color(0xffDADEE3),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text("ابحث",
+                                style: AppTextStyles.font14Medium
+                                    .copyWith(color: AppColors.fontColor)),
+                            Image.asset(Assets.imagesPngImageSearchNormal),
+                          ],
+                        ),
+                      ),
+                    ),
+                    WidthSpace(8.w),
+                    GestureDetector(
+                      onTap: () => push(RoutesKeys.kFilter, context),
+                      child: Image.asset(Assets.imagesPngImageFiltter),
+                    ),
+                  ],
+                ),
+                HeightSpace(20),
+                ButtonApp(
+                  text: "اضافة حجز جديد",
+                  onTap: () => push(RoutesKeys.kAddBooking, context),
+                ),
+              ]),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: BlocBuilder<AnalysisCubit, AnalysisState>(
+              builder: (context, state) {
+                if (state is AnalysisLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (state is AnalysisError) {
+                  return Center(child: Text('حدث خطأ: ${state.message}'));
+                } else if (state is AnalysisLoaded) {
+                  final topServices = state.analysis.data.topService;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      GestureDetector(
-                        onTap: () => push(RoutesKeys.kFilter, context),
-                        child: Container(
-                          width: 300.w,
-                          height: 40.h,
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppColors.white,
-                            borderRadius: BorderRadius.circular(8.r),
-                            border: Border.all(
-                              width: 1,
-                              color: const Color(0xffDADEE3),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text("ابحث",
-                                  style: AppTextStyles.font14Medium
-                                      .copyWith(color: AppColors.fontColor)),
-                              Image.asset(Assets.imagesPngImageSearchNormal),
-                            ],
-                          ),
-                        ),
-                      ),
-                      WidthSpace(8.w),
-                      GestureDetector(
-                        onTap: () => push(RoutesKeys.kFilter, context),
-                        child: Image.asset(Assets.imagesPngImageFiltter),
-                      ),
+                      const HeightSpace(10),
+                      TopServiceSection(topServices: topServices),
+                      const HeightSpace(2),
                     ],
-                  ),
-                  HeightSpace(20),
-                  ButtonApp(
-                    text: "اضافة حجز جديد",
-                    onTap: () => push(RoutesKeys.kAddBooking, context),
-                  ),
-                ]),
-              ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
             ),
-            SliverToBoxAdapter(
-              child: BlocBuilder<AnalysisCubit, AnalysisState>(
-                builder: (context, state) {
-                  if (state is AnalysisLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (state is AnalysisError) {
-                    return Center(child: Text('حدث خطأ: ${state.message}'));
-                  } else if (state is AnalysisLoaded) {
-                    final topServices = state.analysis.data.topService;
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        HeightSpace(20),
-                        TopServiceSection(topServices: topServices),
-                        HeightSpace(2),
-                      ],
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: BlocBuilder<AnalysisCubit, AnalysisState>(
-                builder: (context, state) {
-                  if (state is AnalysisLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (state is AnalysisError) {
-                    return Center(child: Text('حدث خطأ: ${state.message}'));
-                  } else if (state is AnalysisLoaded) {
-                    final incomeStats =
-                        state.analysis.data.incomAndOtherStatistics;
-                    final totalForgevin = state.analysis.data.totalForgevin;
+          ),
+          SliverToBoxAdapter(
+            child: BlocBuilder<AnalysisCubit, AnalysisState>(
+              builder: (context, state) {
+                if (state is AnalysisLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (state is AnalysisError) {
+                  return Center(child: Text('حدث خطأ: ${state.message}'));
+                } else if (state is AnalysisLoaded) {
+                  final incomeStats =
+                      state.analysis.data.incomAndOtherStatistics;
+                  final totalForgevin = state.analysis.data.totalForgevin;
 
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        HeightSpace(20),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Text(
-                            "الإحصائيات المالية",
-                            style: AppTextStyles.font18Bold
-                                .copyWith(color: AppColors.black),
-                          ),
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const HeightSpace(10),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          "الإحصائيات المالية",
+                          style: AppTextStyles.font18Bold
+                              .copyWith(color: AppColors.black),
                         ),
-                        HeightSpace(16),
-                        // SizedBox(
-                        //   height: 150,
-                        //   child: ListView(
-                        //     scrollDirection: Axis.horizontal,
-                        //     padding: const EdgeInsets.symmetric(horizontal: 16),
-                        //     children: [
-                        //       StatCard(
-                        //         title: "إجمالي اليوم",
-                        //         value:
-                        //             "${incomeStats.totalAllowedAmountToday} ر.س",
-                        //         icon: Icons.attach_money_rounded,
-                        //         color: Colors.greenAccent.shade100,
-                        //       ),
-                        //       StatCard(
-                        //         title: "غرامات اليوم",
-                        //         value: "${totalForgevin.dailyTotal} ر.س",
-                        //         icon: Icons.warning_amber_rounded,
-                        //         color: Colors.orange.shade100,
-                        //       ),
-                        //       StatCard(
-                        //         title: "إجمالي الغرامات",
-                        //         value: "${totalForgevin.total} ر.س",
-                        //         icon: Icons.account_balance_wallet_outlined,
-                        //         color: Colors.red.shade100,
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
-                        HeightSpace(16),
-                      ],
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
+                      ),
+                      const HeightSpace(8),
+                    ],
+                  );
+                }
+                return const SizedBox.shrink();
+              },
             ),
-            SliverToBoxAdapter(
-              child: AnalysisView(),
-            ),
-          ],
-        ),
+          ),
+          const SliverToBoxAdapter(
+            child: AnalysisView(),
+          ),
+        ],
       ),
     );
   }

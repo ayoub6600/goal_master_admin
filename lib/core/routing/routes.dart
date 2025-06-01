@@ -41,7 +41,10 @@ import 'package:goal_master_admin/features/home/presentation/view/widgets/show_a
 import 'package:goal_master_admin/features/layout/presentation/view/home_layout_view.dart';
 import 'package:goal_master_admin/features/monthly_booking/data/repo/monthly_booking_repo_imp.dart';
 import 'package:goal_master_admin/features/monthly_booking/presentation/manager/monthly_booking_cubit/monthly_booking_cubit.dart';
+import 'package:goal_master_admin/features/monthly_booking/presentation/manager/udate_monthly_booking_cubit/udate_monthly_booking_cubit.dart';
 import 'package:goal_master_admin/features/monthly_booking/presentation/view/monthly_booking.dart';
+import 'package:goal_master_admin/features/notification/data/repo/notifaction_repo.dart';
+import 'package:goal_master_admin/features/notification/manager/notification_cubit/notification_cubit.dart';
 import 'package:goal_master_admin/features/notification/presentation/view/notifaction_view.dart';
 import 'package:goal_master_admin/features/onbording/presentation/manager/onboarding_cubit.dart';
 import 'package:goal_master_admin/features/onbording/presentation/view/onboarding_view.dart';
@@ -299,7 +302,12 @@ List<RouteBase> appRoutes = [
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
       state: state,
-      child: const NotificationView(),
+      child: BlocProvider(
+        create: (context) => NotificationCubit(
+          notificationRepo: getIt<NotificationRepo>(),
+        ),
+        child: const NotificationView(),
+      ),
     ),
   ),
   //ChangePasswordView
@@ -454,10 +462,21 @@ List<RouteBase> appRoutes = [
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
       state: state,
-      child: BlocProvider(
-        create: (context) => MonthlyBookingCubit(
-          bookingRepo: getIt<MonthlyBookingRepoImp>(),
-        ),
+      child: MultiBlocProvider(
+        providers: [
+          //UpdateMonthlyBooking
+          BlocProvider(
+            create: (context) => UpdateMonthlyBooking(
+              getIt<MonthlyBookingRepoImp>(),
+            ),
+          ),
+          //MonthlyBookingCubit
+          BlocProvider(
+            create: (context) => MonthlyBookingCubit(
+              bookingRepo: getIt<MonthlyBookingRepoImp>(),
+            ),
+          ),
+        ],
         child: const MonthlyBookingView(),
       ),
     ),

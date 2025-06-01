@@ -28,7 +28,7 @@ class AnalysisView extends StatelessWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: todayBookings.length,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+            padding: EdgeInsets.only(left: 6, right: 6, bottom: 40),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               crossAxisSpacing: 12,

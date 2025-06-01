@@ -5,6 +5,8 @@ import 'package:goal_master_admin/features/auth/data/repo/auth_repo_imp.dart';
 import 'package:goal_master_admin/features/booking/data/repo/booking_repo_imp.dart';
 import 'package:goal_master_admin/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master_admin/features/monthly_booking/data/repo/monthly_booking_repo_imp.dart';
+import 'package:goal_master_admin/features/notification/data/repo/notifaction_repo.dart';
+import 'package:goal_master_admin/features/notification/data/repo/notifaction_repo_imp.dart';
 import 'package:goal_master_admin/features/profail/data/repo/profile_repo_imp.dart';
 import '../databases/api/dio_consumer.dart';
 
@@ -29,6 +31,10 @@ void setupServiceLocator() {
   //MonthlyBookingRepoImp
   getIt.registerSingleton<MonthlyBookingRepoImp>(
     MonthlyBookingRepoImp(getIt.get<DioConsumer>()),
+  );
+  //NotificationRepo
+  getIt.registerSingleton<NotificationRepo>(
+    NotificationRepoImp(getIt.get<DioConsumer>()),
   );
 
   // //CardRepoImp

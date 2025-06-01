@@ -1,48 +1,85 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/core/styles/app_text_styles.dart';
-import 'package:goal_master_admin/core/styles/assets.dart' show Assets;
+import 'package:goal_master_admin/core/styles/assets.dart';
 import 'package:goal_master_admin/core/styles/spaces.dart';
+import 'package:goal_master_admin/features/notification/data/model/notification_response.dart';
+import 'package:intl/intl.dart';
 
 class ItemsNotification extends StatelessWidget {
-  const ItemsNotification({super.key});
+  const ItemsNotification({
+    super.key,
+    required this.notification,
+    required this.isRead,
+  });
+
+  final NotificationItem notification;
+  final bool isRead;
+
+  String getFormattedDate(String isoDate) {
+    final dateTime = DateTime.tryParse(isoDate);
+    if (dateTime == null) return '';
+    return DateFormat('yyyy-MM-dd – HH:mm').format(dateTime);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),
+    final message = notification.data.message;
+    final createdAt =
+        getFormattedDate(notification.createdAt.toIso8601String());
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
       decoration: BoxDecoration(
-        color: Color(0xffF4F6F9),
+        color: isRead ? Colors.grey[100] : AppColors.white,
         borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color:
+              isRead ? Colors.transparent : AppColors.primary.withOpacity(0.1),
+          width: 1.w,
+        ),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Image.asset(Assets.imagesPngImageSoccerBall, fit: BoxFit.cover),
+          Container(
+            padding: EdgeInsets.all(8.r),
+            decoration: BoxDecoration(
+              color: isRead
+                  ? Colors.grey[200]
+                  : AppColors.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Image.asset(
+              Assets.imagesPngImageNotification,
+              height: 24.h,
+              width: 24.w,
+              color: isRead ? Colors.grey[500] : AppColors.primary,
+            ),
+          ),
           WidthSpace(12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Text(
-                  "جول ماستر تعلن عن المباره النهائية يوم الاحد...",
-                  style: AppTextStyles.font14SemiBold,
-                  maxLines: 2,
+                  message,
+                  style: AppTextStyles.font14SemiBold.copyWith(
+                    color: isRead ? Colors.grey[600] : AppColors.black,
+                  ),
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
-                Text("1m ago.", style: AppTextStyles.font14SemiBold),
+                HeightSpace(6.h),
+                Text(
+                  createdAt,
+                  style: AppTextStyles.font12Regular.copyWith(
+                    color: isRead ? Colors.grey[400] : Colors.grey[500],
+                  ),
+                ),
               ],
-            ),
-          ),
-          WidthSpace(12.w),
-          CircleAvatar(
-            radius: 12.r,
-            backgroundColor: Colors.red,
-            child: Text(
-              "2",
-              style: AppTextStyles.font14SemiBold.copyWith(color: Colors.white),
             ),
           ),
         ],

@@ -8,6 +8,10 @@ part 'monthly_booking_state.dart';
 class MonthlyBookingCubit extends Cubit<MonthlyBookingState> {
   final MonthlyBookingRepo bookingRepo;
   late final PagingController<int, MonthlyBookingResponse> _pagingController;
+  bool _isDisposed = false;
+
+  PagingController<int, MonthlyBookingResponse> get pagingController =>
+      _pagingController;
 
   MonthlyBookingCubit({
     required this.bookingRepo,
@@ -17,42 +21,51 @@ class MonthlyBookingCubit extends Cubit<MonthlyBookingState> {
     _pagingController.addPageRequestListener((pageKey) {
       _fetchPage(pageKey);
     });
+
     emit(MonthlyBookingLoaded(pagingController: _pagingController));
   }
 
   Future<void> _fetchPage(int pageKey) async {
+    if (_isDisposed) return;
+
     try {
       final result = await bookingRepo.listMonthlyBooking(pageKey);
+      if (_isDisposed) return;
 
       result.fold(
         (failure) {
+          if (_isDisposed) return;
           _pagingController.error = failure.errMessage;
           emit(MonthlyBookingError(failure.errMessage));
         },
         (response) {
-          final booking = response;
-          final isLastPage = booking.length < 10; // Modify as needed
+          if (_isDisposed) return;
+          final bookings = response;
+          final isLastPage = bookings.length < 10;
 
           if (isLastPage) {
-            _pagingController.appendLastPage(booking);
+            _pagingController.appendLastPage(bookings);
           } else {
             final nextPageKey = pageKey + 1;
-            _pagingController.appendPage(booking, nextPageKey);
+            _pagingController.appendPage(bookings, nextPageKey);
           }
         },
       );
     } catch (error) {
+      if (_isDisposed) return;
       _pagingController.error = error.toString();
       emit(MonthlyBookingError(error.toString()));
     }
   }
 
   void refresh() {
+    if (_isDisposed) return;
     _pagingController.refresh();
   }
 
   @override
   Future<void> close() {
+    _isDisposed = true;
     _pagingController.dispose();
     return super.close();
   }
