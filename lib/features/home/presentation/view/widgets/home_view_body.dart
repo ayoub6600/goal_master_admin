@@ -12,6 +12,7 @@ import 'package:goal_master_admin/features/home/presentation/manager/analysis_cu
 import 'package:goal_master_admin/features/home/presentation/view/widgets/analysis_view.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/app_drawer.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/top_service_section.dart';
+import 'package:goal_master_admin/features/notification/manager/notification_cubit/notification_cubit.dart';
 
 class HomeViewBody extends StatelessWidget {
   const HomeViewBody({super.key});
@@ -53,13 +54,54 @@ class HomeViewBody extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    GestureDetector(
-                      onTap: () => push(RoutesKeys.kNotification, context),
-                      child: Image.asset(
-                        Assets.imagesPngImageNotification,
-                        width: 24.w,
-                        height: 24.h,
-                      ),
+                    BlocBuilder<NotificationCubit, NotificationState>(
+                      builder: (context, state) {
+                        final cubit = context.read<NotificationCubit>();
+                        final hasUnread = cubit.hasUnreadNotifications();
+                        final unreadCount = cubit.unreadCount;
+
+                        return GestureDetector(
+                          onTap: () => push(RoutesKeys.kNotification, context),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Image.asset(
+                                Assets.imagesPngImageNotification,
+                                width: 24.w,
+                                height: 24.h,
+                              ),
+                              if (hasUnread)
+                                Positioned(
+                                  top: -4,
+                                  right: -4,
+                                  child: Container(
+                                    padding: EdgeInsets.all(4.r),
+                                    decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    constraints: BoxConstraints(
+                                      minWidth: 16.w,
+                                      minHeight: 16.h,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        unreadCount > 9
+                                            ? '9+'
+                                            : unreadCount.toString(),
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10.sp,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

@@ -1,5 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:goal_master_admin/core/components/keys_values.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master_admin/core/routing/appstart_state.dart';
+import 'package:goal_master_admin/features/notification/data/repo/notifaction_repo.dart';
+import 'package:goal_master_admin/features/notification/manager/notification_cubit/notification_cubit.dart';
+import 'package:goal_master_admin/features/profail/presentation/manager/customer_cubit/customer_cubit.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:oktoast/oktoast.dart';
+
 import 'package:goal_master_admin/core/components/preference_utility.dart';
 import 'package:goal_master_admin/core/routing/app_router.dart';
 import 'package:goal_master_admin/core/routing/routes_keys.dart';
@@ -8,77 +17,91 @@ import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/features/layout/presentation/manager/layout_cubit.dart';
 import 'package:goal_master_admin/features/profail/data/repo/profile_repo_imp.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
-import 'package:oktoast/oktoast.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SharedPreferenceUtil.getInstance();
   setupServiceLocator();
 
-  final onboardingSeen = SharedPreferenceUtil.getBool(PrefKey.onboardingSeen);
-  final isLoggedIn = SharedPreferenceUtil.getString(PrefKey.login) == 'true';
-
-  String initialLocation;
-  if (!onboardingSeen) {
-    initialLocation = RoutesKeys.kOnboarding;
-  } else if (isLoggedIn) {
-    initialLocation = RoutesKeys.kHome;
-  } else {
-    initialLocation = RoutesKeys.kLogin;
-  }
-
-  runApp(MyApp(initialRoute: initialLocation));
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final String initialRoute;
+  const MyApp({super.key});
 
-  const MyApp({required this.initialRoute, super.key});
+  String _mapStatusToRoute(AppStartStatus status) {
+    switch (status) {
+      case AppStartStatus.onboarding:
+        return RoutesKeys.kOnboarding;
+      case AppStartStatus.unauthenticated:
+        return RoutesKeys.kLogin;
+      case AppStartStatus.authenticated:
+        return RoutesKeys.kHome;
+      default:
+        return RoutesKeys.kLogin;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (context) => LayoutCubit()),
-        BlocProvider(
-          create: (context) =>
-              ProfileCubit(getIt<ProfileRepoImp>())..getProfile(),
-        ),
-      ],
-      child: ScreenUtilInit(
-        designSize: const Size(390, 844),
-        child: GestureDetector(
-          onTap: () {
-            final currentFocus = FocusScope.of(context);
-            if (!currentFocus.hasPrimaryFocus) {
-              currentFocus.unfocus();
-            }
-          },
-          child: OKToast(
-            child: MaterialApp.router(
-              title: "Goal Master Admin",
-              theme: ThemeData(
-                colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
-                useMaterial3: true,
-                textTheme: GoogleFonts.tajawalTextTheme(),
-                scaffoldBackgroundColor: Colors.white,
-              ),
+    return BlocProvider(
+      create: (_) => AppStartCubit(),
+      child: BlocBuilder<AppStartCubit, AppStartState>(
+        builder: (context, state) {
+          if (state.status == AppStartStatus.checking) {
+            return const MaterialApp(
               debugShowCheckedModeBanner: false,
-              locale: const Locale('ar'),
-              supportedLocales: const [Locale('ar')],
-              localizationsDelegates: const [
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
-              routerConfig: AppRouter.createRouter(initialRoute),
+              home: Scaffold(
+                backgroundColor: Colors.white,
+                body: Center(child: CircularProgressIndicator()),
+              ),
+            );
+          }
+
+          final initialRoute = _mapStatusToRoute(state.status);
+
+          return MultiBlocProvider(
+            providers: [
+              //NotificationCubit
+              BlocProvider(
+                  create: (_) => NotificationCubit(
+                        notificationRepo: getIt<NotificationRepo>(),
+                      )),
+              BlocProvider(create: (_) => LayoutCubit()),
+              BlocProvider(
+                create: (_) =>
+                    ProfileCubit(getIt<ProfileRepoImp>())..getProfile(),
+              ),
+              BlocProvider(
+                  create: (_) =>
+                      CustomerCubit(bookingRepo: getIt<ProfileRepoImp>())),
+            ],
+            child: ScreenUtilInit(
+              designSize: const Size(390, 844),
+              builder: (_, __) => OKToast(
+                child: MaterialApp.router(
+                  title: "Goal Master Admin",
+                  theme: ThemeData(
+                    colorScheme:
+                        ColorScheme.fromSeed(seedColor: AppColors.primary),
+                    useMaterial3: true,
+                    textTheme: GoogleFonts.tajawalTextTheme(),
+                    scaffoldBackgroundColor: Colors.white,
+                  ),
+                  debugShowCheckedModeBanner: false,
+                  locale: const Locale('ar'),
+                  supportedLocales: const [Locale('ar')],
+                  localizationsDelegates: const [
+                    GlobalMaterialLocalizations.delegate,
+                    GlobalWidgetsLocalizations.delegate,
+                    GlobalCupertinoLocalizations.delegate,
+                  ],
+                  routerConfig: AppRouter.createRouter(initialRoute),
+                ),
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

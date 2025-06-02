@@ -11,27 +11,35 @@ class CustomerCubit extends Cubit<CustomerState> {
   final ProfileRepo bookingRepo;
   late final PagingController<int, Customer> _pagingController;
   final List<Customer> customers = [];
+  final Set<int> _fetchedPages = {}; // 🔒 لتفادي تكرار نفس الصفحة
   bool _now = true;
 
   CustomerCubit({required this.bookingRepo}) : super(CustomerInitial()) {
     _pagingController = PagingController<int, Customer>(firstPageKey: 1);
+
+    // ✅ تأكد أن listener يشتغل مرة واحدة فقط
     _pagingController.addPageRequestListener((pageKey) {
       _fetchPage(pageKey);
     });
+
     emit(CustomerLoaded(pagingController: _pagingController));
   }
 
   Future<void> loadFirstPageManually() async {
     if (customers.isEmpty) {
-      emit(CustomerLoading()); // ✅ Loading state
+      emit(CustomerLoading());
 
       await _fetchPage(1);
-      emit(CustomerLoaded(
-          pagingController: _pagingController)); // ✅ Back to Loaded
+
+      emit(CustomerLoaded(pagingController: _pagingController));
     }
   }
 
   Future<void> _fetchPage(int pageKey) async {
+    // 🔒 تفادي تحميل نفس الصفحة مرتين
+    if (_fetchedPages.contains(pageKey)) return;
+    _fetchedPages.add(pageKey);
+
     try {
       final result = await bookingRepo.getCustomer(pageKey);
 
@@ -62,11 +70,14 @@ class CustomerCubit extends Cubit<CustomerState> {
   void setNow(bool value) {
     _now = value;
     print("-------->now: $value    ${_now}");
+    customers.clear();
+    _fetchedPages.clear(); // 🧼 نرجع كل شيء من أول وجديد
     _pagingController.refresh();
   }
 
   void refresh() {
     customers.clear();
+    _fetchedPages.clear(); // 🧼 نرجع كل شيء من أول وجديد
     _pagingController.refresh();
   }
 

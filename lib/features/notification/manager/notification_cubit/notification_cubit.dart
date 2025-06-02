@@ -60,62 +60,30 @@ class NotificationCubit extends Cubit<NotificationState> {
     emit(NotificationLoading());
   }
 
-  Future<void> markAsRead(String notificationId) async {
-    if (_isDisposed) return;
-
-    // تحديث محلي فوري لتجربة مستخدم أفضل
-    _updateNotificationLocally(notificationId, isRead: true);
-    emit(NotificationMarkingAsRead(notificationId));
-
-    final result =
-        await notificationRepo.markNotificationAsRead(notificationId);
-
-    if (_isDisposed) return;
-
-    result.fold(
-      (failure) {
-        // التراجع عن التغيير إذا فشل الطلب
-        _updateNotificationLocally(notificationId, isRead: false);
-        emit(NotificationMarkAsReadFailure(
-          notificationId: notificationId,
-          message: failure.errMessage,
-        ));
-      },
-      (message) {
-        emit(NotificationMarkAsReadSuccess(
-          notificationId: notificationId,
-          message: message,
-        ));
-      },
-    );
-  }
-
-  void _updateNotificationLocally(String notificationId,
-      {required bool isRead}) {
-    final currentItems = _pagingController.itemList;
-    if (currentItems == null) return;
-
-    final index = currentItems.indexWhere((item) => item.id == notificationId);
-    if (index != -1) {
-      final updatedItem = currentItems[index]
-          .copyWith(readAt: isRead ? DateTime.now().toIso8601String() : null);
-      final newItems = List<NotificationItem>.from(currentItems)
-        ..[index] = updatedItem;
-      _pagingController.itemList = newItems;
-    }
-  }
-
   Future<void> markAllAsRead() async {
     if (_isDisposed) return;
 
+    final currentItems = _pagingController.itemList;
+
+    // ✅ تحقق من وجود إشعارات غير مقروءة أولًا
+    final hasUnread = hasUnreadNotifications();
+
+    if (!hasUnread) {
+      print(
+          '[NotificationCubit] كل الإشعارات مقروءة بالفعل. تم تجاهل markAllAsRead().');
+      return;
+    }
+
     emit(NotificationMarkingAllAsRead());
 
-    // تحديث محلي فوري لكل الإشعارات في القائمة كـ "مقروءة"
-    final currentItems = _pagingController.itemList;
+    // تحديث محلي فوري
     if (currentItems != null) {
       final updatedItems = currentItems
           .map(
-              (item) => item.copyWith(readAt: DateTime.now().toIso8601String()))
+            (item) => item.copyWith(
+              readAt: DateTime.now().toIso8601String(),
+            ),
+          )
           .toList();
       _pagingController.itemList = updatedItems;
     }
@@ -132,6 +100,20 @@ class NotificationCubit extends Cubit<NotificationState> {
         emit(NotificationMarkAllAsReadSuccess(message: message));
       },
     );
+  }
+
+  /// ✅ عدد الإشعارات غير المقروءة
+  int get unreadCount {
+    final items = _pagingController.itemList;
+    return items
+            ?.where((item) => item.readAt == null || item.readAt!.isEmpty)
+            .length ??
+        0;
+  }
+
+  /// ✅ هل يوجد إشعارات غير مقروءة؟
+  bool hasUnreadNotifications() {
+    return unreadCount > 0;
   }
 
   @override

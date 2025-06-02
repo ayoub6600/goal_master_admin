@@ -31,11 +31,9 @@ import 'package:goal_master_admin/features/booking/presentation/view/widgets/boo
 import 'package:goal_master_admin/features/home/data/model/booking_slots_response.dart';
 import 'package:goal_master_admin/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/club_cubit/club_cubit.dart';
-import 'package:goal_master_admin/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
 import 'package:goal_master_admin/features/home/presentation/manager/filter_cubit/filter_cubit.dart';
 import 'package:goal_master_admin/features/home/presentation/manager/page_view_new_booking_cubit/page_view_new_booking_cubit.dart';
 import 'package:goal_master_admin/features/home/presentation/view/fillter_view.dart';
-import 'package:goal_master_admin/features/home/presentation/view/home_view.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/booking_item.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/show_all_resulat_filtter.dart';
 import 'package:goal_master_admin/features/layout/presentation/view/home_layout_view.dart';
@@ -59,7 +57,6 @@ import 'package:goal_master_admin/features/profail/presentation/view/change_pass
 import 'package:goal_master_admin/features/profail/presentation/view/customer_view.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/profile_view.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/update_profile_view.dart';
-import 'package:goal_master_admin/features/profail/presentation/view/widgets/items_user_call.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/widgets/items_user_detains_view.dart';
 
 import '../../features/profail/presentation/view/allowed_amount_view.dart';
@@ -287,12 +284,7 @@ List<RouteBase> appRoutes = [
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
       state: state,
-      child: BlocProvider(
-        create: (context) => CustomerCubit(
-          bookingRepo: getIt<ProfileRepoImp>(),
-        ),
-        child: const CustomerView(),
-      ),
+      child: const CustomerView(),
     ),
   ),
   //NotificationView
@@ -302,12 +294,7 @@ List<RouteBase> appRoutes = [
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
       state: state,
-      child: BlocProvider(
-        create: (context) => NotificationCubit(
-          notificationRepo: getIt<NotificationRepo>(),
-        ),
-        child: const NotificationView(),
-      ),
+      child: const NotificationView(),
     ),
   ),
   //ChangePasswordView

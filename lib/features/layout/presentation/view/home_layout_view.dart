@@ -65,26 +65,6 @@ class _HomeLayoutViewState extends State<HomeLayoutView> {
                   ],
                   child: BookingView(),
                 ),
-
-              // MultiBlocProvider(
-              //   providers: [
-              //     BlocProvider(
-              //       create: (context) => BookingCubit(
-              //         bookingRepo: getIt<BookingRepoImp>(),
-              //       ),
-              //     ),
-              //     //CancelBookingCubit
-              //     BlocProvider(
-              //       create: (context) => CancelBookingCubit(
-              //         getIt<BookingRepoImp>(),
-              //       ),
-              //     ),
-              //     BlocProvider(
-              //       create: (context) => ToggleCubit(),
-              //     ),
-              //   ],
-              //   child: const BookingView(),
-              // ),
               if (state.activeScreen == NavBarElement.profile) ProfileView(),
             ],
           );

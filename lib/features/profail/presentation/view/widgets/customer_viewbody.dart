@@ -14,8 +14,24 @@ import 'package:goal_master_admin/features/profail/presentation/manager/customer
 import 'package:goal_master_admin/features/profail/presentation/view/widgets/items_user_call.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
-class CustomerViewbody extends StatelessWidget {
+class CustomerViewbody extends StatefulWidget {
   const CustomerViewbody({super.key});
+
+  @override
+  State<CustomerViewbody> createState() => _CustomerViewbodyState();
+}
+
+class _CustomerViewbodyState extends State<CustomerViewbody> {
+  bool _firstBuild = true;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_firstBuild) {
+      context.read<CustomerCubit>().loadFirstPageManually();
+      _firstBuild = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,13 +42,10 @@ class CustomerViewbody extends StatelessWidget {
         builder: (context, state) {
           if (state is CustomerLoaded) {
             return PagedListView<int, Customer>.separated(
-              padding: EdgeInsets.only(
-                bottom: 100.h,
-              ),
+              padding: EdgeInsets.only(bottom: 100.h),
               pagingController: state.pagingController,
               builderDelegate: PagedChildBuilderDelegate<Customer>(
-                itemBuilder: (context, booking, index) {
-                  final customer = booking;
+                itemBuilder: (context, customer, index) {
                   return GestureDetector(
                     onTap: () {
                       push(
@@ -40,13 +53,11 @@ class CustomerViewbody extends StatelessWidget {
                         context,
                         extra: {
                           'bookingId': customer.id.toString(),
-                          'customer': customer, // ابعت الموديل هنا
+                          'customer': customer,
                         },
                       );
                     },
-                    child: ItemsUserCall(
-                      customer: customer,
-                    ),
+                    child: ItemsUserCall(customer: customer),
                   );
                 },
                 firstPageErrorIndicatorBuilder: (context) {
@@ -88,6 +99,7 @@ class CustomerViewbody extends StatelessWidget {
               },
             );
           }
+
           return const CustomLoadingWidget();
         },
       ),

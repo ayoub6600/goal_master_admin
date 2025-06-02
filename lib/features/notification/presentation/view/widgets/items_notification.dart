@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master_admin/core/services/service_locator.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/core/styles/app_text_styles.dart';
 import 'package:goal_master_admin/core/styles/assets.dart';
 import 'package:goal_master_admin/core/styles/spaces.dart';
+import 'package:goal_master_admin/features/booking/data/repo/booking_repo_imp.dart';
+import 'package:goal_master_admin/features/booking/presentation/manager/%20booking_details_cubit/booking_details_cubit.dart';
+import 'package:goal_master_admin/features/booking/presentation/manager/%20booking_details_cubit/booking_details_state.dart';
 import 'package:goal_master_admin/features/notification/data/model/notification_response.dart';
+import 'package:goal_master_admin/features/notification/presentation/view/widgets/show_details_notification.dart';
 import 'package:intl/intl.dart';
 
 class ItemsNotification extends StatelessWidget {
@@ -28,6 +34,7 @@ class ItemsNotification extends StatelessWidget {
     final message = notification.data.message;
     final createdAt =
         getFormattedDate(notification.createdAt.toIso8601String());
+    final int? bookingId = notification.data.id;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -80,6 +87,128 @@ class ItemsNotification extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  backgroundColor: AppColors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                  title: Text(
+                    'تفاصيل الإشعار',
+                    style: AppTextStyles.font20Bold,
+                  ),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        message,
+                        style: AppTextStyles.font18Bold,
+                      ),
+                      HeightSpace(12.h),
+                      Text(
+                        'تاريخ الإشعار: $createdAt',
+                        style: AppTextStyles.font14SemiBold.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      if (bookingId != null) ...[
+                        HeightSpace(12.h),
+                        Text(
+                          'رقم الحجز: $bookingId',
+                          style: AppTextStyles.font14SemiBold.copyWith(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  actions: [
+                    if (bookingId != null)
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(ctx); // غلق الديالوج الأول
+                          showDialog(
+                            barrierDismissible: false,
+                            context: context,
+                            builder: (_) => BlocProvider(
+                              create: (_) => BookingDetailsCubit(
+                                getIt<BookingRepoImp>(),
+                                bookingId,
+                              )..getBookingInfo(),
+                              child: AlertDialog(
+                                backgroundColor: AppColors.white,
+                                title: Text(
+                                  'تفاصيل الحجز',
+                                  style: AppTextStyles.font16Bold,
+                                ),
+                                content: BlocBuilder<BookingDetailsCubit,
+                                    BookingDetailsState>(
+                                  builder: (context, state) {
+                                    if (state is BookingDetailsLoading) {
+                                      return SizedBox(
+                                        height: 100,
+                                        child: Center(
+                                            child: CircularProgressIndicator()),
+                                      );
+                                    } else if (state is BookingDetailsSuccess) {
+                                      return ShowDetailsNotification(
+                                        item: state.bookingDetails,
+                                      );
+                                    } else if (state is BookingDetailsError) {
+                                      return Text(
+                                        'حدث خطأ: ${state.message}',
+                                        style: TextStyle(color: Colors.red),
+                                      );
+                                    }
+                                    return const SizedBox();
+                                  },
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: Text(
+                                      'إغلاق',
+                                      style:
+                                          AppTextStyles.font14SemiBold.copyWith(
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'عرض تفاصيل الحجز',
+                          style: AppTextStyles.font14SemiBold.copyWith(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: Text(
+                        'إغلاق',
+                        style: AppTextStyles.font14SemiBold.copyWith(
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+            child: Icon(
+              Icons.chevron_right,
+              color: isRead ? Colors.grey[400] : AppColors.primary,
+              size: 24.w,
             ),
           ),
         ],
