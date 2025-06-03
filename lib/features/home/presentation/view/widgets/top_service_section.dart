@@ -23,7 +23,7 @@ class TopServiceSection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            "🏆 أفضل خدمات الحجز",
+            "الأنشطة الأكثر طلبًا",
             style: AppTextStyles.font18Bold.copyWith(color: AppColors.black),
           ),
         ),

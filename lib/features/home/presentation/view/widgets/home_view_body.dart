@@ -11,8 +11,11 @@ import 'package:goal_master_admin/core/styles/spaces.dart';
 import 'package:goal_master_admin/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/analysis_view.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/app_drawer.dart';
+import 'package:goal_master_admin/features/home/presentation/view/widgets/banner_carousel_view.dart';
+import 'package:goal_master_admin/features/home/presentation/view/widgets/items_show_analysis_new.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/top_service_section.dart';
 import 'package:goal_master_admin/features/notification/manager/notification_cubit/notification_cubit.dart';
+import 'package:shimmer_animation/shimmer_animation.dart';
 
 class HomeViewBody extends StatelessWidget {
   const HomeViewBody({super.key});
@@ -33,25 +36,30 @@ class HomeViewBody extends StatelessWidget {
                 HeightSpace(30.h),
                 Row(
                   children: [
-                    IconButton(
-                        onPressed: () => scaffoldKey.currentState?.openDrawer(),
-                        icon: const Icon(Icons.menu)),
                     WidthSpace(8.w),
-                    CircleAvatar(
-                      radius: 24.r,
-                      backgroundImage: const AssetImage(
-                        Assets.imagesPngImageLogo,
-                      ),
-                      backgroundColor: AppColors.primary,
+                    Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 24.r,
+                          backgroundImage: const AssetImage(
+                            Assets.imagesPngImageLogo,
+                          ),
+                          backgroundColor: AppColors.primary,
+                        ),
+                        IconButton(
+                            onPressed: () =>
+                                scaffoldKey.currentState?.openDrawer(),
+                            icon: const Icon(
+                              Icons.menu,
+                              color: AppColors.white,
+                            )),
+                      ],
                     ),
                     WidthSpace(8.w),
                     Text(
-                      "Goal Master",
+                      "جوال ماستر",
                       textAlign: TextAlign.start,
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTextStyles.font20Bold,
                     ),
                     const Spacer(),
                     BlocBuilder<NotificationCubit, NotificationState>(
@@ -105,47 +113,163 @@ class HomeViewBody extends StatelessWidget {
                     ),
                   ],
                 ),
-                HeightSpace(20),
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () => push(RoutesKeys.kFilter, context),
-                      child: Container(
-                        width: 300.w,
-                        height: 40.h,
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.white,
-                          borderRadius: BorderRadius.circular(8.r),
-                          border: Border.all(
-                            width: 1,
-                            color: const Color(0xffDADEE3),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text("ابحث",
-                                style: AppTextStyles.font14Medium
-                                    .copyWith(color: AppColors.fontColor)),
-                            Image.asset(Assets.imagesPngImageSearchNormal),
-                          ],
-                        ),
-                      ),
-                    ),
-                    WidthSpace(8.w),
-                    GestureDetector(
-                      onTap: () => push(RoutesKeys.kFilter, context),
-                      child: Image.asset(Assets.imagesPngImageFiltter),
-                    ),
-                  ],
-                ),
-                HeightSpace(20),
+                const HeightSpace(30),
+                // Row(
+                //   children: [
+                //     GestureDetector(
+                //       onTap: () => push(RoutesKeys.kFilter, context),
+                //       child: Container(
+                //         width: 300.w,
+                //         height: 40.h,
+                //         padding: const EdgeInsets.all(8),
+                //         decoration: BoxDecoration(
+                //           color: AppColors.white,
+                //           borderRadius: BorderRadius.circular(8.r),
+                //           border: Border.all(
+                //             width: 1,
+                //             color: const Color(0xffDADEE3),
+                //           ),
+                //         ),
+                //         child: Row(
+                //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //           children: [
+                //             Text("ابحث",
+                //                 style: AppTextStyles.font14Medium
+                //                     .copyWith(color: AppColors.fontColor)),
+                //             Image.asset(Assets.imagesPngImageSearchNormal),
+                //           ],
+                //         ),
+                //       ),
+                //     ),
+                //     WidthSpace(8.w),
+                //     GestureDetector(
+                //       onTap: () => push(RoutesKeys.kFilter, context),
+                //       child: Image.asset(Assets.imagesPngImageFiltter),
+                //     ),
+                //   ],
+                // ),
+                // const HeightSpace(20),
+                BannerCarouselScreen(),
+                const HeightSpace(30),
                 ButtonApp(
                   text: "اضافة حجز جديد",
                   onTap: () => push(RoutesKeys.kAddBooking, context),
                 ),
               ]),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: BlocBuilder<AnalysisCubit, AnalysisState>(
+              builder: (context, state) {
+                if (state is AnalysisLoading) {
+                  return const ScimagLoading(itemCount: 4, crossAxisCount: 2);
+                } else if (state is AnalysisError) {
+                  return Center(child: Text('حدث خطأ: ${state.message}'));
+                } else if (state is AnalysisLoaded) {
+                  final stats = state.analysis.data.incomAndOtherStatistics;
+                  final totalForgevin = state.analysis.data.totalForgevin;
+
+                  // الحسابات
+                  double totalCash = 0;
+                  double totalOnline = 0;
+                  for (var p in stats.todayPaidBy) {
+                    final paid = double.tryParse(p.paidAmount) ?? 0;
+                    if (p.type == 1) totalCash += paid;
+                    if (p.type == 2) totalOnline += paid;
+                  }
+
+                  double totalPaid = 0;
+                  double totalService = 0;
+                  for (var item in stats.todayPaidAndDue) {
+                    totalPaid += double.tryParse(item.paidAmount) ?? 0;
+                    totalService += double.tryParse(item.serviceAmount) ?? 0;
+                  }
+
+                  final List<Widget> cards = [
+                    ItemsShowAnalysisNew(
+                      title: "كمية المسامح كريم اليومية",
+                      count: totalForgevin.dailyTotal,
+                      color: AppColors.primary,
+                    ),
+                    ItemsShowAnalysisNew(
+                      title: "كمية المسامح كريم الشاملة",
+                      count: totalForgevin.total,
+                      color: AppColors.primary,
+                    ),
+                    ItemsShowAnalysisNew(
+                      title: "إجمالي المدفوع نقدًا",
+                      count: totalCash,
+                      color: Colors.green,
+                    ),
+                    ItemsShowAnalysisNew(
+                      title: "إجمالي المدفوع عبر الإنترنت",
+                      count: totalOnline,
+                      color: Colors.blue,
+                    ),
+                    ItemsShowAnalysisNew(
+                      title: "إجمالي المدفوع اليوم",
+                      count: totalPaid,
+                      color: Colors.teal,
+                    ),
+                    ItemsShowAnalysisNew(
+                      title: "إجمالي قيمة الخدمات",
+                      count: totalService,
+                      color: Colors.orange,
+                    ),
+                  ];
+
+                  if (cards.isEmpty) return const SizedBox.shrink();
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "الإحصائيات المالية",
+                          style: AppTextStyles.font18Bold
+                              .copyWith(color: AppColors.black),
+                        ),
+                        //  const SizedBox(height: 12),
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: cards.length,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 1.6,
+                          ),
+                          itemBuilder: (context, index) => cards[index],
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                HeightSpace(20),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  child: Text(
+                    "إحصائيات الحجوزات حسب الحالة",
+                    style: AppTextStyles.font18Bold
+                        .copyWith(color: AppColors.black),
+                  ),
+                ),
+                HeightSpace(10),
+                AnalysisView(),
+              ],
             ),
           ),
           SliverToBoxAdapter(
@@ -162,48 +286,13 @@ class HomeViewBody extends StatelessWidget {
                     children: [
                       const HeightSpace(10),
                       TopServiceSection(topServices: topServices),
-                      const HeightSpace(2),
+                      const HeightSpace(100),
                     ],
                   );
                 }
                 return const SizedBox.shrink();
               },
             ),
-          ),
-          SliverToBoxAdapter(
-            child: BlocBuilder<AnalysisCubit, AnalysisState>(
-              builder: (context, state) {
-                if (state is AnalysisLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is AnalysisError) {
-                  return Center(child: Text('حدث خطأ: ${state.message}'));
-                } else if (state is AnalysisLoaded) {
-                  final incomeStats =
-                      state.analysis.data.incomAndOtherStatistics;
-                  final totalForgevin = state.analysis.data.totalForgevin;
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const HeightSpace(10),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Text(
-                          "الإحصائيات المالية",
-                          style: AppTextStyles.font18Bold
-                              .copyWith(color: AppColors.black),
-                        ),
-                      ),
-                      const HeightSpace(8),
-                    ],
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-          ),
-          const SliverToBoxAdapter(
-            child: AnalysisView(),
           ),
         ],
       ),
@@ -220,6 +309,53 @@ class DrawerButton extends StatelessWidget {
     return IconButton(
       icon: const Icon(Icons.menu),
       onPressed: onTap,
+    );
+  }
+}
+
+class ScimagLoading extends StatelessWidget {
+  final int itemCount;
+  final int crossAxisCount;
+  final double spacing;
+  final double aspectRatio;
+
+  const ScimagLoading({
+    super.key,
+    this.itemCount = 6,
+    this.crossAxisCount = 2,
+    this.spacing = 12,
+    this.aspectRatio = 1.2,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(16.r),
+      child: GridView.builder(
+        itemCount: itemCount,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          crossAxisSpacing: spacing.w,
+          mainAxisSpacing: spacing.h,
+          childAspectRatio: aspectRatio,
+        ),
+        itemBuilder: (context, index) => Shimmer(
+          duration: const Duration(seconds: 2),
+          interval: const Duration(seconds: 0),
+          color: Colors.white,
+          colorOpacity: 0,
+          enabled: true,
+          direction: const ShimmerDirection.fromLTRB(),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

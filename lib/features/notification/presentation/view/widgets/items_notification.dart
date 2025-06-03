@@ -63,7 +63,7 @@ class ItemsNotification extends StatelessWidget {
               Assets.imagesPngImageNotification,
               height: 24.h,
               width: 24.w,
-              color: isRead ? Colors.grey[500] : AppColors.primary,
+              color: AppColors.primary,
             ),
           ),
           WidthSpace(12.w),

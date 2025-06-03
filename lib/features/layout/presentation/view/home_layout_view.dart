@@ -9,6 +9,7 @@ import 'package:goal_master_admin/features/booking/presentation/manager/booking_
 import 'package:goal_master_admin/features/booking/presentation/view/booking_view.dart';
 import 'package:goal_master_admin/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master_admin/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
+import 'package:goal_master_admin/features/home/presentation/manager/banner_cubit/banner_cubit.dart';
 import 'package:goal_master_admin/features/home/presentation/view/home_view.dart';
 import 'package:goal_master_admin/features/layout/presentation/manager/layout_cubit.dart';
 import 'package:goal_master_admin/features/layout/presentation/manager/layout_state.dart';
@@ -42,10 +43,21 @@ class _HomeLayoutViewState extends State<HomeLayoutView> {
             children: [
               if (state.activeScreen == NavBarElement.home)
                 //HomeView(),
-                BlocProvider(
-                  create: (context) => AnalysisCubit(
-                    getIt<AnalysisRepoImp>(),
-                  )..getAnalysis(),
+                //BannerCubitCubit
+
+                MultiBlocProvider(
+                  providers: [
+                    BlocProvider(
+                      create: (context) => BannerCubitCubit(
+                        getIt<AnalysisRepoImp>(),
+                      )..getBanner(),
+                    ),
+                    BlocProvider(
+                      create: (context) => AnalysisCubit(
+                        getIt<AnalysisRepoImp>(),
+                      )..getAnalysis(),
+                    ),
+                  ],
                   child: const HomeView(),
                 ),
               if (state.activeScreen == NavBarElement.booking)

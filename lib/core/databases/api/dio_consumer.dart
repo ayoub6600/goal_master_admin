@@ -16,14 +16,13 @@ class DioConsumer extends ApiConsumer {
     dio.options.headers['Accept'] = 'application/json';
     dio.options.headers['Content-Type'] = 'application/json';
 
-    // تم تحميل التوكن عند تهيئة dio لأول مرة
     _setAuthorizationHeader();
 
     dio.options.headers['accept-language'] = 'ar';
     dio.options.followRedirects = false;
 
     dio.interceptors.addAll([
-      TokenInterceptor(dio), // إرفاق الـ Interceptor للتعامل مع التوكن
+      TokenInterceptor(dio),
       ChuckerDioInterceptor(),
       PrettyDioLogger(
         requestBody: true,
@@ -38,7 +37,7 @@ class DioConsumer extends ApiConsumer {
   // إضافة دالة لتحديث التوكن في الهيدر
   void _setAuthorizationHeader() {
     String token = SharedPreferenceUtil.getString(PrefKey.fcmToken);
-    print("Authorization token: $token");
+
     dio.options.headers['Authorization'] = 'Bearer $token';
   }
 

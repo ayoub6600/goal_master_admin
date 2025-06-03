@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
       case AppStartStatus.authenticated:
         return RoutesKeys.kHome;
       default:
-        return RoutesKeys.kLogin;
+        return RoutesKeys.kHome;
     }
   }
 

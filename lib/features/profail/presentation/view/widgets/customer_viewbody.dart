@@ -13,6 +13,7 @@ import 'package:goal_master_admin/features/profail/data/model/customer_list_resp
 import 'package:goal_master_admin/features/profail/presentation/manager/customer_cubit/customer_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/widgets/items_user_call.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:shimmer_animation/shimmer_animation.dart';
 
 class CustomerViewbody extends StatefulWidget {
   const CustomerViewbody({super.key});
@@ -77,10 +78,10 @@ class _CustomerViewbodyState extends State<CustomerViewbody> {
                   );
                 },
                 firstPageProgressIndicatorBuilder: (context) {
-                  return const CustomLoadingWidget();
+                  return const CustomerListLoading();
                 },
                 newPageProgressIndicatorBuilder: (context) {
-                  return const CustomLoadingWidget();
+                  return const CustomerListLoading();
                 },
                 noItemsFoundIndicatorBuilder: (context) {
                   return const EmptyLoading(
@@ -100,8 +101,80 @@ class _CustomerViewbodyState extends State<CustomerViewbody> {
             );
           }
 
-          return const CustomLoadingWidget();
+          return const CustomerListLoading();
         },
+      ),
+    );
+  }
+}
+
+class CustomerListLoading extends StatelessWidget {
+  const CustomerListLoading({super.key, this.itemCount = 6});
+
+  final int itemCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: itemCount,
+      separatorBuilder: (_, __) => SizedBox(height: 12.h),
+      itemBuilder: (_, __) => Shimmer(
+        duration: const Duration(seconds: 2),
+        interval: const Duration(seconds: 0),
+        color: Colors.white,
+        colorOpacity: 0,
+        enabled: true,
+        direction: const ShimmerDirection.fromLTRB(),
+        child: Container(
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12.r),
+            color: Colors.grey.shade300,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48.w,
+                height: 48.w,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(width: 16.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 14.h,
+                      width: double.infinity,
+                      color: Colors.white,
+                    ),
+                    SizedBox(height: 8.h),
+                    Container(
+                      height: 14.h,
+                      width: 120.w,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Container(
+                width: 24.w,
+                height: 24.w,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4.r),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -9,6 +9,8 @@ class EndPoints {
   //# parent
   static String login = 'login';
 
+  static String banner = "list/slider";
+
   static String sendOTP = 'resend-otp';
 
   static String verifyOTP = 'verify';

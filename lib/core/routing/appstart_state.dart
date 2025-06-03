@@ -3,10 +3,10 @@ import 'package:goal_master_admin/core/components/keys_values.dart';
 import 'package:goal_master_admin/core/components/preference_utility.dart';
 
 enum AppStartStatus {
-  checking, // في البداية
-  onboarding, // أول مرة يفتح
-  unauthenticated, // مش مسجل دخول
-  authenticated, // داخل التطبيق
+  checking,
+  onboarding,
+  unauthenticated,
+  authenticated,
 }
 
 class AppStartState {
@@ -21,7 +21,6 @@ class AppStartCubit extends Cubit<AppStartState> {
   }
 
   Future<void> _checkAppStartState() async {
-    await Future.delayed(const Duration(milliseconds: 500));
     final onboardingSeen = SharedPreferenceUtil.getBool(PrefKey.onboardingSeen);
     final loggedIn = SharedPreferenceUtil.getString(PrefKey.login) == 'true';
 

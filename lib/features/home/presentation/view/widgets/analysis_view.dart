@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master_admin/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
+import 'package:goal_master_admin/features/home/presentation/view/widgets/home_view_body.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/items_show_analysis.dart';
 
 class AnalysisView extends StatelessWidget {
@@ -11,7 +12,7 @@ class AnalysisView extends StatelessWidget {
     return BlocBuilder<AnalysisCubit, AnalysisState>(
       builder: (context, state) {
         if (state is AnalysisLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const ScimagLoading(itemCount: 4, crossAxisCount: 2);
         } else if (state is AnalysisError) {
           return Center(child: Text('حدث خطأ: ${state.message}'));
         } else if (state is AnalysisLoaded) {
