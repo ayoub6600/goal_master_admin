@@ -16,6 +16,7 @@ import 'package:goal_master_admin/features/home/presentation/view/widgets/items_
 import 'package:goal_master_admin/features/home/presentation/view/widgets/top_service_section.dart';
 import 'package:goal_master_admin/features/notification/manager/notification_cubit/notification_cubit.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
+import 'package:hexcolor/hexcolor.dart';
 
 class HomeViewBody extends StatelessWidget {
   const HomeViewBody({super.key});
@@ -189,22 +190,22 @@ class HomeViewBody extends StatelessWidget {
                     ItemsShowAnalysisNew(
                       title: "كمية المسامح كريم اليومية",
                       count: totalForgevin.dailyTotal,
-                      color: AppColors.primary,
+                      color: HexColor('#418946'),
                     ),
                     ItemsShowAnalysisNew(
                       title: "كمية المسامح كريم الشاملة",
                       count: totalForgevin.total,
-                      color: AppColors.primary,
+                      color: HexColor('#2C5C30'), // أخضر أغمق
                     ),
                     ItemsShowAnalysisNew(
                       title: "إجمالي المدفوع نقدًا",
                       count: totalCash,
-                      color: Colors.green,
+                      color: HexColor('#367C82'), // Teal داكن
                     ),
                     ItemsShowAnalysisNew(
                       title: "إجمالي المدفوع عبر الإنترنت",
                       count: totalOnline,
-                      color: Colors.blue,
+                      color: HexColor('#7A9D54'), // Olive
                     ),
                     ItemsShowAnalysisNew(
                       title: "إجمالي المدفوع اليوم",
@@ -214,7 +215,7 @@ class HomeViewBody extends StatelessWidget {
                     ItemsShowAnalysisNew(
                       title: "إجمالي قيمة الخدمات",
                       count: totalService,
-                      color: Colors.orange,
+                      color: HexColor('#D4AC2B'), // Mustard
                     ),
                   ];
 

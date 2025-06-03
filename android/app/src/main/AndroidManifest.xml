@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.goal_master_admin">
+    package="com.goal.master.admin">
 
     <!-- صلاحية الاتصال الهاتفي -->
     <uses-permission android:name="android.permission.CALL_PHONE" />

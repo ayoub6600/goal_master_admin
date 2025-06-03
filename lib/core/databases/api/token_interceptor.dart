@@ -2,8 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:goal_master_admin/core/components/keys_values.dart';
 import 'package:goal_master_admin/core/components/preference_utility.dart';
-import 'package:goal_master_admin/core/routing/app_router.dart';
-import 'package:goal_master_admin/core/routing/routes_keys.dart';
+
 import 'package:goal_master_admin/features/auth/data/repo/auth_repo_imp.dart';
 
 class TokenInterceptor extends Interceptor {
@@ -27,23 +26,17 @@ class TokenInterceptor extends Interceptor {
     if (err.response?.statusCode == 401 &&
         !err.requestOptions.path.contains("profile") &&
         !_isRefreshing) {
-      print("🔁 Token expired, trying to refresh...");
-
       _isRefreshing = true;
 
       final result = await GetIt.I<AuthRepoImpl>().profile();
 
       await result.fold(
         (failure) async {
-          print("❌ Failed to refresh token: $failure");
-
           _isRefreshing = false;
           _redirectToLogin(); // ✅ التحويل إلى login
           handler.reject(err);
         },
         (newToken) async {
-          print("✅ Token refreshed");
-
           await SharedPreferenceUtil.putString(PrefKey.fcmToken, newToken);
 
           final opts = err.requestOptions;
