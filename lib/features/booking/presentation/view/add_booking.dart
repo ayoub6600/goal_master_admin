@@ -21,7 +21,6 @@ import 'package:goal_master_admin/features/booking/presentation/view/widgets/tim
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/zone_selection.dart';
 
 import 'package:intl/intl.dart';
-
 import 'widgets/custom_calder.dart';
 
 class AddBookingView extends StatefulWidget {
@@ -33,6 +32,7 @@ class AddBookingView extends StatefulWidget {
 
 class _AddBookingViewState extends State<AddBookingView> {
   final PageController _controller = PageController();
+  bool _isMonthly = false;
 
   @override
   Widget build(BuildContext context) {
@@ -63,30 +63,55 @@ class _AddBookingViewState extends State<AddBookingView> {
                       ],
                     ),
                   ),
+
+                  /// سويتش تحديد إن كان الحجز شهريًا
+                  if (state.currentPage == 7)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "هل الحجز شهري؟",
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          Switch(
+                            value: _isMonthly,
+                            onChanged: (val) {
+                              setState(() {
+                                _isMonthly = val;
+                              });
+                              context.read<AddBookingCubit>().setIsMonthly(val);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+
                   if (state.currentPage == 7)
                     EventCard(
                       date: formatDateString(context
                           .read<CalendarCubit>()
                           .state
                           .selectedTimeEnd
-                          .toString()), // Format the date
+                          .toString()),
                       startTime: formatTimeString(context
                           .read<CalendarCubit>()
                           .state
                           .selectedTime
-                          .toString()), // Format the time
+                          .toString()),
                       endTime: formatTimeString(context
                           .read<CalendarCubit>()
                           .state
                           .selectedTimeEnd
-                          .toString()), // Format the time
+                          .toString()),
                       club: pageViewCubit.state.clubTitle.toString(),
                       categoryName:
                           pageViewCubit.state.categoryTitle.toString(),
                       serviceTitle: pageViewCubit.state.serviceTitle.toString(),
-                      address: pageViewCubit.state.zoneTitle
-                          .toString(), // Address as needed
+                      address: pageViewCubit.state.zoneTitle.toString(),
                     ),
+
                   if (state.currentPage > 0)
                     Padding(
                       padding: EdgeInsets.all(16.w),
@@ -181,27 +206,22 @@ class _AddBookingViewState extends State<AddBookingView> {
       ],
     );
   }
-}
 
-String formatDateString(String dateString) {
-  try {
-    DateTime dateTime =
-        DateTime.parse(dateString); // Parse the date string to DateTime
-    return DateFormat('yyyy-MM-dd')
-        .format(dateTime); // Format as date only (e.g., "2025-04-23")
-  } catch (e) {
-    return ''; // Return empty string if the date format is invalid
+  String formatDateString(String dateString) {
+    try {
+      DateTime dateTime = DateTime.parse(dateString);
+      return DateFormat('yyyy-MM-dd').format(dateTime);
+    } catch (e) {
+      return '';
+    }
   }
-}
 
-// Format the time only
-String formatTimeString(String dateString) {
-  try {
-    DateTime dateTime =
-        DateTime.parse(dateString); // Parse the date string to DateTime
-    return DateFormat('HH:mm')
-        .format(dateTime); // Format as time only (e.g., "23:00")
-  } catch (e) {
-    return ''; // Return empty string if the time format is invalid
+  String formatTimeString(String dateString) {
+    try {
+      DateTime dateTime = DateTime.parse(dateString);
+      return DateFormat('HH:mm').format(dateTime);
+    } catch (e) {
+      return '';
+    }
   }
 }

@@ -209,6 +209,7 @@ class BookingRepoImp extends BookingRepo {
       required String endTime,
       required String fullName,
       required String phone,
+      required int isMonthly,
       required String state}) {
     return apiConsumer.handleRequest(
       () => apiConsumer.post(
@@ -224,6 +225,7 @@ class BookingRepoImp extends BookingRepo {
           'full_name': fullName,
           'phone_no': phone,
           'state': "1",
+          'is_monthly': isMonthly
         },
       ),
       (data) {

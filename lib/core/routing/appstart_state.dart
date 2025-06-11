@@ -23,12 +23,20 @@ class AppStartCubit extends Cubit<AppStartState> {
   Future<void> _checkAppStartState() async {
     final onboardingSeen = SharedPreferenceUtil.getBool(PrefKey.onboardingSeen);
     final loggedIn = SharedPreferenceUtil.getString(PrefKey.login) == 'true';
+    final userId = SharedPreferenceUtil.getInt(PrefKey.userId);
+
+    print('[AppStart] onboardingSeen: $onboardingSeen');
+    print('[AppStart] loggedIn: $loggedIn');
+    print('[AppStart] userId: $userId');
 
     if (!onboardingSeen) {
+      print('[AppStart] 👣 Showing onboarding');
       emit(AppStartState(AppStartStatus.onboarding));
-    } else if (!loggedIn) {
+    } else if (!loggedIn || userId == null || userId == 0) {
+      print('[AppStart] 🚫 Not authenticated');
       emit(AppStartState(AppStartStatus.unauthenticated));
     } else {
+      print('[AppStart] ✅ Authenticated');
       emit(AppStartState(AppStartStatus.authenticated));
     }
   }

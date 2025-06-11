@@ -1,11 +1,10 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.goal.master.admin">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- صلاحية الاتصال الهاتفي -->
     <uses-permission android:name="android.permission.CALL_PHONE" />
 
     <application
-        android:label="goal_master_admin"
+        android:label="مدير الملعب"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
@@ -47,4 +46,5 @@
             <data android:scheme="https" />
         </intent>
     </queries>
+
 </manifest>

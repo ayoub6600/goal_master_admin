@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.goal_master_admin"
+    namespace = "com.goal.master.admin"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 

@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master_admin/features/notification/data/model/notification_response.dart';
 import 'package:goal_master_admin/features/notification/data/repo/notifaction_repo.dart';
+import 'package:goal_master_admin/utils/notification_socket_service.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 part 'notification_state.dart';
@@ -8,16 +9,33 @@ part 'notification_state.dart';
 class NotificationCubit extends Cubit<NotificationState> {
   final NotificationRepo notificationRepo;
   late final PagingController<int, NotificationItem> _pagingController;
+  late final NotificationSocketService _socketService;
+
   bool _isDisposed = false;
 
   PagingController<int, NotificationItem> get pagingController =>
       _pagingController;
 
-  NotificationCubit({required this.notificationRepo})
-      : super(NotificationInitial()) {
+  NotificationCubit({
+    required this.notificationRepo,
+    required int userId,
+  }) : super(NotificationInitial()) {
     _pagingController =
         PagingController<int, NotificationItem>(firstPageKey: 1);
     _pagingController.addPageRequestListener(_fetchPage);
+
+    _socketService = NotificationSocketService(
+      userId: userId,
+      onNotificationReceived: (notification) {
+        if (_isDisposed) return;
+        final current = _pagingController.itemList ?? [];
+        _pagingController.itemList = [notification, ...current];
+        emit(NotificationLoadSuccess(pagingController: _pagingController));
+      },
+    );
+
+    _socketService.initialize();
+
     emit(NotificationLoadSuccess(pagingController: _pagingController));
   }
 
@@ -64,19 +82,15 @@ class NotificationCubit extends Cubit<NotificationState> {
     if (_isDisposed) return;
 
     final currentItems = _pagingController.itemList;
-
-    // ✅ تحقق من وجود إشعارات غير مقروءة أولًا
     final hasUnread = hasUnreadNotifications();
 
     if (!hasUnread) {
-      print(
-          '[NotificationCubit] كل الإشعارات مقروءة بالفعل. تم تجاهل markAllAsRead().');
+      print('[NotificationCubit] كل الإشعارات مقروءة بالفعل.');
       return;
     }
 
     emit(NotificationMarkingAllAsRead());
 
-    // تحديث محلي فوري
     if (currentItems != null) {
       final updatedItems = currentItems
           .map(
@@ -102,7 +116,6 @@ class NotificationCubit extends Cubit<NotificationState> {
     );
   }
 
-  /// ✅ عدد الإشعارات غير المقروءة
   int get unreadCount {
     final items = _pagingController.itemList;
     return items
@@ -111,7 +124,6 @@ class NotificationCubit extends Cubit<NotificationState> {
         0;
   }
 
-  /// ✅ هل يوجد إشعارات غير مقروءة؟
   bool hasUnreadNotifications() {
     return unreadCount > 0;
   }
@@ -119,6 +131,7 @@ class NotificationCubit extends Cubit<NotificationState> {
   @override
   Future<void> close() {
     _isDisposed = true;
+    _socketService.dispose();
     _pagingController.dispose();
     return super.close();
   }

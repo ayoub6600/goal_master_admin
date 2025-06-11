@@ -13,9 +13,13 @@ class AddBookingCubit extends Cubit<AddBookingState> {
 
   final BookingRepo bookingRepo;
   int _paymentType = 0; // default is cash
-
+  int _isMonthly = 0;
   void setPaymentType(int value) {
     _paymentType = value;
+  }
+
+  void setIsMonthly(bool value) {
+    _isMonthly = value ? 1 : 0;
   }
 
   Future<void> addBooking({
@@ -62,6 +66,7 @@ class AddBookingCubit extends Cubit<AddBookingState> {
       fullName: fullname,
       phone: phone,
       state: '1',
+      isMonthly: _isMonthly,
     );
 
     result.fold(
