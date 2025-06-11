@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:goal_master_admin/core/components/custom_loading_widget.dart';
 import 'package:goal_master_admin/core/components/empty_loading.dart';
 import 'package:goal_master_admin/core/components/error_state_widget.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';

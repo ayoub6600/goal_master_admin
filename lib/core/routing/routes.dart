@@ -41,16 +41,12 @@ import 'package:goal_master_admin/features/monthly_booking/data/repo/monthly_boo
 import 'package:goal_master_admin/features/monthly_booking/presentation/manager/monthly_booking_cubit/monthly_booking_cubit.dart';
 import 'package:goal_master_admin/features/monthly_booking/presentation/manager/udate_monthly_booking_cubit/udate_monthly_booking_cubit.dart';
 import 'package:goal_master_admin/features/monthly_booking/presentation/view/monthly_booking.dart';
-import 'package:goal_master_admin/features/notification/data/repo/notifaction_repo.dart';
-import 'package:goal_master_admin/features/notification/manager/notification_cubit/notification_cubit.dart';
 import 'package:goal_master_admin/features/notification/presentation/view/notifaction_view.dart';
 import 'package:goal_master_admin/features/onbording/presentation/manager/onboarding_cubit.dart';
 import 'package:goal_master_admin/features/onbording/presentation/view/onboarding_view.dart';
 import 'package:goal_master_admin/features/profail/data/model/customer_list_response.dart';
-
 import 'package:goal_master_admin/features/profail/data/repo/profile_repo_imp.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/allowed_amount_cubit/allowed_amount_cubit.dart';
-import 'package:goal_master_admin/features/profail/presentation/manager/customer_cubit/customer_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/reset_password_cubit/reset_password_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/update_profile_cubit/update_profile_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/change_password_view.dart';
@@ -58,7 +54,6 @@ import 'package:goal_master_admin/features/profail/presentation/view/customer_vi
 import 'package:goal_master_admin/features/profail/presentation/view/profile_view.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/update_profile_view.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/widgets/items_user_detains_view.dart';
-
 import '../../features/profail/presentation/view/allowed_amount_view.dart';
 import 'app_router.dart';
 

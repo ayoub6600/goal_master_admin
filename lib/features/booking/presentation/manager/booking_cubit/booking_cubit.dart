@@ -75,7 +75,6 @@ class BookingCubit extends Cubit<BookingStateNew> {
   }
 
   Future<void> _fetchPage(int pageKey) async {
-    print("pageKey: $bookingId");
     try {
       final result = await bookingRepo.getBooking(
         pageKey,

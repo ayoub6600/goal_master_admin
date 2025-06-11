@@ -145,7 +145,6 @@ class _BookingViewBodyBottomSheetState
             ],
             selectedValue: cubit.status,
             onChanged: (val) {
-              print("-------->val: $val");
               cubit.updateStatus(val ?? "");
             },
           ),
