@@ -16,6 +16,7 @@ import 'package:goal_master_admin/features/layout/presentation/manager/layout_st
 import 'package:goal_master_admin/features/layout/presentation/view/widget/home_bottom_nav_bar.dart';
 import 'package:goal_master_admin/features/profail/data/repo/profile_repo_imp.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/customer_cubit/customer_cubit.dart';
+import 'package:goal_master_admin/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/profile_view.dart';
 
 class HomeLayoutView extends StatefulWidget {
@@ -43,10 +44,16 @@ class _HomeLayoutViewState extends State<HomeLayoutView> {
             children: [
               if (state.activeScreen == NavBarElement.home)
                 //HomeView(),
-                //BannerCubitCubit
+                //BannerCubitCubit/
+                //ProfileCubit
 
                 MultiBlocProvider(
                   providers: [
+                    BlocProvider(
+                      create: (context) => ProfileCubit(
+                        getIt<ProfileRepoImp>(),
+                      )..getProfile(),
+                    ),
                     BlocProvider(
                       create: (context) => BannerCubitCubit(
                         getIt<AnalysisRepoImp>(),

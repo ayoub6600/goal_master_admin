@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
 
 import 'package:goal_master_admin/features/auth/data/repo/auth_repo_imp.dart';
+import 'package:goal_master_admin/features/booking/data/repo/booking_repo.dart';
 import 'package:goal_master_admin/features/booking/data/repo/booking_repo_imp.dart';
 import 'package:goal_master_admin/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master_admin/features/monthly_booking/data/repo/monthly_booking_repo_imp.dart';
@@ -36,6 +37,7 @@ void setupServiceLocator() {
   getIt.registerSingleton<NotificationRepo>(
     NotificationRepoImp(getIt.get<DioConsumer>()),
   );
+  getIt.registerSingleton<BookingRepo>(getIt<BookingRepoImp>());
 
   // //CardRepoImp
   // getIt.registerSingleton<CardRepoImp>(

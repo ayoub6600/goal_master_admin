@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master_admin/core/components/keys_values.dart';
+import 'package:goal_master_admin/core/components/preference_utility.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/core/styles/app_text_styles.dart';
 import 'package:goal_master_admin/core/styles/spaces.dart';
@@ -58,7 +60,9 @@ class CategorySelection extends StatelessWidget {
                       ),
                     ),
                     onTap: () {
-                      final clubId = context.read<PageViewCubit>().state.clubId;
+                      final clubId =
+                          SharedPreferenceUtil.getInt(PrefKey.clubId);
+                      ;
 
                       if (clubId != null) {
                         context
@@ -76,7 +80,6 @@ class CategorySelection extends StatelessWidget {
                           curve: Curves.ease,
                         );
                       } else {
-                        // ممكن تعرض تنبيه للمستخدم إنه لازم يختار نادي الأول
                         print("⚠️ No club selected yet.");
                       }
                     },

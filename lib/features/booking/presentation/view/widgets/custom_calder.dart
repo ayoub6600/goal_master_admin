@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:goal_master_admin/core/components/keys_values.dart';
+import 'package:goal_master_admin/core/components/preference_utility.dart';
 
 import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/core/styles/app_text_styles.dart';
@@ -44,14 +46,14 @@ class CustomCalder extends StatelessWidget {
                   );
                   calendarCubit.updateSelectedDay(selectedDay, focusedDay);
 
-                  final clubId = context.read<PageViewCubit>().state.clubId;
+                  final clubId = SharedPreferenceUtil.getInt(PrefKey.clubId);
                   final employeeId =
                       context.read<PageViewCubit>().state.employeeId;
                   final serviceId =
                       context.read<PageViewCubit>().state.serviceId;
 
                   calendarCubit.listTimeslot(
-                    branchId: clubId ?? 0,
+                    branchId: clubId,
                     employeeId: employeeId ?? 0,
                     serviceId: serviceId ?? 0,
                   );
@@ -85,7 +87,6 @@ class CustomCalder extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              //  TimeSlotSection(state: state, controller: controller),
             ],
           ),
         );

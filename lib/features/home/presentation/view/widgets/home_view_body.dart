@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master_admin/core/components/button_app.dart';
+import 'package:goal_master_admin/core/components/keys_values.dart';
+import 'package:goal_master_admin/core/components/preference_utility.dart';
 import 'package:goal_master_admin/core/routing/route_utils.dart';
 import 'package:goal_master_admin/core/routing/routes_keys.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
@@ -11,10 +13,10 @@ import 'package:goal_master_admin/core/styles/spaces.dart';
 import 'package:goal_master_admin/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/analysis_view.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/app_drawer.dart';
-import 'package:goal_master_admin/features/home/presentation/view/widgets/banner_carousel_view.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/items_show_analysis_new.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/top_service_section.dart';
 import 'package:goal_master_admin/features/notification/manager/notification_cubit/notification_cubit.dart';
+import 'package:goal_master_admin/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
 import 'package:hexcolor/hexcolor.dart';
 
@@ -38,30 +40,61 @@ class HomeViewBody extends StatelessWidget {
                 Row(
                   children: [
                     WidthSpace(8.w),
-                    Stack(
-                      children: [
-                        CircleAvatar(
-                          radius: 24.r,
-                          backgroundImage: const AssetImage(
-                            Assets.imagesPngImageLogo,
-                          ),
-                          backgroundColor: AppColors.primary,
-                        ),
-                        IconButton(
-                            onPressed: () =>
-                                scaffoldKey.currentState?.openDrawer(),
-                            icon: const Icon(
-                              Icons.menu,
-                              color: AppColors.white,
-                            )),
-                      ],
-                    ),
+                    IconButton(
+                        onPressed: () => scaffoldKey.currentState?.openDrawer(),
+                        icon: Icon(
+                          Icons.menu,
+                          color: AppColors.black,
+                        )),
                     WidthSpace(8.w),
-                    Text(
-                      "جوال ماستر",
-                      textAlign: TextAlign.start,
-                      style: AppTextStyles.font20Bold,
+                    BlocBuilder<ProfileCubit, ProfileState>(
+                      builder: (context, state) {
+                        print("state: $state");
+                        if (state is ProfileLoading) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                SharedPreferenceUtil.getString(
+                                    PrefKey.fullName),
+                                style: AppTextStyles.font16SemiBold,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              HeightSpace(8.h),
+                              Text(
+                                SharedPreferenceUtil.getString(PrefKey.phone),
+                                style: AppTextStyles.font16SemiBold
+                                    .copyWith(color: Color(0xff6D7580)),
+                              ),
+                            ],
+                          );
+                        } else if (state is ProfileLoaded) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                state.user.name ?? "No Name",
+                                style: AppTextStyles.font18Bold,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          );
+                        } else if (state is ProfileError) {
+                          return Text(
+                            "Error: ${state.error}",
+                            style: TextStyle(color: Colors.red),
+                          );
+                        }
+                        return Text("No Data Available");
+                      },
                     ),
+                    // Text(
+                    //   "جوال ماستر",
+                    //   textAlign: TextAlign.start,
+                    //   style: AppTextStyles.font20Bold,
+                    // ),
                     const Spacer(),
                     BlocBuilder<NotificationCubit, NotificationState>(
                       builder: (context, state) {
@@ -85,7 +118,7 @@ class HomeViewBody extends StatelessWidget {
                                   right: -4,
                                   child: Container(
                                     padding: EdgeInsets.all(4.r),
-                                    decoration: BoxDecoration(
+                                    decoration: const BoxDecoration(
                                       color: Colors.red,
                                       shape: BoxShape.circle,
                                     ),
@@ -150,7 +183,7 @@ class HomeViewBody extends StatelessWidget {
                 //   ],
                 // ),
                 // const HeightSpace(20),
-                BannerCarouselScreen(),
+                //  BannerCarouselScreen(),
                 const HeightSpace(30),
                 ButtonApp(
                   text: "اضافة حجز جديد",

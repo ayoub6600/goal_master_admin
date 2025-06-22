@@ -147,10 +147,8 @@ class _AddNewBookingState extends State<AddNewBooking> {
                       date: widget.booking.date,
                       startTime: widget.booking.startTime,
                       endTime: widget.booking.endTime,
-                      club: widget.booking.club,
                       categoryName: widget.booking.categoryName,
                       serviceTitle: widget.booking.serviceTitle,
-                      address: widget.booking.address,
                     ),
                   if (state.currentPage > 0)
                     Padding(
@@ -189,18 +187,17 @@ class _AddNewBookingState extends State<AddNewBooking> {
                                   onTap: () {
                                     print(
                                         "employeeId ${pageViewCubit.state.employeeId} serviceId ${widget.booking.serviceId} zoneId ${pageViewCubit.state.zoneId} clubId ${widget.booking.clubId} date ${widget.booking.date} startTime ${widget.booking.startTime} endTime ${widget.booking.endTime}");
-                                    context.read<AddBookingCubit>().addBooking(
-                                          employeeId:
-                                              pageViewCubit.state.employeeId ??
-                                                  0,
-                                          serviceId: widget.booking.serviceId,
-                                          zoneId:
-                                              pageViewCubit.state.zoneId ?? 12,
-                                          clubId: widget.booking.clubId,
-                                          date: widget.booking.date,
-                                          startTime: widget.booking.startTime,
-                                          endTime: widget.booking.endTime,
-                                        );
+                                    // context.read<AddBookingCubit>().addBooking(
+
+                                    //       customerId: 0,
+                                    //       employeeId:
+                                    //           pageViewCubit.state.employeeId ??
+                                    //               0,
+                                    //       serviceId: widget.booking.serviceId,
+                                    //       date: widget.booking.date,
+                                    //       startTime: widget.booking.startTime,
+                                    //       endTime: widget.booking.endTime,
+                                    //     );
                                   },
                                 ),
                               );
@@ -224,7 +221,7 @@ class _AddNewBookingState extends State<AddNewBooking> {
                 ),
               );
             }
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           },
         ),
       ],

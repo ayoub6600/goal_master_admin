@@ -13,7 +13,7 @@ import 'package:goal_master_admin/features/booking/presentation/manager/calendar
 import 'package:goal_master_admin/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/category_selection.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/choose_payment.dart';
-import 'package:goal_master_admin/features/booking/presentation/view/widgets/club_selection.dart';
+import 'package:goal_master_admin/features/booking/presentation/view/widgets/customer_selection.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/employee_selection.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/event_card.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/service_selection.dart';
@@ -32,7 +32,6 @@ class AddBookingView extends StatefulWidget {
 
 class _AddBookingViewState extends State<AddBookingView> {
   final PageController _controller = PageController();
-  bool _isMonthly = false;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +41,7 @@ class _AddBookingViewState extends State<AddBookingView> {
       children: [
         PageWrapper(
           title: "إضافة الحجز",
-          allowBack: false,
+          allowBack: true,
           child: BlocBuilder<PageViewCubit, PageViewState>(
             builder: (context, state) {
               return Column(
@@ -52,43 +51,17 @@ class _AddBookingViewState extends State<AddBookingView> {
                       controller: _controller,
                       physics: NeverScrollableScrollPhysics(),
                       children: [
-                        ZoneSelection(controller: _controller),
-                        ClubSelection(controller: _controller),
                         CategorySelection(controller: _controller),
                         ServiceSelection(controller: _controller),
                         EmployeeSelection(controller: _controller),
                         CustomCalder(controller: _controller),
                         TimeSlotSection(controller: _controller),
+                        CustomerSelection(controller: _controller),
                         ChoosePayment(controller: _controller),
                       ],
                     ),
                   ),
-
-                  /// سويتش تحديد إن كان الحجز شهريًا
-                  if (state.currentPage == 7)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            "هل الحجز شهري؟",
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          Switch(
-                            value: _isMonthly,
-                            onChanged: (val) {
-                              setState(() {
-                                _isMonthly = val;
-                              });
-                              context.read<AddBookingCubit>().setIsMonthly(val);
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-
-                  if (state.currentPage == 7)
+                  if (state.currentPage == 6)
                     EventCard(
                       date: formatDateString(context
                           .read<CalendarCubit>()
@@ -105,13 +78,11 @@ class _AddBookingViewState extends State<AddBookingView> {
                           .state
                           .selectedTimeEnd
                           .toString()),
-                      club: pageViewCubit.state.clubTitle.toString(),
+                      // club: pageViewCubit.state.clubTitle.toString(),
                       categoryName:
                           pageViewCubit.state.categoryTitle.toString(),
                       serviceTitle: pageViewCubit.state.serviceTitle.toString(),
-                      address: pageViewCubit.state.zoneTitle.toString(),
                     ),
-
                   if (state.currentPage > 0)
                     Padding(
                       padding: EdgeInsets.all(16.w),
@@ -131,7 +102,7 @@ class _AddBookingViewState extends State<AddBookingView> {
                             ),
                           ),
                           SizedBox(width: 8.w),
-                          if (state.currentPage == 7)
+                          if (state.currentPage == 6)
                             BlocConsumer<AddBookingCubit, AddBookingState>(
                               listener: (context, state) {
                                 if (state is AddBookingSuccess) {
@@ -150,19 +121,25 @@ class _AddBookingViewState extends State<AddBookingView> {
                                   child: ButtonApp(
                                     text: "تأكيد الحجز",
                                     onTap: () {
+                                      print(
+                                          "phone ${pageViewCubit.state.phone}");
                                       context
                                           .read<AddBookingCubit>()
                                           .addBooking(
+                                            phone:
+                                                pageViewCubit.state.phone ?? "",
+                                            status:
+                                                pageViewCubit.state.status ??
+                                                    "1",
+                                            customerId: pageViewCubit
+                                                    .state.customerId ??
+                                                0,
                                             employeeId: pageViewCubit
                                                     .state.employeeId ??
                                                 0,
                                             serviceId:
                                                 pageViewCubit.state.serviceId ??
                                                     0,
-                                            zoneId:
-                                                pageViewCubit.state.zoneId ?? 0,
-                                            clubId:
-                                                pageViewCubit.state.clubId ?? 0,
                                             date: context
                                                 .read<CalendarCubit>()
                                                 .state

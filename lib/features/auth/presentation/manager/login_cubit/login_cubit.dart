@@ -32,7 +32,7 @@ class LoginCubit extends Cubit<LoginState> {
           emit(LoginError(" لا يمكن تسجيل الدخول بتلك البيانات"));
         }
 
-        print("---->token ${SharedPreferenceUtil.getString(PrefKey.fcmToken)}");
+
         //save user
 
         _saveUserData(user);
@@ -56,6 +56,11 @@ class LoginCubit extends Cubit<LoginState> {
     await SharedPreferenceUtil.putString(
         PrefKey.phone, userData.user?.phoneNumber ?? "");
     SharedPreferenceUtil.putString(PrefKey.login, "true");
+
+    await SharedPreferenceUtil.putInt(
+        PrefKey.zoneId, userData.user?.zoneId ?? 0);
+    await SharedPreferenceUtil.putInt(
+        PrefKey.clubId, userData.user?.clubId ?? 0);
   }
 
   bool _validate(String name, String password) {

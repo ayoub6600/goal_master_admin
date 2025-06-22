@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:goal_master_admin/core/components/keys_values.dart';
 import 'package:goal_master_admin/core/components/preference_utility.dart';
 import 'package:goal_master_admin/features/booking/data/repo/booking_repo.dart';
@@ -22,12 +23,16 @@ class AddBookingCubit extends Cubit<AddBookingState> {
     _isMonthly = value ? 1 : 0;
   }
 
+  final TextEditingController reviewController = TextEditingController();
+  final TextEditingController paidAmountController = TextEditingController();
+
   Future<void> addBooking({
     required int employeeId,
     required int serviceId,
-    required int zoneId,
-    required int clubId,
     required String date,
+    required int customerId,
+    required String status,
+    required String phone,
     required dynamic startTime, // String or DateTime
     required dynamic endTime, // String or DateTime
   }) async {
@@ -39,21 +44,16 @@ class AddBookingCubit extends Cubit<AddBookingState> {
     String formattedStartTime = _formatTime(startTime);
     String formattedEndTime = _formatTime(endTime);
 
-    print("startTime: $formattedStartTime");
-    print("endTime: $formattedEndTime");
-
+    int clubId = SharedPreferenceUtil.getInt(PrefKey.clubId); // تأكد من المفتاح
     if (!_validateBookingData(
       employeeId: employeeId,
       serviceId: serviceId,
-      zoneId: zoneId,
-      clubId: clubId,
       date: formattedDate,
       startTime: startTime,
       endTime: endTime,
     )) return;
 
     String fullname = SharedPreferenceUtil.getString(PrefKey.fullName);
-    String phone = SharedPreferenceUtil.getString(PrefKey.phone);
 
     final result = await bookingRepo.addBooking(
       branchId: clubId,
@@ -65,8 +65,13 @@ class AddBookingCubit extends Cubit<AddBookingState> {
       endTime: formattedEndTime,
       fullName: fullname,
       phone: phone,
+      //   phone: '0916776611',
       state: '1',
       isMonthly: _isMonthly,
+      customerId: customerId,
+      review: "",
+      paidAmount: paidAmountController.text,
+      status: status,
     );
 
     result.fold(
@@ -99,13 +104,11 @@ class AddBookingCubit extends Cubit<AddBookingState> {
   bool _validateBookingData({
     required int employeeId,
     required int serviceId,
-    required int zoneId,
-    required int clubId,
     required String date,
     required dynamic startTime,
     required dynamic endTime,
   }) {
-    if (employeeId == 0 || serviceId == 0 || zoneId == 0 || clubId == 0) {
+    if (employeeId == 0 || serviceId == 0) {
       emit(
           const AddBookingFailure(massage: "يرجى اختيار جميع الحقول المطلوبة"));
       return false;

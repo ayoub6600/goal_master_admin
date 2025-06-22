@@ -25,22 +25,24 @@ class _NotificationViewState extends State<NotificationView> {
   @override
   void initState() {
     super.initState();
-    // ✅ تنفيذ markAllAsRead عند الدخول للصفحة
     Future.microtask(() {
       context.read<NotificationCubit>().markAllAsRead();
     });
   }
 
+  @override
   Widget build(BuildContext context) {
     return BlocListener<NotificationCubit, NotificationState>(
       listener: (context, state) {
-        print(state);
-        if (state is NotificationFailure) {
+        if (state is NotificationLoadFailure) {
           showCustomFailureToast(state.message);
         }
-        if (state is NotificationMarkAsReadSuccess) {
+        if (state is NotificationMarkAllAsReadSuccess) {
           showCustomSuccessToast(state.message);
           context.read<NotificationCubit>().refresh();
+        }
+        if (state is NotificationMarkAllAsReadFailure) {
+          showCustomFailureToast(state.message);
         }
       },
       child: PageWrapper(
@@ -55,7 +57,6 @@ class _NotificationViewState extends State<NotificationView> {
             },
             child: BlocBuilder<NotificationCubit, NotificationState>(
               builder: (context, state) {
-                print("state: $state");
                 if (state is NotificationLoadSuccess) {
                   return PagedListView<int, NotificationItem>.separated(
                     padding: EdgeInsets.zero,
@@ -63,14 +64,9 @@ class _NotificationViewState extends State<NotificationView> {
                     builderDelegate:
                         PagedChildBuilderDelegate<NotificationItem>(
                       itemBuilder: (context, item, index) {
-                        return GestureDetector(
-                          // onTap: () => context
-                          //     .read<NotificationCubit>()
-                          //     .markAsRead(item.id),
-                          child: ItemsNotification(
-                            notification: item,
-                            isRead: item.isRead,
-                          ),
+                        return ItemsNotification(
+                          notification: item,
+                          isRead: item.isRead,
                         );
                       },
                       firstPageErrorIndicatorBuilder: (context) =>
@@ -94,7 +90,7 @@ class _NotificationViewState extends State<NotificationView> {
                     ),
                     separatorBuilder: (_, __) => HeightSpace(16.h),
                   );
-                } else if (state is NotificationFailure) {
+                } else if (state is NotificationLoadFailure) {
                   return ErrorStateWidget(
                     errorMessage: state.message,
                     onRetryPressed: () =>

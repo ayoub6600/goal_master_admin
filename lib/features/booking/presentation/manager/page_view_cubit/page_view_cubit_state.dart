@@ -2,7 +2,7 @@ part of 'page_view_cubit_cubit.dart';
 
 class PageViewState extends Equatable {
   final int currentPage;
-  final int? clubId;
+  final int? customerId;
   final int? employeeId;
   final int? categoryId;
   final int? serviceId;
@@ -12,15 +12,19 @@ class PageViewState extends Equatable {
   final String? categoryTitle;
   final String? employeeTitle;
   final String? clubTitle;
+  final String? status;
   final String? selectedDate;
+  final String? phone;
 
   const PageViewState({
     required this.currentPage,
-    this.clubId,
+    this.customerId,
     this.employeeId,
     this.categoryId,
     this.serviceId,
     this.zoneId,
+    this.phone,
+    this.status,
     this.zoneTitle,
     this.serviceTitle,
     this.categoryTitle,
@@ -31,11 +35,13 @@ class PageViewState extends Equatable {
 
   PageViewState copyWith({
     int? currentPage,
-    int? clubId,
+    int? customerId,
     int? employeeId,
     int? categoryId,
     int? serviceId,
+    String? status,
     int? zoneId,
+    String? phone,
     String? zoneTitle,
     String? serviceTitle,
     String? categoryTitle,
@@ -45,11 +51,13 @@ class PageViewState extends Equatable {
   }) {
     return PageViewState(
       currentPage: currentPage ?? this.currentPage,
-      clubId: clubId ?? this.clubId,
+      customerId: customerId ?? this.customerId,
       employeeId: employeeId ?? this.employeeId,
       serviceId: serviceId ?? this.serviceId,
       categoryId: categoryId ?? this.categoryId,
+      status: status ?? this.status,
       zoneId: zoneId ?? this.zoneId,
+      phone: phone ?? this.phone,
       zoneTitle: zoneTitle ?? this.zoneTitle,
       serviceTitle: serviceTitle ?? this.serviceTitle,
       categoryTitle: categoryTitle ?? this.categoryTitle,
@@ -62,12 +70,13 @@ class PageViewState extends Equatable {
   @override
   List<Object?> get props => [
         currentPage,
-        clubId,
+        customerId,
         employeeId,
         serviceId,
         zoneId,
         categoryId,
         zoneTitle,
+        status,
         serviceTitle,
         categoryTitle,
         employeeTitle,

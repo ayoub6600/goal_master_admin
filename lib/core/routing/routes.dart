@@ -377,21 +377,21 @@ List<RouteBase> appRoutes = [
       state: state,
       child: MultiBlocProvider(
         providers: [
-          BlocProvider(
-            create: (context) => ZoneCubitCubit(
-              getIt<BookingRepoImp>(),
-            )..listZone(),
-          ),
-          //ClubCubit
-          BlocProvider(
-              create: (context) => ClubCubit(
-                    getIt<BookingRepoImp>(),
-                  )),
-          //CategoryCubit
+          // BlocProvider(
+          //   create: (context) => ZoneCubitCubit(
+          //     getIt<BookingRepoImp>(),
+          //   )..listZone(),
+          // ),
+          // //ClubCubit
+          // BlocProvider(
+          //     create: (context) => ClubCubit(
+          //           getIt<BookingRepoImp>(),
+          //         )),
+          // //CategoryCubit
           BlocProvider(
               create: (context) => CategoryCubit(
                     getIt<BookingRepoImp>(),
-                  )),
+                  )..listCategory()),
           //ServiceCubit
           BlocProvider(
               create: (context) => ServiceCubit(

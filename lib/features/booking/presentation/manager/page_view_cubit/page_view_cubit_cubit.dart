@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 
 part 'page_view_cubit_state.dart';
 
@@ -18,17 +19,32 @@ class PageViewCubit extends Cubit<PageViewState> {
     }
   }
 
-  void setClubId(int id, String title) {
-    emit(state.copyWith(clubId: id, clubTitle: title));
-  }
-
-  void setZoneId(int id, String title) {
-    emit(state.copyWith(zoneId: id, zoneTitle: title));
-  }
-
   void setCategoryId(int id, String title) {
     emit(state.copyWith(categoryId: id, categoryTitle: title));
   }
+
+  void goToNextPageIfReady(PageController controller) {
+    if (state.status != null && state.customerId != null) {
+      nextPage();
+      controller.animateToPage(
+        controller.page!.toInt() + 1,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.ease,
+      );
+    }
+  }
+
+  void updateStatus(String val) {
+    emit(state.copyWith(status: val));
+  }
+
+  void setCustomerId(
+    int id,
+    String phone,
+  ) {
+    emit(state.copyWith(customerId: id, phone: phone));
+  }
+  //status
 
   void setEmployeeId(
     int id,

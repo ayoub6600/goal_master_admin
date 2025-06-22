@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master_admin/core/components/keys_values.dart';
+import 'package:goal_master_admin/core/components/preference_utility.dart';
 
 import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/core/styles/app_text_styles.dart';
@@ -74,7 +76,8 @@ class ServiceSelection extends StatelessWidget {
                       ),
                     ),
                     onTap: () {
-                      final clubId = context.read<PageViewCubit>().state.clubId;
+                      final clubId =
+                          SharedPreferenceUtil.getInt(PrefKey.clubId);
                       context
                           .read<PageViewCubit>()
                           .setServiceId(service.id, service.title);

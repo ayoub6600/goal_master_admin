@@ -30,7 +30,7 @@ class OnboardingSkipPageButton extends StatelessWidget {
           onTap: () {
             bool done = cubit.increment(context);
             if (!done) {
-              pushReplacement(RoutesKeys.kRegister, context);
+              pushReplacement(RoutesKeys.kLogin, context);
               SharedPreferenceUtil.putString(PrefKey.login, "false");
               SharedPreferenceUtil.putBool(PrefKey.onboardingSeen, true);
             }
@@ -47,7 +47,7 @@ class OnboardingSkipPageButton extends StatelessWidget {
               ),
             ),
             child: Text(
-              isLastPage ? "انشاء حساب" : "تخطى",
+              isLastPage ? "استمرار" : "تخطى",
               style: AppTextStyles.font16Regular.copyWith(color: Colors.black),
             ),
           ),

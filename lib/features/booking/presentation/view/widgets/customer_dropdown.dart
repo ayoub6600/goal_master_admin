@@ -8,6 +8,7 @@ import 'package:searchable_paginated_dropdown/searchable_paginated_dropdown.dart
 class CustomerDropdownWidget extends StatelessWidget {
   const CustomerDropdownWidget({Key? key, required this.onCustomerSelected})
       : super(key: key);
+
   final void Function(Customer customer) onCustomerSelected;
 
   @override
@@ -30,7 +31,6 @@ class CustomerDropdownWidget extends StatelessWidget {
               ),
             ),
             hintText: const Text('اختر عميل'),
-            // margin: const EdgeInsets.all(15),
             paginatedRequest: (int page, String? searchKey) async {
               final cubit = context.read<CustomerCubit>();
               final result = await cubit.bookingRepo.getCustomer(page);
@@ -39,11 +39,29 @@ class CustomerDropdownWidget extends StatelessWidget {
                 (failure) => throw Exception(failure.errMessage),
                 (response) {
                   final customers = response.data ?? [];
-                  return customers
+
+                  final filteredCustomers =
+                      (searchKey == null || searchKey.isEmpty)
+                          ? customers
+                          : customers.where((customer) {
+                              final name =
+                                  customer.fullName?.toLowerCase() ?? '';
+                              final phone = customer.phoneNo ?? '';
+                              return name.contains(searchKey.toLowerCase()) ||
+                                  phone.contains(searchKey);
+                            }).toList();
+
+                  return filteredCustomers
                       .map((customer) => SearchableDropdownMenuItem<Customer>(
                             value: customer,
                             label: customer.fullName ?? '',
-                            child: Text(customer.fullName ?? ''),
+                            child: Row(
+                              children: [
+                                Text(customer.fullName ?? ''),
+                                const Spacer(),
+                                Text(customer.phoneNo ?? ''),
+                              ],
+                            ),
                           ))
                       .toList();
                 },

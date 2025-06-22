@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master_admin/core/routing/route_utils.dart';
+import 'package:goal_master_admin/core/routing/routes_keys.dart';
 import 'package:goal_master_admin/core/services/service_locator.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/core/styles/app_text_styles.dart';
@@ -84,6 +86,34 @@ class ItemsNotification extends StatelessWidget {
                   createdAt,
                   style: AppTextStyles.font12Regular.copyWith(
                     color: isRead ? Colors.grey[400] : Colors.grey[500],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    push(RoutesKeys.kBookingItemsDetails, context,
+                        extra: bookingId);
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12.w,
+                          vertical: 4.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Text(
+                          "تفاصيل ",
+                          style: AppTextStyles.font12Regular.copyWith(
+                            color: AppColors.white,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

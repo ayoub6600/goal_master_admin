@@ -216,12 +216,12 @@ class _FilterViewState extends State<FilterView> {
                                     .read<FilterCubit>()
                                     .updateBranchId(selected.id.toString());
 
-                                context.read<CategoryCubit>().listCategory(
-                                      branchId: clubs
-                                          .firstWhere(
-                                              (zone) => zone.name == value)
-                                          .id, // استخدم ID الخاص بالفرع
-                                    );
+                                // context.read<CategoryCubit>().listCategory(
+                                //       branchId: clubs
+                                //           .firstWhere(
+                                //               (zone) => zone.name == value)
+                                //           .id, // استخدم ID الخاص بالفرع
+                                //     );
                               },
                             );
                           }

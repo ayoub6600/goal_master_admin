@@ -5,20 +5,17 @@ class EventCard extends StatelessWidget {
   final String date;
   final String startTime;
   final String endTime;
-  final String club;
+
   final String categoryName;
   final String serviceTitle;
-  final String address;
 
   const EventCard({
     Key? key,
     required this.date,
     required this.startTime,
     required this.endTime,
-    required this.club,
     required this.categoryName,
     required this.serviceTitle,
-    required this.address,
   }) : super(key: key);
 
   @override
@@ -52,10 +49,7 @@ class EventCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             // عرض باقي البيانات
-            Text(
-              'النادي: $club',
-              style: AppTextStyles.font16Regular,
-            ),
+
             const SizedBox(height: 4),
             Text(
               'الفئة: $categoryName',
@@ -66,13 +60,7 @@ class EventCard extends StatelessWidget {
               'الخدمة: $serviceTitle',
               style: AppTextStyles.font16Regular,
             ),
-            const SizedBox(height: 8),
-            // عرض العنوان
-            Text(
-              'العنوان: $address',
-              style: AppTextStyles.font16Regular,
-            ),
-            const SizedBox(height: 16),
+
             // إضافة فاصل بين البيانات
             const Divider(),
           ],

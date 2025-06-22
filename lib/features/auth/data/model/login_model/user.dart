@@ -10,20 +10,23 @@ class User {
   int? status;
   dynamic email;
   dynamic emailVerifiedAt;
+  int? zoneId;
+  int? clubId;
 
-  User({
-    this.id,
-    this.name,
-    this.username,
-    this.phoneNumber,
-    this.isSysAdm,
-    this.userType,
-    this.photo,
-    this.schEmployeeId,
-    this.status,
-    this.email,
-    this.emailVerifiedAt,
-  });
+  User(
+      {this.id,
+      this.name,
+      this.username,
+      this.phoneNumber,
+      this.isSysAdm,
+      this.userType,
+      this.photo,
+      this.schEmployeeId,
+      this.status,
+      this.email,
+      this.emailVerifiedAt,
+      this.zoneId,
+      this.clubId});
 
   @override
   String toString() {
@@ -42,6 +45,8 @@ class User {
         status: json['status'] as int?,
         email: json['email'] as dynamic,
         emailVerifiedAt: json['email_verified_at'] as dynamic,
+        zoneId: json['zone_id'] as int?,
+        clubId: json['club_id'] as int?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -56,6 +61,8 @@ class User {
         'status': status,
         'email': email,
         'email_verified_at': emailVerifiedAt,
+        'zone_id': zoneId,
+        'club_id': clubId
       };
 }
 

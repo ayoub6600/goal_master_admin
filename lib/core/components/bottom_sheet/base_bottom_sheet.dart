@@ -11,8 +11,6 @@ Future<T?> baseBottomSheet<T>({
   String? title,
   bool showCloseButton = true,
 }) async {
-  //final navBarCubit = context.read<NavBarCubit>();
-
   void handleNavBar(bool isVisible) {
     if (hideNavBar) {
       //  isVisible ? navBarCubit.showNavBar() : navBarCubit.hideNavBar();
@@ -33,49 +31,43 @@ Future<T?> baseBottomSheet<T>({
           padding: EdgeInsets.only(
             left: 24,
             right: 24,
-            bottom: 24,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
             top: showDragHandle ? 8 : 24,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (showDragHandle)
-                Center(
-                  child: Container(
-                    height: 4.h,
-                    width: 130.w,
-                    margin: EdgeInsets.only(bottom: 4.h),
-                    decoration: BoxDecoration(
-                      color: AppColors.uiBlack,
-                      borderRadius: BorderRadius.circular(100),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (showDragHandle)
+                  Center(
+                    child: Container(
+                      height: 4.h,
+                      width: 130.w,
+                      margin: EdgeInsets.only(bottom: 4.h),
+                      decoration: BoxDecoration(
+                        color: AppColors.uiBlack,
+                        borderRadius: BorderRadius.circular(100),
+                      ),
                     ),
                   ),
-                ),
-              if (title != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        title,
-                        style: AppTextStyles.font18Medium.copyWith(
-                          color: AppColors.dark3,
+                if (title != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          title,
+                          style: AppTextStyles.font18Medium.copyWith(
+                            color: AppColors.dark3,
+                          ),
                         ),
-                      ),
-                      // if (showCloseButton)
-                      // PrimaryIconButton(
-                      //   icon: SvgPicture.asset(AppAssets.close),
-                      //   onPressed: () => Navigator.pop(context),
-                      //   width: 32,
-                      //   height: 32,
-                      //   borderRadius: 8,
-                      // ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              child,
-            ],
+                child,
+              ],
+            ),
           ),
         ),
       );

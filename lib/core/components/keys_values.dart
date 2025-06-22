@@ -18,4 +18,6 @@ class PrefKey {
   static const String homeDialog = "homeDialog";
   static String onboardingSeen = "onboardingSeen";
   static const String refreshToken = "refreshToken";
+  static const String zoneId = "zoneId";
+  static const String clubId = "clubId";
 }

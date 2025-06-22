@@ -62,7 +62,7 @@ class ProfileHeader extends StatelessWidget {
                       ),
                       HeightSpace(8.h),
                       Text(
-                        state.user.phoneNumber ?? "No Phone",
+                        state.user.phoneNumber ?? " ",
                         style: AppTextStyles.font16SemiBold
                             .copyWith(color: Color(0xff6D7580)),
                       ),

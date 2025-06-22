@@ -6,22 +6,21 @@ class OnboardingPages {
   static List<OnboardingModel> getPages(BuildContext context) {
     return [
       OnboardingModel(
-        title: "أفضل الملاعب بأفضل الأسعار",
-        subtitle:
-            "نوفر لك أفضل العروض والتخفيضات على حجز الملاعب، عروض خاصة للمباريات الجماعية مع خيارات دفع مريحة وسهلة.",
+        title: "إدارة الملاعب والأسعار",
+        subtitle: "تابع أحدث العروض والخصومات، وقم بتحديث الأسعار بكل سهولة.",
         imageIndex: 0,
         images: Assets.imagesPngImageOn2,
       ),
       OnboardingModel(
-        title: "احجز ملعبك بكل سهولة ",
+        title: "سهولة إدارة الحجوزات",
         subtitle:
-            "سواء كنت تبي تلعب كرة قدم، تنس، أو أي رياضة ثانية، احجز ملعبك بأسرع وقت وبضغطة زر.",
+            "تحكّم في جميع الحجوزات، عدّل المواعيد والتفاصيل بنقرة زر واحدة.",
         imageIndex: 1,
         images: Assets.imagesPngImage1,
       ),
       OnboardingModel(
-        title: "جهّز فريقك وتحدى الأصدقاء",
-        subtitle: "شارك في بطولات، كوّن فريقك، ونافس أقوى اللاعبين في منطقتك",
+        title: "متابعة الفِرق والبطولات",
+        subtitle: "راقب نشاطات الفِرق، وأدِر البطولات والتحديات بكل احترافية.",
         imageIndex: 2,
         images: Assets.imagesPngImageOn3,
       ),

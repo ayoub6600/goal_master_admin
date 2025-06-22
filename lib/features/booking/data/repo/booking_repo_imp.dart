@@ -199,18 +199,23 @@ class BookingRepoImp extends BookingRepo {
   }
 
   @override
-  Future<Either<Failure, String>> addBooking(
-      {required int branchId,
-      required int employeeId,
-      required int serviceId,
-      required int paymentType,
-      required String date,
-      required String startTime,
-      required String endTime,
-      required String fullName,
-      required String phone,
-      required int isMonthly,
-      required String state}) {
+  Future<Either<Failure, String>> addBooking({
+    required int branchId,
+    required int employeeId,
+    required int serviceId,
+    required int paymentType,
+    required String date,
+    required String startTime,
+    required String endTime,
+    required String fullName,
+    required String phone,
+    required int isMonthly,
+    required String state,
+    String? paidAmount,
+    String? status,
+    String? review,
+    int? customerId,
+  }) {
     return apiConsumer.handleRequest(
       () => apiConsumer.post(
         EndPoints.addBooking,
@@ -225,7 +230,11 @@ class BookingRepoImp extends BookingRepo {
           'full_name': fullName,
           'phone_no': phone,
           'state': "1",
-          'is_monthly': isMonthly
+          'is_monthly': isMonthly,
+          'paid_amount': paidAmount,
+          'status': status,
+          'review': review,
+          'customer_id': customerId
         },
       ),
       (data) {
@@ -280,6 +289,25 @@ class BookingRepoImp extends BookingRepo {
       }),
       (data) {
         return BookingDetails.fromJson(data['data'] as Map<String, dynamic>);
+      },
+    );
+  }
+
+  @override
+  Future<Either<Failure, String>> addCustomer(
+      {required String fullName, required String phone}) {
+    return apiConsumer.handleRequest(
+      () => apiConsumer.post(EndPoints.addCustomer, queryParameters: {
+        'full_name': fullName,
+        'phone_no': phone,
+      }),
+      (data) {
+        final customerId = data['data']?['cmn_customer_id'];
+        if (customerId != null) {
+          return customerId.toString();
+        } else {
+          throw Exception("Customer ID not found in response");
+        }
       },
     );
   }

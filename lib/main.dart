@@ -4,8 +4,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master_admin/core/components/keys_values.dart';
 import 'package:goal_master_admin/core/routing/appstart_state.dart';
+import 'package:goal_master_admin/features/booking/data/repo/booking_repo.dart';
+import 'package:goal_master_admin/features/booking/presentation/manager/add_customer_cubit/add_customer_cubit.dart';
 import 'package:goal_master_admin/features/notification/data/repo/notifaction_repo.dart';
 import 'package:goal_master_admin/features/notification/manager/notification_cubit/notification_cubit.dart';
+import 'package:goal_master_admin/features/notification/manager/websocket_cubit/websocket_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/customer_cubit/customer_cubit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oktoast/oktoast.dart';
@@ -63,12 +66,20 @@ class MyApp extends StatelessWidget {
 
           return MultiBlocProvider(
             providers: [
+              BlocProvider(
+                create: (_) => WebSocketCubit('wss://socket.goalmasters.online')
+                  ..connect(),
+              ),
               //NotificationCubit
               BlocProvider(
                   create: (_) => NotificationCubit(
                         notificationRepo: getIt<NotificationRepo>(),
                         userId:
                             SharedPreferenceUtil.getInt(PrefKey.userId) ?? 0,
+                      )),
+              BlocProvider(
+                  create: (_) => AddCustomerCubit(
+                        getIt<BookingRepo>(),
                       )),
               BlocProvider(create: (_) => LayoutCubit()),
               BlocProvider(

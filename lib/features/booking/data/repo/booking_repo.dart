@@ -51,6 +51,11 @@ abstract class BookingRepo {
     int categoryId,
     int branchId,
   );
+  //customer-create
+  Future<Either<Failure, String>> addCustomer({
+    required String fullName,
+    required String phone,
+  });
 
   //employee
   Future<Either<Failure, List<Employee>>> listEmployee({required int branchId});
@@ -61,16 +66,22 @@ abstract class BookingRepo {
     required int serviceId,
     required String date,
   });
-  Future<Either<Failure, String>> addBooking(
-      {required int branchId,
-      required int employeeId,
-      required int serviceId,
-      required int paymentType,
-      required String date,
-      required String startTime,
-      required String endTime,
-      required String fullName,
-      required String phone,
-      required String state,
-      required int isMonthly});
+
+  Future<Either<Failure, String>> addBooking({
+    required int branchId,
+    required int employeeId,
+    required int serviceId,
+    required int paymentType,
+    required String date,
+    required String startTime,
+    required String endTime,
+    required String fullName,
+    required String phone,
+    required String state,
+    required int isMonthly,
+    String review,
+    required int customerId,
+    String paidAmount,
+    String status,
+  });
 }

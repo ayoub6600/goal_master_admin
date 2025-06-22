@@ -11,6 +11,8 @@ class EndPoints {
 
   static String banner = "list/slider";
 
+  static String addCustomer = 'manager/customer-create';
+
   static String sendOTP = 'resend-otp';
 
   static String verifyOTP = 'verify';
