@@ -33,6 +33,7 @@ class AddBookingCubit extends Cubit<AddBookingState> {
     required int customerId,
     required String status,
     required String phone,
+    required String fullname,
     required dynamic startTime, // String or DateTime
     required dynamic endTime, // String or DateTime
   }) async {
@@ -52,8 +53,6 @@ class AddBookingCubit extends Cubit<AddBookingState> {
       startTime: startTime,
       endTime: endTime,
     )) return;
-
-    String fullname = SharedPreferenceUtil.getString(PrefKey.fullName);
 
     final result = await bookingRepo.addBooking(
       branchId: clubId,

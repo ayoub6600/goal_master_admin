@@ -8,16 +8,21 @@ import 'package:goal_master_admin/features/profail/data/model/customer_list_resp
 abstract class ProfileRepo {
   Future<Either<Failure, User>> getProfile();
   Future<Either<Failure, CustomerData>> getCustomer(
-    int page,
-  );
+    int page, {
+    String? search,
+  });
   Future<Either<Failure, AllowedAmountResponse>> getAllowedAmount(
     int page,
   );
+
   Future<Either<Failure, UserData>> resetPassword({
     required String oldPassword,
     required String newPassword,
     required String newPasswordConfirmation,
   });
+  Future<Either<Failure, CustomerData>> searchCustomers(
+      {required String search});
+
   Future<Either<Failure, UserData>> updateProfile({
     required String name,
     required String username,

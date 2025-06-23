@@ -18,7 +18,6 @@ import 'package:goal_master_admin/features/booking/presentation/view/widgets/emp
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/event_card.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/service_selection.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/time_slot_section.dart';
-import 'package:goal_master_admin/features/booking/presentation/view/widgets/zone_selection.dart';
 
 import 'package:intl/intl.dart';
 import 'widgets/custom_calder.dart';
@@ -126,6 +125,9 @@ class _AddBookingViewState extends State<AddBookingView> {
                                       context
                                           .read<AddBookingCubit>()
                                           .addBooking(
+                                            fullname: pageViewCubit
+                                                .state.nameCustomer
+                                                .toString(),
                                             phone:
                                                 pageViewCubit.state.phone ?? "",
                                             status:

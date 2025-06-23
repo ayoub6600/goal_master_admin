@@ -41,8 +41,9 @@ class PageViewCubit extends Cubit<PageViewState> {
   void setCustomerId(
     int id,
     String phone,
+    String name,
   ) {
-    emit(state.copyWith(customerId: id, phone: phone));
+    emit(state.copyWith(customerId: id, phone: phone, nameCustomer: name));
   }
   //status
 

@@ -28,7 +28,7 @@ class _UpdateProfileBodyState extends State<UpdateProfileBody> {
   Widget build(BuildContext context) {
     var cubit = context.read<UpdateProfileCubit>();
     return PageWrapper(
-      title: "تغيير معلوماتك الشخصية",
+      title: " معلوماتك الشخصية",
       allowBack: true,
       child: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -62,6 +62,7 @@ class _UpdateProfileBodyState extends State<UpdateProfileBody> {
               hint: SharedPreferenceUtil.getString(PrefKey.fullName),
               controller: cubit.nameController,
               inputType: TextInputType.emailAddress,
+              enabled: false,
             ),
             HeightSpace(16.h),
             Text(

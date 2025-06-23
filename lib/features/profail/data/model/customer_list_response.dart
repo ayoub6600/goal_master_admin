@@ -21,34 +21,34 @@ class CustomerListResponse {
 }
 
 class CustomerData {
-  final int currentPage;
+  final int? currentPage;
   final List<Customer> data;
   final String? firstPageUrl;
-  final int from;
-  final int lastPage;
+  final int? from;
+  final int? lastPage;
   final String? lastPageUrl;
-  final List<PageLink> links;
+  final List<PageLink>? links;
   final String? nextPageUrl;
-  final String path;
-  final int perPage;
+  final String? path;
+  final int? perPage;
   final String? prevPageUrl;
-  final int to;
-  final int total;
+  final int? to;
+  final int? total;
 
   CustomerData({
-    required this.currentPage,
+    this.currentPage,
     required this.data,
     this.firstPageUrl,
-    required this.from,
-    required this.lastPage,
+    this.from,
+    this.lastPage,
     this.lastPageUrl,
-    required this.links,
+    this.links,
     this.nextPageUrl,
-    required this.path,
-    required this.perPage,
+    this.path,
+    this.perPage,
     this.prevPageUrl,
-    required this.to,
-    required this.total,
+    this.to,
+    this.total,
   });
 
   factory CustomerData.fromJson(Map<String, dynamic> json) {
@@ -59,14 +59,22 @@ class CustomerData {
       from: json['from'],
       lastPage: json['last_page'],
       lastPageUrl: json['last_page_url'],
-      links:
-          List<PageLink>.from(json['links'].map((x) => PageLink.fromJson(x))),
+      links: json['links'] != null
+          ? List<PageLink>.from(json['links'].map((x) => PageLink.fromJson(x)))
+          : [],
       nextPageUrl: json['next_page_url'],
       path: json['path'],
       perPage: json['per_page'],
       prevPageUrl: json['prev_page_url'],
       to: json['to'],
       total: json['total'],
+    );
+  }
+
+  /// ✅ جديدة: تستخدم مع API اللي يرجّع List مباشرة
+  factory CustomerData.fromList(List<dynamic> list) {
+    return CustomerData(
+      data: list.map((e) => Customer.fromJson(e)).toList(),
     );
   }
 
@@ -77,7 +85,7 @@ class CustomerData {
         'from': from,
         'last_page': lastPage,
         'last_page_url': lastPageUrl,
-        'links': links.map((x) => x.toJson()).toList(),
+        'links': links?.map((x) => x.toJson()).toList(),
         'next_page_url': nextPageUrl,
         'path': path,
         'per_page': perPage,
@@ -102,10 +110,12 @@ class Customer {
 
   factory Customer.fromJson(Map<String, dynamic> json) {
     return Customer(
-      id: json['id'],
-      fullName: json['full_name'],
-      phoneNo: json['phone_no'],
-      phoneVerified: json['phone_verified'],
+      id: json['id'] ?? 0,
+      fullName: json['full_name'] ?? '',
+      phoneNo: json['phone_no'] ?? '',
+      phoneVerified: json['phone_verified'] ??
+          json['is_phone_verified'] ??
+          0, // يتعامل مع الحالتين
     );
   }
 

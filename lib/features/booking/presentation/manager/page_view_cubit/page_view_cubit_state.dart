@@ -11,6 +11,7 @@ class PageViewState extends Equatable {
   final String? serviceTitle;
   final String? categoryTitle;
   final String? employeeTitle;
+  final String? nameCustomer;
   final String? clubTitle;
   final String? status;
   final String? selectedDate;
@@ -24,6 +25,7 @@ class PageViewState extends Equatable {
     this.serviceId,
     this.zoneId,
     this.phone,
+    this.nameCustomer,
     this.status,
     this.zoneTitle,
     this.serviceTitle,
@@ -39,6 +41,7 @@ class PageViewState extends Equatable {
     int? employeeId,
     int? categoryId,
     int? serviceId,
+    String? nameCustomer,
     String? status,
     int? zoneId,
     String? phone,
@@ -55,6 +58,7 @@ class PageViewState extends Equatable {
       employeeId: employeeId ?? this.employeeId,
       serviceId: serviceId ?? this.serviceId,
       categoryId: categoryId ?? this.categoryId,
+      nameCustomer: nameCustomer ?? this.nameCustomer,
       status: status ?? this.status,
       zoneId: zoneId ?? this.zoneId,
       phone: phone ?? this.phone,
@@ -77,6 +81,7 @@ class PageViewState extends Equatable {
         categoryId,
         zoneTitle,
         status,
+        nameCustomer,
         serviceTitle,
         categoryTitle,
         employeeTitle,

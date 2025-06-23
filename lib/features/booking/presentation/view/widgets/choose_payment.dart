@@ -62,7 +62,7 @@ class _ChoosePaymentState extends State<ChoosePayment> {
           Padding(
             padding: EdgeInsets.all(16.w),
             child: CustomTextField(
-              hint: "مبلغ الحجز",
+              hint: "المبلغ المدفوع",
               controller: context.read<AddBookingCubit>().paidAmountController,
               inputType: TextInputType.number,
             ),

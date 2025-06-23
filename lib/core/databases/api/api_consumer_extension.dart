@@ -10,7 +10,8 @@ import 'package:goal_master_admin/core/errors/failure.dart';
 extension ApiConsumerExtension on ApiConsumer {
   Future<Either<Failure, T>> handleRequest<T>(
     Future Function() request,
-    T Function(Map<String, dynamic>) fromJson,
+    T Function(dynamic)
+        fromJson, // 🟢 عدلنا هنا من Map<String, dynamic> إلى dynamic
   ) async {
     try {
       var response = await request();

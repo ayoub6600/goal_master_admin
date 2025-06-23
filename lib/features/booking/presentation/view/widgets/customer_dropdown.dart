@@ -21,65 +21,56 @@ class CustomerDropdownWidget extends StatelessWidget {
               margin: EdgeInsets.zero,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppColors.grey,
-                ),
+                border: Border.all(color: AppColors.grey),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: child,
-              ),
+              child: Padding(padding: const EdgeInsets.all(8.0), child: child),
             ),
             hintText: const Text('اختر عميل'),
+            requestItemCount: 10, // عدد العملاء في كل "صفحة"
+
             paginatedRequest: (int page, String? searchKey) async {
               final cubit = context.read<CustomerCubit>();
-              final result = await cubit.bookingRepo.getCustomer(page);
+
+              final result = await cubit.fetchCustomersForDropdown(
+                page: page,
+                search: searchKey,
+              );
 
               return result.fold(
                 (failure) => throw Exception(failure.errMessage),
-                (response) {
-                  final customers = response.data ?? [];
-
-                  final filteredCustomers =
-                      (searchKey == null || searchKey.isEmpty)
-                          ? customers
-                          : customers.where((customer) {
-                              final name =
-                                  customer.fullName?.toLowerCase() ?? '';
-                              final phone = customer.phoneNo ?? '';
-                              return name.contains(searchKey.toLowerCase()) ||
-                                  phone.contains(searchKey);
-                            }).toList();
-
-                  return filteredCustomers
-                      .map((customer) => SearchableDropdownMenuItem<Customer>(
-                            value: customer,
-                            label: customer.fullName ?? '',
-                            child: Row(
-                              children: [
-                                Text(customer.fullName ?? ''),
-                                const Spacer(),
-                                Text(customer.phoneNo ?? ''),
-                              ],
-                            ),
-                          ))
-                      .toList();
+                (customers) {
+                  return customers.map((customer) {
+                    return SearchableDropdownMenuItem<Customer>(
+                      value: customer,
+                      label: customer.fullName ?? '',
+                      child: Row(
+                        children: [
+                          Expanded(child: Text(customer.fullName ?? '')),
+                          const SizedBox(width: 8),
+                          Text(customer.phoneNo ?? ''),
+                        ],
+                      ),
+                    );
+                  }).toList();
                 },
               );
             },
-            requestItemCount: 20,
             onChanged: (Customer? selectedCustomer) {
               if (selectedCustomer != null) {
                 onCustomerSelected(selectedCustomer);
-                debugPrint('تم اختيار: ${selectedCustomer.id}');
+                debugPrint('✅ تم اختيار العميل: ${selectedCustomer.id}');
               }
             },
           );
-        } else if (state is CustomerLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is CustomerError) {
-          return Center(child: Text('خطأ: ${state.message}'));
         }
+
+        if (state is CustomerLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (state is CustomerError) {
+          return Center(child: Text('حدث خطأ: ${state.message}'));
+        }
+
         return const SizedBox.shrink();
       },
     );

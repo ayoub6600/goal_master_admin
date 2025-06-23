@@ -50,7 +50,7 @@ class ProfileView extends StatelessWidget {
                   ),
                   HeightSpace(8.h),
                   ProfileItem(
-                    title: "تغيير معلوماتك الشخصية",
+                    title: " معلوماتك الشخصية",
                     icon: Assets.imagesPngImageMagicpen,
                     onTap: () {
                       push(RoutesKeys.kUpdateProfile, context);

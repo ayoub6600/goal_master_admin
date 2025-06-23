@@ -26,15 +26,34 @@ class ProfileRepoImp extends ProfileRepo {
   }
 
   @override
-  Future<Either<Failure, CustomerData>> getCustomer(
-    int page,
-  ) {
+  Future<Either<Failure, CustomerData>> searchCustomers({
+    required String search,
+  }) {
     return consumer.handleRequest(
-      () => consumer.get(EndPoints.listCustomer,
-          queryParameters: {"page": page}), // ← Update to the correct endpoint
-      (res) {
-        return CustomerData.fromJson(res['data']);
-      },
+      () => consumer.get(
+        "manager/returnCustomers",
+        queryParameters: {"search": search},
+      ),
+      (res) => CustomerData.fromList(res),
+    );
+  }
+
+  @override
+  Future<Either<Failure, CustomerData>> getCustomer(
+    int page, {
+    String? search,
+  }) {
+    final query = {
+      "page": page,
+      if (search != null && search.isNotEmpty) "search": search,
+    };
+
+    return consumer.handleRequest(
+      () => consumer.get(
+        EndPoints.listCustomer,
+        queryParameters: query,
+      ),
+      (res) => CustomerData.fromJson(res['data']),
     );
   }
 
