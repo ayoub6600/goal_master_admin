@@ -43,11 +43,11 @@ class _CustomerSelectionState extends State<CustomerSelection> {
             label: "",
             hint: "اختر الحالة",
             items: [
-              {"id": 0, "name_ar": "قيد الانتظار"},
-              {"id": 1, "name_ar": "قيد المعالجة"},
+              {"id": 0, "name_ar": "غير خالص"},
+              {"id": 1, "name_ar": "انتظار قبول الطلب"},
               {"id": 2, "name_ar": "موافَق عليه"},
               {"id": 3, "name_ar": "ملغي"},
-              {"id": 4, "name_ar": "مكتمل"},
+              {"id": 4, "name_ar": "خالص"},
             ],
             selectedValue: "cubit.status",
             onChanged: (val) {

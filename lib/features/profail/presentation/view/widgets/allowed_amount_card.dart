@@ -69,7 +69,7 @@ class AllowedAmountCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        "💰 ${item.allowedAmount} ر.س",
+                        "💰 ${item.allowedAmount}  دينار",
                         style: AppTextStyles.font14SemiBold,
                       ),
                     ],

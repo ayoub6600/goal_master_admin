@@ -192,15 +192,15 @@ class BookingItems extends StatelessWidget {
   String _getStatusText(int status) {
     switch (status) {
       case 0:
-        return 'قيد الانتظار';
+        return "غير خالص";
       case 1:
-        return 'قيد المعالجة';
+        return "في الانتظار";
       case 2:
         return 'موافَق عليه';
       case 3:
         return 'ملغي';
       case 4:
-        return 'مكتمل';
+        return 'خالص';
       default:
         return 'غير معروف';
     }
