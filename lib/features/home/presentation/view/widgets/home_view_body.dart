@@ -41,15 +41,12 @@ class HomeViewBody extends StatelessWidget {
                   children: [
                     WidthSpace(8.w),
                     IconButton(
-                        onPressed: () => scaffoldKey.currentState?.openDrawer(),
-                        icon: Icon(
-                          Icons.menu,
-                          color: AppColors.black,
-                        )),
+                      onPressed: () => scaffoldKey.currentState?.openDrawer(),
+                      icon: Icon(Icons.menu, color: AppColors.black),
+                    ),
                     WidthSpace(8.w),
                     BlocBuilder<ProfileCubit, ProfileState>(
                       builder: (context, state) {
-                        print("state: $state");
                         if (state is ProfileLoading) {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,8 +61,9 @@ class HomeViewBody extends StatelessWidget {
                               HeightSpace(8.h),
                               Text(
                                 SharedPreferenceUtil.getString(PrefKey.phone),
-                                style: AppTextStyles.font16SemiBold
-                                    .copyWith(color: Color(0xff6D7580)),
+                                style: AppTextStyles.font16SemiBold.copyWith(
+                                  color: const Color(0xff6D7580),
+                                ),
                               ),
                             ],
                           );
@@ -84,23 +82,38 @@ class HomeViewBody extends StatelessWidget {
                         } else if (state is ProfileError) {
                           return Text(
                             "Error: ${state.error}",
-                            style: TextStyle(color: Colors.red),
+                            style: const TextStyle(color: Colors.red),
                           );
                         }
-                        return Text("No Data Available");
+                        return const Text("No Data Available");
                       },
                     ),
-                    // Text(
-                    //   "جوال ماستر",
-                    //   textAlign: TextAlign.start,
-                    //   style: AppTextStyles.font20Bold,
-                    // ),
                     const Spacer(),
-                    BlocBuilder<NotificationCubit, NotificationState>(
+                    BlocConsumer<NotificationCubit, NotificationState>(
+                      listener: (context, state) {
+                        print('[🔔 Listener] Notification state: $state');
+
+                        if (state is NotificationLoadSuccess) {
+                          print(
+                              '[🔔 Listener] Unread count: ${state.unreadCount}');
+                        } else if (state is NotificationUnreadUpdated) {
+                          print(
+                              '[🔔 Listener] Updated unread count: ${state.unreadCount}');
+                        }
+                      },
                       builder: (context, state) {
-                        final cubit = context.read<NotificationCubit>();
-                        final hasUnread = cubit.hasUnreadNotifications();
-                        final unreadCount = cubit.unreadCount;
+                        print(
+                            '[🔁 Builder] Notification state: $state'); // ✅ هيتطبع كل 15 ثانية لما يحصل poll
+
+                        int unreadCount = 0;
+
+                        if (state is NotificationLoadSuccess) {
+                          unreadCount = state.unreadCount;
+                        } else if (state is NotificationUnreadUpdated) {
+                          unreadCount = state.unreadCount;
+                        }
+
+                        final hasUnread = unreadCount > 0;
 
                         return GestureDetector(
                           onTap: () => push(RoutesKeys.kNotification, context),
@@ -148,43 +161,6 @@ class HomeViewBody extends StatelessWidget {
                   ],
                 ),
                 const HeightSpace(30),
-                // Row(
-                //   children: [
-                //     GestureDetector(
-                //       onTap: () => push(RoutesKeys.kFilter, context),
-                //       child: Container(
-                //         width: 300.w,
-                //         height: 40.h,
-                //         padding: const EdgeInsets.all(8),
-                //         decoration: BoxDecoration(
-                //           color: AppColors.white,
-                //           borderRadius: BorderRadius.circular(8.r),
-                //           border: Border.all(
-                //             width: 1,
-                //             color: const Color(0xffDADEE3),
-                //           ),
-                //         ),
-                //         child: Row(
-                //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //           children: [
-                //             Text("ابحث",
-                //                 style: AppTextStyles.font14Medium
-                //                     .copyWith(color: AppColors.fontColor)),
-                //             Image.asset(Assets.imagesPngImageSearchNormal),
-                //           ],
-                //         ),
-                //       ),
-                //     ),
-                //     WidthSpace(8.w),
-                //     GestureDetector(
-                //       onTap: () => push(RoutesKeys.kFilter, context),
-                //       child: Image.asset(Assets.imagesPngImageFiltter),
-                //     ),
-                //   ],
-                // ),
-                // const HeightSpace(20),
-                //  BannerCarouselScreen(),
-                const HeightSpace(30),
                 ButtonApp(
                   text: "اضافة حجز جديد",
                   onTap: () => push(RoutesKeys.kAddBooking, context),
@@ -203,7 +179,6 @@ class HomeViewBody extends StatelessWidget {
                   final stats = state.analysis.data.incomAndOtherStatistics;
                   final totalForgevin = state.analysis.data.totalForgevin;
 
-                  // الحسابات
                   double totalCash = 0;
                   double totalOnline = 0;
                   for (var p in stats.todayPaidBy) {
@@ -228,17 +203,17 @@ class HomeViewBody extends StatelessWidget {
                     ItemsShowAnalysisNew(
                       title: "كمية المسامح كريم الشاملة",
                       count: totalForgevin.total,
-                      color: HexColor('#2C5C30'), // أخضر أغمق
+                      color: HexColor('#2C5C30'),
                     ),
                     ItemsShowAnalysisNew(
                       title: "إجمالي المدفوع نقدًا",
                       count: totalCash,
-                      color: HexColor('#367C82'), // Teal داكن
+                      color: HexColor('#367C82'),
                     ),
                     ItemsShowAnalysisNew(
                       title: "إجمالي المدفوع عبر الإنترنت",
                       count: totalOnline,
-                      color: HexColor('#7A9D54'), // Olive
+                      color: HexColor('#7A9D54'),
                     ),
                     ItemsShowAnalysisNew(
                       title: "إجمالي المدفوع اليوم",
@@ -248,11 +223,9 @@ class HomeViewBody extends StatelessWidget {
                     ItemsShowAnalysisNew(
                       title: "إجمالي قيمة الخدمات",
                       count: totalService,
-                      color: HexColor('#D4AC2B'), // Mustard
+                      color: HexColor('#D4AC2B'),
                     ),
                   ];
-
-                  if (cards.isEmpty) return const SizedBox.shrink();
 
                   return Padding(
                     padding: const EdgeInsets.symmetric(
@@ -265,7 +238,6 @@ class HomeViewBody extends StatelessWidget {
                           style: AppTextStyles.font18Bold
                               .copyWith(color: AppColors.black),
                         ),
-                        //  const SizedBox(height: 12),
                         GridView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
@@ -302,7 +274,7 @@ class HomeViewBody extends StatelessWidget {
                   ),
                 ),
                 HeightSpace(10),
-                AnalysisView(),
+                const AnalysisView(),
               ],
             ),
           ),

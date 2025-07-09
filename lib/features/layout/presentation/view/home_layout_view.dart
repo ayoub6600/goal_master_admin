@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master_admin/core/components/custom_success_toast.dart';
+import 'package:goal_master_admin/core/components/keys_values.dart';
+import 'package:goal_master_admin/core/components/preference_utility.dart'
+    show SharedPreferenceUtil;
 import 'package:goal_master_admin/core/services/service_locator.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/core/styles/assets.dart';
@@ -14,10 +18,13 @@ import 'package:goal_master_admin/features/home/presentation/view/home_view.dart
 import 'package:goal_master_admin/features/layout/presentation/manager/layout_cubit.dart';
 import 'package:goal_master_admin/features/layout/presentation/manager/layout_state.dart';
 import 'package:goal_master_admin/features/layout/presentation/view/widget/home_bottom_nav_bar.dart';
+import 'package:goal_master_admin/features/notification/data/repo/notifaction_repo.dart';
+import 'package:goal_master_admin/features/notification/manager/notification_cubit/notification_cubit.dart';
 import 'package:goal_master_admin/features/profail/data/repo/profile_repo_imp.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/customer_cubit/customer_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/profile_view.dart';
+import 'package:oktoast/oktoast.dart';
 
 class HomeLayoutView extends StatefulWidget {
   const HomeLayoutView({super.key});
@@ -54,6 +61,16 @@ class _HomeLayoutViewState extends State<HomeLayoutView> {
                         getIt<ProfileRepoImp>(),
                       )..getProfile(),
                     ),
+                    // BlocProvider(
+                    //   create: (_) => NotificationCubit(
+                    //     notificationRepo: getIt<NotificationRepo>(),
+                    //     userId:
+                    //         SharedPreferenceUtil.getInt(PrefKey.userId) ?? 0,
+                    //     onVisualNotification: (notification) {
+                    //       showCustomSuccessToast(notification.data.message);
+                    //     },
+                    //   ),
+                    // ),
                     BlocProvider(
                       create: (context) => BannerCubitCubit(
                         getIt<AnalysisRepoImp>(),
