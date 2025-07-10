@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.goal.master.admin"
+    namespace = "com.rahbdev.goaladmin"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "25.2.9519653"
 
@@ -20,7 +20,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.goal.master.admin"
+        applicationId = "com.rahbdev.goaladmin"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

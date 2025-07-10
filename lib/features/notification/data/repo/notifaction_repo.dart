@@ -5,7 +5,6 @@ import 'package:goal_master_admin/features/notification/data/model/notification_
 abstract class NotificationRepo {
   Future<Either<Failure, NotificationResponse>> getNotifications(int page);
 
-  // Future<Either<Failure, String>> markNotificationAsRead(String notificationId);
-  Future<Either<Failure, String>>
-      markAllNotificationsAsRead(); // ✅ الدالة الجديدة
+  Future<Either<Failure, String>> markNotificationAsRead(String notificationId);
+  Future<Either<Failure, String>> markAllNotificationsAsRead();
 }

@@ -15,7 +15,6 @@ import 'package:goal_master_admin/features/booking/presentation/manager/add_cust
 import 'package:goal_master_admin/features/layout/presentation/manager/layout_cubit.dart';
 import 'package:goal_master_admin/features/notification/data/repo/notifaction_repo.dart';
 import 'package:goal_master_admin/features/notification/manager/notification_cubit/notification_cubit.dart';
-import 'package:goal_master_admin/features/notification/manager/websocket_cubit/websocket_cubit.dart';
 import 'package:goal_master_admin/features/profail/data/repo/profile_repo_imp.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/customer_cubit/customer_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
@@ -66,10 +65,10 @@ class MyApp extends StatelessWidget {
 
           return MultiBlocProvider(
             providers: [
-              BlocProvider(
-                create: (_) => WebSocketCubit('wss://socket.goalmasters.online')
-                  ..connect(),
-              ),
+              // BlocProvider(
+              //   create: (_) => WebSocketCubit('wss://socket.goalmasters.online')
+              //     ..connect(),
+              // ),
               BlocProvider(
                 create: (_) => NotificationCubit(
                   notificationRepo: getIt<NotificationRepo>(),

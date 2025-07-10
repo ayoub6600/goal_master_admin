@@ -1,4 +1,4 @@
-package com.goal.master.admin
+package com.rahbdev.goaladmin
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -31,4 +31,16 @@ class NotificationRepoImp extends NotificationRepo {
       (data) => data['message'],
     );
   }
+
+  @override
+  Future<Either<Failure, String>> markNotificationAsRead(
+      String notificationId) {
+    return consumer.handleRequest(
+      () => consumer.post(
+        EndPoints.markNotificationAsRead(notificationId),
+        queryParameters: {'notification_id': notificationId},
+      ),
+      (data) => data['message'],
+    );
+  }
 }

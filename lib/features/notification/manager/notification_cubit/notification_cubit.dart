@@ -19,7 +19,7 @@ class NotificationCubit extends Cubit<NotificationState> {
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   bool _isDisposed = false;
-  String? _lastNotificationId; // ✅ نحتفظ بآخر إشعار
+  String? _lastNotificationId;
 
   PagingController<int, NotificationItem> get pagingController =>
       _pagingController;
@@ -183,6 +183,30 @@ class NotificationCubit extends Cubit<NotificationState> {
   }
 
   bool hasUnreadNotifications() => unreadCount > 0;
+  Future<void> markAsRead(String notificationId) async {
+    if (_isDisposed) return;
+
+    final currentItems = _pagingController.itemList;
+    if (currentItems == null) return;
+
+    final index = currentItems.indexWhere((item) => item.id == notificationId);
+    if (index == -1) return;
+
+    final updatedItem =
+        currentItems[index].copyWith(readAt: DateTime.now().toIso8601String());
+    currentItems[index] = updatedItem;
+    _pagingController.itemList = List.from(currentItems);
+
+    final result =
+        await notificationRepo.markNotificationAsRead(notificationId);
+
+    result.fold(
+      (failure) => print('[❌] فشل تعيين الإشعار كمقروء: ${failure.errMessage}'),
+      (message) => print('[✅] الإشعار $notificationId تم تحديثه بنجاح'),
+    );
+
+    emit(NotificationUnreadUpdated(unreadCount));
+  }
 
   @override
   Future<void> close() {

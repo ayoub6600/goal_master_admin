@@ -12,6 +12,7 @@ import 'package:goal_master_admin/features/booking/data/repo/booking_repo_imp.da
 import 'package:goal_master_admin/features/booking/presentation/manager/%20booking_details_cubit/booking_details_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/%20booking_details_cubit/booking_details_state.dart';
 import 'package:goal_master_admin/features/notification/data/model/notification_response.dart';
+import 'package:goal_master_admin/features/notification/manager/notification_cubit/notification_cubit.dart';
 import 'package:goal_master_admin/features/notification/presentation/view/widgets/show_details_notification.dart';
 import 'package:intl/intl.dart';
 
@@ -19,11 +20,12 @@ class ItemsNotification extends StatelessWidget {
   const ItemsNotification({
     super.key,
     required this.notification,
-    required this.isRead,
   });
 
   final NotificationItem notification;
-  final bool isRead;
+
+  bool get isRead =>
+      notification.readAt != null && notification.readAt!.isNotEmpty;
 
   String getFormattedDate(String isoDate) {
     final dateTime = DateTime.tryParse(isoDate);
@@ -53,6 +55,16 @@ class ItemsNotification extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (!isRead)
+            Container(
+              width: 8.r,
+              height: 8.r,
+              margin: EdgeInsets.only(top: 8.h, right: 4.w),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+              ),
+            ),
           Container(
             padding: EdgeInsets.all(8.r),
             decoration: BoxDecoration(
@@ -90,24 +102,25 @@ class ItemsNotification extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () {
+                    isRead
+                        ? null
+                        : context
+                            .read<NotificationCubit>()
+                            .markAsRead(notification.id);
                     push(RoutesKeys.kBookingItemsDetails, context,
                         extra: bookingId);
                   },
                   child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
                         padding: EdgeInsets.symmetric(
-                          horizontal: 12.w,
-                          vertical: 4.h,
-                        ),
+                            horizontal: 12.w, vertical: 4.h),
                         decoration: BoxDecoration(
                           color: AppColors.primary,
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                         child: Text(
-                          "تفاصيل ",
+                          "تفاصيل",
                           style: AppTextStyles.font12Regular.copyWith(
                             color: AppColors.white,
                           ),
@@ -121,6 +134,12 @@ class ItemsNotification extends StatelessWidget {
           ),
           GestureDetector(
             onTap: () {
+              isRead
+                  ? null
+                  : context
+                      .read<NotificationCubit>()
+                      .markAsRead(notification.id);
+
               showDialog(
                 context: context,
                 builder: (ctx) => AlertDialog(
@@ -136,10 +155,7 @@ class ItemsNotification extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        message,
-                        style: AppTextStyles.font18Bold,
-                      ),
+                      Text(message, style: AppTextStyles.font18Bold),
                       HeightSpace(12.h),
                       Text(
                         'تاريخ الإشعار: $createdAt',
@@ -162,7 +178,7 @@ class ItemsNotification extends StatelessWidget {
                     if (bookingId != null)
                       TextButton(
                         onPressed: () {
-                          Navigator.pop(ctx); // غلق الديالوج الأول
+                          Navigator.pop(ctx);
                           showDialog(
                             barrierDismissible: false,
                             context: context,
@@ -188,8 +204,7 @@ class ItemsNotification extends StatelessWidget {
                                       );
                                     } else if (state is BookingDetailsSuccess) {
                                       return ShowDetailsNotification(
-                                        item: state.bookingDetails,
-                                      );
+                                          item: state.bookingDetails);
                                     } else if (state is BookingDetailsError) {
                                       return Text(
                                         'حدث خطأ: ${state.message}',
