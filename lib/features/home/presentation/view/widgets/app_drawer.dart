@@ -100,8 +100,9 @@ class AppDrawer extends StatelessWidget {
                           if (state is DeleteAccountSuccess) {
                             await SharedPreferenceUtil.clear();
                             pushReplacement(RoutesKeys.kLogin, context);
-                            SharedPreferenceUtil.putString(
-                                PrefKey.onboardingSeen, "true");
+                            SharedPreferenceUtil.putBool(
+                                PrefKey.onboardingSeen, true);
+
                             SharedPreferenceUtil.putString(
                                 PrefKey.login, "false");
                           } else if (state is DeleteAccountFailure) {

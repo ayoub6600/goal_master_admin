@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:goal_master_admin/core/components/custom_success_toast.dart';
 import 'package:goal_master_admin/core/components/keys_values.dart';
 import 'package:goal_master_admin/core/components/preference_utility.dart';
 import 'package:goal_master_admin/core/routing/app_router.dart';
@@ -20,13 +20,38 @@ import 'package:goal_master_admin/features/profail/presentation/manager/customer
 import 'package:goal_master_admin/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oktoast/oktoast.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-void main() async {
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SharedPreferenceUtil.getInstance();
   setupServiceLocator();
 
+  await _initializeNotifications();
+  await requestNotificationPermission();
+
   runApp(const MyApp());
+}
+
+Future<void> _initializeNotifications() async {
+  const AndroidInitializationSettings androidInitSettings =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  const InitializationSettings initSettings = InitializationSettings(
+    android: androidInitSettings,
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(initSettings);
+}
+
+Future<void> requestNotificationPermission() async {
+  final status = await Permission.notification.status;
+  if (!status.isGranted) {
+    await Permission.notification.request();
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -65,16 +90,54 @@ class MyApp extends StatelessWidget {
 
           return MultiBlocProvider(
             providers: [
-              // BlocProvider(
-              //   create: (_) => WebSocketCubit('wss://socket.goalmasters.online')
-              //     ..connect(),
-              // ),
               BlocProvider(
                 create: (_) => NotificationCubit(
                   notificationRepo: getIt<NotificationRepo>(),
                   userId: SharedPreferenceUtil.getInt(PrefKey.userId) ?? 0,
-                  onVisualNotification: (notification) {
-                    showCustomSuccessToast(notification.data.message);
+                  onVisualNotification: (notification) async {
+                    await flutterLocalNotificationsPlugin.show(
+                      0,
+                      '📣 مدير الملعب',
+                      notification.data.message,
+                      NotificationDetails(
+                        android: AndroidNotificationDetails(
+                          'goal_channel_id',
+                          'Goal Notifications',
+                          channelDescription:
+                              'Notifications from Goal Master Admin',
+                          importance: Importance.max,
+                          priority: Priority.high,
+                          playSound: true,
+                          icon: '@mipmap/ic_launcher',
+                          styleInformation: BigPictureStyleInformation(
+                            DrawableResourceAndroidBitmap('logo_goal'),
+                            largeIcon:
+                                DrawableResourceAndroidBitmap('logo_goal'),
+                            contentTitle: '📣 مدير الملعب',
+                            summaryText: notification.data.message,
+                          ),
+                        ),
+                      ),
+                      payload: RoutesKeys.kNotification,
+                    );
+
+                    // await flutterLocalNotificationsPlugin.show(
+                    //   0,
+                    //   notification.data.message ?? 'تنبيه جديد',
+                    //   notification.data.message,
+                    //   const NotificationDetails(
+                    //     android: AndroidNotificationDetails(
+                    //       'goal_channel_id',
+                    //       'Goal Notifications',
+                    //       channelDescription:
+                    //           'Notifications from Goal Master Admin',
+                    //       importance: Importance.max,
+                    //       priority: Priority.high,
+                    //       playSound: true,
+                    //       icon: '@mipmap/ic_launcher',
+                    //     ),
+                    //   ),
+                    // );
                   },
                 ),
               ),
@@ -95,7 +158,6 @@ class MyApp extends StatelessWidget {
               designSize: const Size(390, 844),
               builder: (_, __) => Builder(
                 builder: (context) {
-                  // ✅ تشغيل WebSocket بعد أول frame
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     context.read<NotificationCubit>().startSocket();
                   });
