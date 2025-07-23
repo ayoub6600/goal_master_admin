@@ -25,15 +25,27 @@ class ItemsShowAnalysis extends StatelessWidget {
         color: Colors.grey[200],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min, // حل مشكلة overflow
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(title, style: AppTextStyles.font16Medium),
-          const SizedBox(height: 12),
+          Flexible(
+            child: Text(
+              title,
+              style: AppTextStyles.font16Medium,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(height: 8),
           CircularPercentIndicator(
-            radius: 40.0,
-            lineWidth: 8.0,
+            radius: 36.0,
+            lineWidth: 6.0,
             percent: percent.clamp(0.0, 1.0),
-            center: Text(count.toString()),
+            center: Text(
+              count.toString(),
+              style: AppTextStyles.font16Medium,
+            ),
             progressColor: color,
             backgroundColor: Colors.grey.shade300,
             animation: true,

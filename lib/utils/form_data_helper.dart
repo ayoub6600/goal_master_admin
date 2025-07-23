@@ -16,6 +16,7 @@ class FormDataHelper {
   }) async {
     if (file == null) return;
     // Read the file bytes
+    // ignore: prefer_final_locals
     var imageBytes = await file.readAsBytes();
     // Determine the actual MIME type of the file
     String? actualMimeType =

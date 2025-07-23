@@ -1,7 +1,8 @@
 {
-    "cSpell.words": [
-        "Otpviewbody",
-        "Responce"
-    ],
-    "debug.enableStatusBarColor": false
+  "cSpell.words": [
+    "Otpviewbody",
+    "Responce"
+  ],
+  "debug.enableStatusBarColor": false,
+  "dart.flutterSdkPath": ".fvm/versions/3.29.3"
 }
