@@ -13,7 +13,8 @@ class TokenInterceptor extends Interceptor {
 
   void _redirectToLogin() async {
     await SharedPreferenceUtil.clear();
-
+    // نحتفظ بـ onboardingSeen = true حتى لا يعود للـ onboarding
+    await SharedPreferenceUtil.putBool(PrefKey.onboardingSeen, true);
     SharedPreferenceUtil.putString(PrefKey.login, "false");
     // AppRouter.router.go(RoutesKeys.kLogin);
   }

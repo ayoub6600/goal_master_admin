@@ -53,32 +53,35 @@ class BookingItemsDetails extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        //  if (booking.status == 3)
-                        Row(
-                          children: [
-                            DepositBookingButton(bookingDetails: booking),
-                          ],
-                        ),
-                        HeightSpace(16.h),
-                        Row(
-                          children: [
-                            if (booking.status != 3)
-                              CancelBookingButton(
-                                id: booking.id,
+                  booking.status == 4
+                      ? const Divider()
+                      : Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            children: [
+                              if (booking.status == 3)
+                                Row(
+                                  children: [
+                                    DepositBookingButton(
+                                        bookingDetails: booking),
+                                  ],
+                                ),
+                              HeightSpace(16.h),
+                              Row(
+                                children: [
+                                  if (booking.status != 3)
+                                    CancelBookingButton(
+                                      id: booking.id,
+                                    ),
+                                  WidthSpace(8.w),
+                                  UpdateBookingStatusView(
+                                    id: booking.id,
+                                  ),
+                                ],
                               ),
-                            WidthSpace(8.w),
-                            UpdateBookingStatusView(
-                              id: booking.id,
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
-                  ),
                 ],
               );
             }

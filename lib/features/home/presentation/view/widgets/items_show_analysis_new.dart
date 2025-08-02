@@ -32,7 +32,7 @@ class ItemsShowAnalysisNew extends StatelessWidget {
           Flexible(
             child: Text(
               title,
-              maxLines: 2,
+              maxLines: 3,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 14,

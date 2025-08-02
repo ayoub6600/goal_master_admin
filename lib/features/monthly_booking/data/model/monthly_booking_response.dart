@@ -1,6 +1,6 @@
 class CustomerModel {
   final int id;
-  final int userId;
+  final int? userId;
   final String fullName;
   final String phoneNo;
   final bool isPhoneVerified;
@@ -16,7 +16,7 @@ class CustomerModel {
   factory CustomerModel.fromJson(Map<String, dynamic> json) {
     return CustomerModel(
       id: json['id'],
-      userId: json['user_id'],
+      userId: json['user_id'], // nullable
       fullName: json['full_name'] ?? '',
       phoneNo: json['phone_no'] ?? '',
       isPhoneVerified: json['is_phone_verified'] == 1,

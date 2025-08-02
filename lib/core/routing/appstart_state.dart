@@ -20,23 +20,58 @@ class AppStartCubit extends Cubit<AppStartState> {
     _checkAppStartState();
   }
 
+  // دالة لإعادة فحص الحالة (مفيدة للاختبار)
+  Future<void> recheckState() async {
+    emit(AppStartState(AppStartStatus.checking));
+    await _checkAppStartState();
+  }
+
+  // دالة للتحقق من البيانات المحفوظة (مفيدة للاختبار)
+  static void debugPrintSavedData() {
+    print('=== DEBUG: Saved Data ===');
+    print(
+        'onboardingSeen: ${SharedPreferenceUtil.getBool(PrefKey.onboardingSeen)}');
+    print('login: ${SharedPreferenceUtil.getString(PrefKey.login)}');
+    print('userId: ${SharedPreferenceUtil.getInt(PrefKey.userId)}');
+    print('========================');
+  }
+
   Future<void> _checkAppStartState() async {
-    final onboardingSeen = SharedPreferenceUtil.getBool(PrefKey.onboardingSeen);
-    final loggedIn = SharedPreferenceUtil.getString(PrefKey.login) == 'true';
-    final userId = SharedPreferenceUtil.getInt(PrefKey.userId);
+    // تأكد من أن SharedPreferences جاهز
+    await SharedPreferenceUtil.getInstance();
+
+    // قراءة البيانات مع إعادة المحاولة
+    bool onboardingSeen = false;
+    String loggedIn = '';
+    int? userId;
+
+    try {
+      onboardingSeen = SharedPreferenceUtil.getBool(PrefKey.onboardingSeen);
+      loggedIn = SharedPreferenceUtil.getString(PrefKey.login);
+      userId = SharedPreferenceUtil.getInt(PrefKey.userId);
+    } catch (e) {
+      print('[AppStart] Error reading preferences: $e');
+      // في حالة الخطأ، نعتبر أن المستخدم لم يرى الـ onboarding
+      onboardingSeen = false;
+      loggedIn = '';
+      userId = null;
+    }
 
     print('[AppStart] onboardingSeen: $onboardingSeen');
     print('[AppStart] loggedIn: $loggedIn');
     print('[AppStart] userId: $userId');
 
+    // تأخير بسيط للتأكد من أن البيانات محفوظة
+    await Future.delayed(Duration(milliseconds: 200));
+
     if (!onboardingSeen) {
       print('[AppStart] 👣 Showing onboarding');
       emit(AppStartState(AppStartStatus.onboarding));
-    } else if (!loggedIn || userId == null || userId == 0) {
-      print('[AppStart] 🚫 Not authenticated');
+    } else if (loggedIn != 'true' || userId == null || userId == 0) {
+      print('[AppStart] 🚫 Not authenticated - redirecting to login');
       emit(AppStartState(AppStartStatus.unauthenticated));
     } else {
-      print('[AppStart] ✅ Authenticated');
+      print('[AppStart] ✅ Authenticated - going to home');
       emit(AppStartState(AppStartStatus.authenticated));
     }
   }

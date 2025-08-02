@@ -3,6 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:goal_master_admin/core/components/button_wrapper.dart';
+import 'package:goal_master_admin/core/components/keys_values.dart';
+import 'package:goal_master_admin/core/components/preference_utility.dart';
+import 'package:goal_master_admin/core/routing/route_utils.dart';
+import 'package:goal_master_admin/core/routing/routes_keys.dart';
 import 'package:goal_master_admin/core/styles/assets.dart';
 import 'package:goal_master_admin/features/onbording/presentation/manager/onboarding_cubit.dart'
     show OnboardingCubit, OnboardingState;
@@ -16,11 +20,12 @@ class OnboardingPreviousPageButtonIcon extends StatelessWidget {
     return BlocBuilder<OnboardingCubit, OnboardingState>(
       builder: (context, state) {
         return ButtonWrapper(
-          onTap: () {
+          onTap: () async {
             bool done = cubit.increment(context);
             if (!done) {
-              // AppRouter.pushReplacement(context, LoginScreen());
-              //   GoRouter.of(context).pushReplacement(RoutesKeys.kLogin);
+              await SharedPreferenceUtil.putString(PrefKey.login, "false");
+              await SharedPreferenceUtil.putBool(PrefKey.onboardingSeen, true);
+              pushReplacement(RoutesKeys.kLogin, context);
             }
           },
           width: 48.w,

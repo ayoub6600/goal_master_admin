@@ -27,12 +27,23 @@ class OnboardingSkipPageButton extends StatelessWidget {
         bool isLastPage =
             state.index == OnboardingPages.getPages(context).length - 1;
         return ButtonWrapper(
-          onTap: () {
+          onTap: () async {
             bool done = cubit.increment(context);
             if (!done) {
-              pushReplacement(RoutesKeys.kLogin, context);
-              SharedPreferenceUtil.putString(PrefKey.login, "false");
-              SharedPreferenceUtil.putBool(PrefKey.onboardingSeen, true);
+              try {
+                // تأكد من أن SharedPreferences جاهز
+                await SharedPreferenceUtil.getInstance();
+
+                // لا نضع login = false هنا، فقط نضع onboardingSeen = true
+                await SharedPreferenceUtil.putBool(
+                    PrefKey.onboardingSeen, true);
+
+                print('[Onboarding] onboardingSeen saved: true');
+                pushReplacement(RoutesKeys.kLogin, context);
+              } catch (e) {
+                print('[Onboarding] Error saving onboardingSeen: $e');
+                pushReplacement(RoutesKeys.kLogin, context);
+              }
             }
           },
           child: Container(

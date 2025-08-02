@@ -32,7 +32,6 @@ class LoginCubit extends Cubit<LoginState> {
           emit(LoginError(" لا يمكن تسجيل الدخول بتلك البيانات"));
         }
 
-
         //save user
 
         _saveUserData(user);
@@ -42,25 +41,39 @@ class LoginCubit extends Cubit<LoginState> {
 
   Future<void> _saveUserData(UserData userData) async {
     print("---->UserData token ${userData.token}");
-    await SharedPreferenceUtil.putString(
-        PrefKey.refreshToken, userData.token ?? "");
-//userid
-    await SharedPreferenceUtil.putInt(PrefKey.userId, userData.user?.id);
 
-    await SharedPreferenceUtil.putString(
-        PrefKey.fcmToken, userData.token ?? "");
-    await SharedPreferenceUtil.putString(
-        PrefKey.fullName, userData.user?.name ?? "");
-    await SharedPreferenceUtil.putString(
-        PrefKey.email, userData.user?.username ?? "");
-    await SharedPreferenceUtil.putString(
-        PrefKey.phone, userData.user?.phoneNumber ?? "");
-    SharedPreferenceUtil.putString(PrefKey.login, "true");
+    try {
+      // تأكد من أن SharedPreferences جاهز
+      await SharedPreferenceUtil.getInstance();
 
-    await SharedPreferenceUtil.putInt(
-        PrefKey.zoneId, userData.user?.zoneId ?? 0);
-    await SharedPreferenceUtil.putInt(
-        PrefKey.clubId, userData.user?.clubId ?? 0);
+      await SharedPreferenceUtil.putString(
+          PrefKey.refreshToken, userData.token ?? "");
+      //userid
+      await SharedPreferenceUtil.putInt(PrefKey.userId, userData.user?.id);
+
+      await SharedPreferenceUtil.putString(
+          PrefKey.fcmToken, userData.token ?? "");
+      await SharedPreferenceUtil.putString(
+          PrefKey.fullName, userData.user?.name ?? "");
+      await SharedPreferenceUtil.putString(
+          PrefKey.email, userData.user?.username ?? "");
+      await SharedPreferenceUtil.putString(
+          PrefKey.phone, userData.user?.phoneNumber ?? "");
+
+      // حفظ حالة تسجيل الدخول
+      await SharedPreferenceUtil.putString(PrefKey.login, "true");
+
+      await SharedPreferenceUtil.putInt(
+          PrefKey.zoneId, userData.user?.zoneId ?? 0);
+      await SharedPreferenceUtil.putInt(
+          PrefKey.clubId, userData.user?.clubId ?? 0);
+
+      print("---->User data saved successfully");
+      print("---->userId: ${userData.user?.id}");
+      print("---->login: true");
+    } catch (e) {
+      print("---->Error saving user data: $e");
+    }
   }
 
   bool _validate(String name, String password) {

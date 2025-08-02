@@ -29,14 +29,23 @@ class OnboardingPreviousPageButton extends StatelessWidget {
         bool isLastPage =
             state.index == OnboardingPages.getPages(context).length - 1;
         return ButtonWrapper(
-          onTap: () {
+          onTap: () async {
             bool done = cubit.increment(context);
             if (!done) {
-              pushReplacement(RoutesKeys.kLogin, context);
-              SharedPreferenceUtil.putBool(PrefKey.onboardingSeen, true);
-              SharedPreferenceUtil.putString(PrefKey.login, "false");
+              try {
+                // تأكد من أن SharedPreferences جاهز
+                await SharedPreferenceUtil.getInstance();
 
-              print("----->$done");
+                // لا نضع login = false هنا، فقط نضع onboardingSeen = true
+                await SharedPreferenceUtil.putBool(
+                    PrefKey.onboardingSeen, true);
+
+                print('[Onboarding] onboardingSeen saved: true');
+                pushReplacement(RoutesKeys.kLogin, context);
+              } catch (e) {
+                print('[Onboarding] Error saving onboardingSeen: $e');
+                pushReplacement(RoutesKeys.kLogin, context);
+              }
             }
           },
           child: Container(

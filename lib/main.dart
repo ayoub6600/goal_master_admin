@@ -23,7 +23,6 @@ import 'package:goal_master_admin/features/profail/presentation/manager/profile_
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -32,10 +31,14 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await SharedPreferenceUtil.getInstance();
+
   setupServiceLocator();
 
   await _initializeNotifications();
   await requestNotificationPermission();
+
+  // طباعة البيانات المحفوظة للتحقق (مفيد للاختبار)
+  AppStartCubit.debugPrintSavedData();
 
   runApp(const MyApp());
 }
@@ -64,10 +67,13 @@ class MyApp extends StatelessWidget {
   String _mapStatusToRoute(AppStartStatus status) {
     switch (status) {
       case AppStartStatus.onboarding:
+        // أول مرة - عرض شاشة onboarding
         return RoutesKeys.kOnboarding;
       case AppStartStatus.unauthenticated:
+        // بعد onboarding أو عند عدم تسجيل الدخول - عرض صفحة تسجيل الدخول
         return RoutesKeys.kLogin;
       case AppStartStatus.authenticated:
+        // عند تسجيل الدخول - عرض الصفحة الرئيسية
         return RoutesKeys.kHome;
       default:
         return RoutesKeys.kHome;
