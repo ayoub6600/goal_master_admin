@@ -174,7 +174,7 @@ class MonthlyBookingItems extends StatelessWidget {
               },
               builder: (context, state) {
                 return ButtonApp(
-                  text: "تفعيل الحجز",
+                  text: "الغاء الحجز",
                   onTap: () {
                     DateTime? pickedDate;
                     final dateController = TextEditingController();
@@ -201,7 +201,7 @@ class MonthlyBookingItems extends StatelessWidget {
                           ButtonApp(
                             text: state is UpdateMonthlyBookingLoading
                                 ? "الرجاء الانتظار"
-                                : "تأكيد التفعيل",
+                                : "تأكيد الغاء الحجز",
                             onTap: () {
                               if (pickedDate == null) {
                                 showCustomFailureToast(

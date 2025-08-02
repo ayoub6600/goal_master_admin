@@ -22,4 +22,5 @@ class RoutesKeys {
   static const kAllowedAmount = '/kAllowedAmount';
   static const kBookingItemsDetails = '/kBookingItemsDetails';
   static const kItemsUserDetainsView = '/kItemsUserDetainsView';
+  static const kHtmlViewerScreen = '/kHtmlViewerScreen';
 }

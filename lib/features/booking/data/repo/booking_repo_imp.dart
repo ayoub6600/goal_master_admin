@@ -229,27 +229,23 @@ class BookingRepoImp extends BookingRepo {
           'end_time': endTime,
           'full_name': fullName,
           'phone_no': phone,
-          'state': "1",
+          'state': state,
           'is_monthly': isMonthly,
-          'paid_amount': paidAmount,
-          'status': status,
-          'review': review,
-          'customer_id': customerId
+          'paid_amount': paidAmount ?? '',
+          'status': status ?? '',
+          'review': review ?? '',
+          'customer_id': customerId,
         },
       ),
       (data) {
-        if (paymentType == 1) {
-          return data['data'];
+        final html = data['html'];
+        if (html != null && html is String && html.trim().isNotEmpty) {
+          return html;
         }
 
-        // Extract returnUrl if available
-        final returnUrl = data['data']?['returnUrl'];
-        if (returnUrl != null && returnUrl is String) {
-          return returnUrl;
-        }
-
-        // fallback: return something useful (e.g., success message or booking ID)
-        return data['data'].toString();
+        // fallback
+        final msg = data['msg'] ?? data['data'] ?? 'تم الحفظ بنجاح';
+        return '<div style="padding: 24px; font-size: 16px;">$msg</div>';
       },
     );
   }

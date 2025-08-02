@@ -31,6 +31,7 @@ import 'package:goal_master_admin/features/booking/presentation/manager/update_b
 import 'package:goal_master_admin/features/booking/presentation/manager/zone_cubit/zone_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/add_booking.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/booking_items_details.dart.dart';
+import 'package:goal_master_admin/features/booking/presentation/view/widgets/html_viewer_screen.dart';
 import 'package:goal_master_admin/features/home/data/model/booking_slots_response.dart';
 import 'package:goal_master_admin/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/club_cubit/club_cubit.dart';
@@ -472,17 +473,22 @@ List<RouteBase> appRoutes = [
         child: const MonthlyBookingView(),
       ),
     ),
-  )
-  // //ContactView
-  // GoRoute(
-  //   parentNavigatorKey: parentKey,
-  //   path: RoutesKeys.kContact,
-  //   pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
-  //     context: context,
-  //     state: state,
-  //     child: const ContactView(),
-  //   ),
-  // ),
+  ),
+  //HtmlViewerScreen
+
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kHtmlViewerScreen,
+    pageBuilder: (context, state) {
+      final htmlContent = state.extra as String? ?? '<p>No content</p>';
+      return buildPageWithDefaultTransition<void>(
+        context: context,
+        state: state,
+        child: HtmlViewerScreen(htmlContent: htmlContent),
+      );
+    },
+  ),
+
   // //BookingView
   // GoRoute(
   //   parentNavigatorKey: parentKey,
