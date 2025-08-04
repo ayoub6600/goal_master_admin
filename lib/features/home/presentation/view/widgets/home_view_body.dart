@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master_admin/core/components/button_app.dart';
+import 'package:goal_master_admin/core/components/error_widgets.dart';
 import 'package:goal_master_admin/core/components/keys_values.dart';
 import 'package:goal_master_admin/core/components/preference_utility.dart';
 import 'package:goal_master_admin/core/routing/route_utils.dart';
@@ -81,7 +82,7 @@ class HomeViewBody extends StatelessWidget {
                           );
                         } else if (state is ProfileError) {
                           return Text(
-                            "Error: ${state.error}",
+                            "....",
                             style: const TextStyle(color: Colors.red),
                           );
                         }
@@ -174,19 +175,28 @@ class HomeViewBody extends StatelessWidget {
                 if (state is AnalysisLoading) {
                   return const ScimagLoading(itemCount: 4, crossAxisCount: 2);
                 } else if (state is AnalysisError) {
-                  return Center(child: Text('حدث خطأ: ${state.message}'));
+                  return AppErrorView(
+                    message: state.message,
+                  );
                 } else if (state is AnalysisLoaded) {
                   final stats = state.analysis.data.incomAndOtherStatistics;
                   final totalForgevin = state.analysis.data.totalForgevin;
 
+                  // ✅ بعد التعديل: إجمالي الدخل/المستحق doubles مباشرة من الموديل
+                  final double incomeTotal = state.analysis.data.totalIncome;
+                  final double dueTotal = state.analysis.data.totalDue;
+
+                  // حسابات الكاش والأونلاين من todayPaidBy
                   double totalCash = 0;
                   double totalOnline = 0;
                   for (var p in stats.todayPaidBy) {
                     final paid = double.tryParse(p.paidAmount) ?? 0;
-                    if (p.type == 1) totalCash += paid;
-                    if (p.type == 2) totalOnline += paid;
+                    if (p.type == 1) totalCash += paid; // نقدًا
+                    if (p.type == 2 || p.type == 4)
+                      totalOnline += paid; // أونلاين
                   }
 
+                  // إجمالي المدفوع والخدمات من todayPaidAndDue
                   double totalPaid = 0;
                   double totalService = 0;
                   for (var item in stats.todayPaidAndDue) {
@@ -223,7 +233,17 @@ class HomeViewBody extends StatelessWidget {
                     ItemsShowAnalysisNew(
                       title: "إجمالي قيمة الخدمات",
                       count: totalService,
-                      color: HexColor('#D4AC2B'),
+                      color: HexColor('#F39C12'),
+                    ),
+                    ItemsShowAnalysisNew(
+                      title: "إجمالي الدخل",
+                      count: incomeTotal, // ✅ مباشرة
+                      color: HexColor('#9C640C'),
+                    ),
+                    ItemsShowAnalysisNew(
+                      title: "إجمالي المستحق",
+                      count: dueTotal, // ✅ مباشرة
+                      color: HexColor('#BA4A00'),
                     ),
                   ];
 
@@ -284,7 +304,9 @@ class HomeViewBody extends StatelessWidget {
                 if (state is AnalysisLoading) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (state is AnalysisError) {
-                  return Center(child: Text('حدث خطأ: ${state.message}'));
+                  return AppErrorView(
+                    message: state.message,
+                  );
                 } else if (state is AnalysisLoaded) {
                   final topServices = state.analysis.data.topService;
                   return Column(

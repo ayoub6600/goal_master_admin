@@ -147,9 +147,7 @@ class _DepositBookingPaymentWidgetState
               context.read<BookingDepositCubit>().depositBookingPayment(
                     due: dueController.text,
                     toleranceType: selectedToleranceType,
-                    extraInputValue: selectedToleranceType == 1
-                        ? extraInputController.text
-                        : null,
+                    extraInputValue: extraInputController.text,
                   );
             },
           ),

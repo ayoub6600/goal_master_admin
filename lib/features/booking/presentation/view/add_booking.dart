@@ -16,14 +16,11 @@ import 'package:goal_master_admin/features/booking/presentation/view/widgets/cho
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/customer_selection.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/employee_selection.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/event_card.dart';
-import 'package:goal_master_admin/features/booking/presentation/view/widgets/html_viewer_screen.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/service_selection.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/time_slot_section.dart';
 
 import 'package:intl/intl.dart';
 import 'widgets/custom_calder.dart';
-import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 class AddBookingView extends StatefulWidget {
   const AddBookingView({super.key});

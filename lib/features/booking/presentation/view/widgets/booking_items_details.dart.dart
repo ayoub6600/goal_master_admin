@@ -59,13 +59,12 @@ class BookingItemsDetails extends StatelessWidget {
                           padding: const EdgeInsets.all(8.0),
                           child: Column(
                             children: [
-                              if (booking.status == 3)
-                                Row(
-                                  children: [
-                                    DepositBookingButton(
-                                        bookingDetails: booking),
-                                  ],
-                                ),
+                              //  if (booking.status == 3)
+                              Row(
+                                children: [
+                                  DepositBookingButton(bookingDetails: booking),
+                                ],
+                              ),
                               HeightSpace(16.h),
                               Row(
                                 children: [

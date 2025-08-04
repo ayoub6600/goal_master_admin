@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:goal_master_admin/core/components/error_widgets.dart';
 import 'package:goal_master_admin/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/home_view_body.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/items_show_analysis.dart';
@@ -14,7 +15,9 @@ class AnalysisView extends StatelessWidget {
         if (state is AnalysisLoading) {
           return const ScimagLoading(itemCount: 4, crossAxisCount: 2);
         } else if (state is AnalysisError) {
-          return Center(child: Text('حدث خطأ: ${state.message}'));
+          return AppErrorView(
+            message: state.message,
+          );
         } else if (state is AnalysisLoaded) {
           final todayBookings = state.analysis.data.bookingStatus.totalBooking;
 

@@ -1,3 +1,5 @@
+// dashboard_models.dart
+
 class DashboardResponse {
   final bool status;
   final DashboardData data;
@@ -10,7 +12,7 @@ class DashboardResponse {
   factory DashboardResponse.fromJson(Map<String, dynamic> json) {
     return DashboardResponse(
       status: json['status'].toString().toLowerCase() == 'true',
-      data: DashboardData.fromJson(json['data']),
+      data: DashboardData.fromJson(json['data'] as Map<String, dynamic>),
     );
   }
 }
@@ -20,23 +22,32 @@ class DashboardData {
   final IncomAndOtherStatistics incomAndOtherStatistics;
   final List<TopService> topService;
   final TotalForgevin totalForgevin;
+  final double totalIncome; // ← بدلاً من List<TotalIncome>
+  final double totalDue; // ← بدلاً من List<TotalDue>
 
   DashboardData({
     required this.bookingStatus,
     required this.incomAndOtherStatistics,
     required this.topService,
     required this.totalForgevin,
+    required this.totalIncome,
+    required this.totalDue,
   });
 
   factory DashboardData.fromJson(Map<String, dynamic> json) {
     return DashboardData(
-      bookingStatus: BookingStatus.fromJson(json['bookingStatus']),
-      incomAndOtherStatistics:
-          IncomAndOtherStatistics.fromJson(json['incomAndOtherStatistics']),
+      bookingStatus:
+          BookingStatus.fromJson(json['bookingStatus'] as Map<String, dynamic>),
+      incomAndOtherStatistics: IncomAndOtherStatistics.fromJson(
+          json['incomAndOtherStatistics'] as Map<String, dynamic>),
       topService: (json['topService'] as List)
-          .map((e) => TopService.fromJson(e))
+          .map((e) => TopService.fromJson(e as Map<String, dynamic>))
           .toList(),
-      totalForgevin: TotalForgevin.fromJson(json['totalForgevin']),
+      totalForgevin:
+          TotalForgevin.fromJson(json['totalForgevin'] as Map<String, dynamic>),
+      // المفاتيح هنا بالحروف الكبيرة زي الـ JSON
+      totalIncome: _parseDouble(json['TotalIncome']),
+      totalDue: _parseDouble(json['TotalDue']),
     );
   }
 }
@@ -53,10 +64,10 @@ class BookingStatus {
   factory BookingStatus.fromJson(Map<String, dynamic> json) {
     return BookingStatus(
       totalBooking: (json['totalBooking'] as List)
-          .map((e) => BookingInfo.fromJson(e))
+          .map((e) => BookingInfo.fromJson(e as Map<String, dynamic>))
           .toList(),
       todayBooking: (json['todayBooking'] as List)
-          .map((e) => BookingInfo.fromJson(e))
+          .map((e) => BookingInfo.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
   }
@@ -85,7 +96,7 @@ class BookingInfo {
 class IncomAndOtherStatistics {
   final List<TodayPaidAndDue> todayPaidAndDue;
   final List<TodayPaidBy> todayPaidBy;
-  final int totalAllowedAmountToday;
+  final double totalAllowedAmountToday; // ← رقم بدل String
 
   IncomAndOtherStatistics({
     required this.todayPaidAndDue,
@@ -96,12 +107,12 @@ class IncomAndOtherStatistics {
   factory IncomAndOtherStatistics.fromJson(Map<String, dynamic> json) {
     return IncomAndOtherStatistics(
       todayPaidAndDue: (json['todayPaidAndDue'] as List)
-          .map((e) => TodayPaidAndDue.fromJson(e))
+          .map((e) => TodayPaidAndDue.fromJson(e as Map<String, dynamic>))
           .toList(),
       todayPaidBy: (json['todayPaidBy'] as List)
-          .map((e) => TodayPaidBy.fromJson(e))
+          .map((e) => TodayPaidBy.fromJson(e as Map<String, dynamic>))
           .toList(),
-      totalAllowedAmountToday: _parseInt(json['totalAllowedAmountToday']),
+      totalAllowedAmountToday: _parseDouble(json['totalAllowedAmountToday']),
     );
   }
 }
@@ -109,8 +120,8 @@ class IncomAndOtherStatistics {
 class TodayPaidAndDue {
   final int paymentStatus;
   final int status;
-  final String paidAmount;
-  final String serviceAmount;
+  final String paidAmount; // إبقائها String لو عايز تعرضها كما هي
+  final String serviceAmount; // إبقائها String لو عايز تعرضها كما هي
 
   TodayPaidAndDue({
     required this.paymentStatus,
@@ -186,10 +197,13 @@ class TotalForgevin {
   }
 }
 
-// 🔧 Helper functions
+/// --------------------
+/// Helper functions
+/// --------------------
 int _parseInt(dynamic value) {
   if (value is int) return value;
   if (value is String) return int.tryParse(value) ?? 0;
+  if (value is double) return value.toInt();
   return 0;
 }
 

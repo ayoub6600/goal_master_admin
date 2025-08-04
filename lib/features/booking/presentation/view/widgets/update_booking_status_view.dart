@@ -84,6 +84,7 @@ class UpdateBookingStatusView extends StatelessWidget {
                             textColor: Colors.white,
                             onTap: () {
                               cubit.updateBookingStatus(id);
+                              Navigator.pop(context);
                             },
                           ),
                         ),

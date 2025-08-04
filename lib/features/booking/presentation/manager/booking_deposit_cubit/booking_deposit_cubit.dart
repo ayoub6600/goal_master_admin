@@ -19,22 +19,11 @@ class BookingDepositCubit extends Cubit<BookingDepositState> {
   }) async {
     emit(BookingDepositLoading());
 
-    String paymentStatus;
-    String extraInput;
-
-    if (toleranceType == 0) {
-      paymentStatus = '0';
-      extraInput = '0';
-    } else {
-      paymentStatus = '1';
-      extraInput = extraInputValue ?? '0';
-    }
-
     final result = await bookingRepo.depositBookingPayment(
       bookingId,
       due,
-      paymentStatus,
-      extraInput,
+      "1",
+      extraInputValue == null ? '0' : extraInputValue,
     );
 
     result.fold(

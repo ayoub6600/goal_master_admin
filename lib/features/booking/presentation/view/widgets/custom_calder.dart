@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master_admin/core/components/keys_values.dart';
 import 'package:goal_master_admin/core/components/preference_utility.dart';
-
-import 'package:goal_master_admin/core/styles/app_colors.dart';
-import 'package:goal_master_admin/core/styles/app_text_styles.dart';
-import 'package:goal_master_admin/core/styles/spaces.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/calendar_cubit/calendar_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/calendar_cubit/calendar_state.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';

@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:goal_master_admin/core/errors/failure.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 enum CurrentLocationStatus { initial, submitting, success, error }
 
@@ -15,10 +14,10 @@ class LayoutState extends Equatable {
 
   ///location
   final CurrentLocationStatus currentLocationStatus;
-  final LatLng? currentPosition;
+//  final LatLng? currentPosition;
   final String currentFullAddress;
   final String currentShortAddress;
-  final Marker currentMarker;
+  //final Marker currentMarker;
 
   const LayoutState({
     required this.failure,
@@ -26,9 +25,9 @@ class LayoutState extends Equatable {
     required this.activeScreen,
     required this.currentFullAddress,
     required this.currentShortAddress,
-    required this.currentPosition,
+    //  required this.currentPosition,
     required this.currentLocationStatus,
-    required this.currentMarker,
+    // required this.currentMarker,
   });
 
   factory LayoutState.initial() {
@@ -38,9 +37,9 @@ class LayoutState extends Equatable {
       activeScreen: NavBarElement.home,
       currentFullAddress: '',
       currentShortAddress: '',
-      currentPosition: null,
+      //   currentPosition: null,
       currentLocationStatus: CurrentLocationStatus.initial,
-      currentMarker: Marker(markerId: MarkerId("location")),
+      // currentMarker: Marker(markerId: MarkerId("location")),
     );
   }
 
@@ -51,9 +50,9 @@ class LayoutState extends Equatable {
         activeScreen,
         currentFullAddress,
         currentShortAddress,
-        currentPosition,
+        //currentPosition,
         currentLocationStatus,
-        currentMarker,
+        // currentMarker,
       ];
 
   LayoutState copyWith({
@@ -62,9 +61,9 @@ class LayoutState extends Equatable {
     NavBarElement? activeScreen,
     String? currentFullAddress,
     String? currentShortAddress,
-    LatLng? currentPosition,
+    // LatLng? currentPosition,
     CurrentLocationStatus? currentLocationStatus,
-    Marker? currentMarker,
+    // Marker? currentMarker,
   }) {
     return LayoutState(
       failure: failure ?? this.failure,
@@ -72,10 +71,10 @@ class LayoutState extends Equatable {
       activeScreen: activeScreen ?? this.activeScreen,
       currentFullAddress: currentFullAddress ?? this.currentFullAddress,
       currentShortAddress: currentShortAddress ?? this.currentShortAddress,
-      currentPosition: currentPosition ?? this.currentPosition,
+      // currentPosition: currentPosition ?? this.currentPosition,
       currentLocationStatus:
           currentLocationStatus ?? this.currentLocationStatus,
-      currentMarker: currentMarker ?? this.currentMarker,
+      // currentMarker: currentMarker ?? this.currentMarker,
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master_admin/core/components/empty_loading.dart';
 import 'package:goal_master_admin/core/components/error_state_widget.dart';
+import 'package:goal_master_admin/core/components/error_widgets.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/core/styles/assets.dart';
 import 'package:goal_master_admin/core/styles/spaces.dart';
@@ -53,7 +54,7 @@ class BookingList extends StatelessWidget {
                 return const BookingListLoading();
               },
               noItemsFoundIndicatorBuilder: (context) {
-                return EmptyLoading(
+                return const EmptyLoading(
                   image: Assets.imagesPngImagePaper,
                   title: "لا يوجد حجوزات",
                 );
@@ -63,11 +64,8 @@ class BookingList extends StatelessWidget {
           );
         } else if (state is BookingFailure) {
           print("state.message: ${state.message}");
-          return ErrorStateWidget(
-            errorMessage: state.message,
-            onRetryPressed: () {
-              context.read<BookingCubit>().refresh();
-            },
+          return AppErrorView(
+            message: state.message,
           );
         }
         return const BookingListLoading(
