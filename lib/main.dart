@@ -64,6 +64,20 @@ Future<void> requestNotificationPermission() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  static final ValueNotifier<bool> hasInternet = ValueNotifier(true);
+
+  // مراقبة الاتصال بالإنترنت
+  static void startConnectivityListener() {
+    Connectivity().onConnectivityChanged.listen((result) async {
+      if (result == ConnectivityResult.none) {
+        hasInternet.value = false;
+      } else {
+        // تحقق فعلي من الإنترنت (مثلاً ping أو محاولة طلب)
+        hasInternet.value = true;
+      }
+    });
+  }
+
   String _mapStatusToRoute(AppStartStatus status) {
     switch (status) {
       case AppStartStatus.onboarding:
