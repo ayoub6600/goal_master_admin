@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -24,6 +22,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'core/components/no_internet_page.dart';
+
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
@@ -31,11 +32,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await SharedPreferenceUtil.getInstance();
-
   setupServiceLocator();
-
-  await _initializeNotifications();
-  await requestNotificationPermission();
+  await requestNotificationPermission(); // ✅ طلب الصلاحيات
+  await _initializeNotifications(); // ✅ iOS + Android init
 
   // طباعة البيانات المحفوظة للتحقق (مفيد للاختبار)
   AppStartCubit.debugPrintSavedData();
@@ -44,21 +43,52 @@ Future<void> main() async {
 }
 
 Future<void> _initializeNotifications() async {
+  // ANDROID init
   const AndroidInitializationSettings androidInitSettings =
       AndroidInitializationSettings('@mipmap/ic_launcher');
 
-  const InitializationSettings initSettings = InitializationSettings(
-    android: androidInitSettings,
+  // iOS init (Darwin)
+  const DarwinInitializationSettings iosInitSettings =
+      DarwinInitializationSettings(
+    requestAlertPermission: false, // هنطلبها لاحقًا بدالة منفصلة
+    requestBadgePermission: false,
+    requestSoundPermission: false,
   );
 
-  await flutterLocalNotificationsPlugin.initialize(initSettings);
+  // لازم تضم الاثنين معًا
+  const InitializationSettings initSettings = InitializationSettings(
+    android: androidInitSettings,
+    iOS: iosInitSettings,
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(
+    initSettings,
+    // مهم لـ iOS عشان لما يضغط على الإشعار نعرف نوجّه
+    onDidReceiveNotificationResponse: (NotificationResponse response) async {
+      final payload = response.payload;
+      if (payload == RoutesKeys.kNotification) {
+        // افتح صفحة الإشعارات
+      }
+    },
+  );
 }
 
 Future<void> requestNotificationPermission() async {
+  // Android 13+ إذن الإشعارات
   final status = await Permission.notification.status;
   if (!status.isGranted) {
     await Permission.notification.request();
   }
+
+  // iOS: لازم من خلال البلجن نفسه
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin>()
+      ?.requestPermissions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
 }
 
 class MyApp extends StatelessWidget {
@@ -72,7 +102,6 @@ class MyApp extends StatelessWidget {
       if (result == ConnectivityResult.none) {
         hasInternet.value = false;
       } else {
-        // تحقق فعلي من الإنترنت (مثلاً ping أو محاولة طلب)
         hasInternet.value = true;
       }
     });
@@ -81,13 +110,10 @@ class MyApp extends StatelessWidget {
   String _mapStatusToRoute(AppStartStatus status) {
     switch (status) {
       case AppStartStatus.onboarding:
-        // أول مرة - عرض شاشة onboarding
         return RoutesKeys.kOnboarding;
       case AppStartStatus.unauthenticated:
-        // بعد onboarding أو عند عدم تسجيل الدخول - عرض صفحة تسجيل الدخول
         return RoutesKeys.kLogin;
       case AppStartStatus.authenticated:
-        // عند تسجيل الدخول - عرض الصفحة الرئيسية
         return RoutesKeys.kHome;
       default:
         return RoutesKeys.kHome;
@@ -96,6 +122,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // بدء مراقبة الاتصال
+    startConnectivityListener();
     return BlocProvider(
       create: (_) => AppStartCubit(),
       child: BlocBuilder<AppStartCubit, AppStartState>(
@@ -112,19 +140,28 @@ class MyApp extends StatelessWidget {
 
           final initialRoute = _mapStatusToRoute(state.status);
 
-          return MultiBlocProvider(
-            providers: [
-              BlocProvider(
-                create: (_) => NotificationCubit(
-                  notificationRepo: getIt<NotificationRepo>(),
-                  userId: SharedPreferenceUtil.getInt(PrefKey.userId) ?? 0,
-                  onVisualNotification: (notification) async {
-                    await flutterLocalNotificationsPlugin.show(
-                      0,
-                      '📣 مدير الملعب',
-                      notification.data.message,
-                      NotificationDetails(
-                        android: AndroidNotificationDetails(
+          return ValueListenableBuilder<bool>(
+            valueListenable: MyApp.hasInternet,
+            builder: (context, hasInternet, _) {
+              if (!hasInternet) {
+                return NoInternetPage(
+                  onRetry: () async {
+                    final result = await Connectivity().checkConnectivity();
+                    if (result != ConnectivityResult.none) {
+                      MyApp.hasInternet.value = true;
+                    }
+                  },
+                );
+              }
+              return MultiBlocProvider(
+                providers: [
+                  BlocProvider(
+                    create: (_) => NotificationCubit(
+                      notificationRepo: getIt<NotificationRepo>(),
+                      userId: SharedPreferenceUtil.getInt(PrefKey.userId),
+                      onVisualNotification: (notification) async {
+                        // ✅ اجعل NotificationDetails تشمل iOS + Android
+                        const androidDetails = AndroidNotificationDetails(
                           'goal_channel_id',
                           'Goal Notifications',
                           channelDescription:
@@ -138,78 +175,78 @@ class MyApp extends StatelessWidget {
                             largeIcon:
                                 DrawableResourceAndroidBitmap('logo_goal'),
                             contentTitle: '📣 مدير الملعب',
-                            summaryText: notification.data.message,
+                            summaryText: null,
                           ),
-                        ),
-                      ),
-                      payload: RoutesKeys.kNotification,
-                    );
+                        );
 
-                    // await flutterLocalNotificationsPlugin.show(
-                    //   0,
-                    //   notification.data.message ?? 'تنبيه جديد',
-                    //   notification.data.message,
-                    //   const NotificationDetails(
-                    //     android: AndroidNotificationDetails(
-                    //       'goal_channel_id',
-                    //       'Goal Notifications',
-                    //       channelDescription:
-                    //           'Notifications from Goal Master Admin',
-                    //       importance: Importance.max,
-                    //       priority: Priority.high,
-                    //       playSound: true,
-                    //       icon: '@mipmap/ic_launcher',
-                    //     ),
-                    //   ),
-                    // );
-                  },
-                ),
-              ),
-              BlocProvider(
-                create: (_) => AddCustomerCubit(getIt<BookingRepo>()),
-              ),
-              BlocProvider(create: (_) => LayoutCubit()),
-              BlocProvider(
-                create: (_) =>
-                    ProfileCubit(getIt<ProfileRepoImp>())..getProfile(),
-              ),
-              BlocProvider(
-                create: (_) =>
-                    CustomerCubit(bookingRepo: getIt<ProfileRepoImp>()),
-              ),
-            ],
-            child: ScreenUtilInit(
-              designSize: const Size(390, 844),
-              builder: (_, __) => Builder(
-                builder: (context) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    context.read<NotificationCubit>().startSocket();
-                  });
+                        const iosDetails = DarwinNotificationDetails(
+                          presentAlert: true,
+                          presentBadge: true,
+                          presentSound: true,
+                          threadIdentifier: 'admin_notifications',
+                        );
 
-                  return OKToast(
-                    child: MaterialApp.router(
-                      title: "Goal Master Admin",
-                      theme: ThemeData(
-                        colorScheme:
-                            ColorScheme.fromSeed(seedColor: AppColors.primary),
-                        useMaterial3: true,
-                        textTheme: GoogleFonts.tajawalTextTheme(),
-                        scaffoldBackgroundColor: Colors.white,
-                      ),
-                      debugShowCheckedModeBanner: false,
-                      locale: const Locale('ar'),
-                      supportedLocales: const [Locale('ar')],
-                      localizationsDelegates: const [
-                        GlobalMaterialLocalizations.delegate,
-                        GlobalWidgetsLocalizations.delegate,
-                        GlobalCupertinoLocalizations.delegate,
-                      ],
-                      routerConfig: AppRouter.createRouter(initialRoute),
+                        const details = NotificationDetails(
+                          android: androidDetails,
+                          iOS: iosDetails,
+                        );
+
+                        await flutterLocalNotificationsPlugin.show(
+                          0,
+                          '📣 مدير الملعب',
+                          notification.data.message,
+                          details,
+                          payload: RoutesKeys.kNotification,
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-            ),
+                  ),
+                  BlocProvider(
+                    create: (_) => AddCustomerCubit(getIt<BookingRepo>()),
+                  ),
+                  BlocProvider(create: (_) => LayoutCubit()),
+                  BlocProvider(
+                    create: (_) =>
+                        ProfileCubit(getIt<ProfileRepoImp>())..getProfile(),
+                  ),
+                  BlocProvider(
+                    create: (_) =>
+                        CustomerCubit(bookingRepo: getIt<ProfileRepoImp>()),
+                  ),
+                ],
+                child: ScreenUtilInit(
+                  designSize: const Size(390, 844),
+                  builder: (_, __) => Builder(
+                    builder: (context) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        context.read<NotificationCubit>().startSocket();
+                      });
+                      return OKToast(
+                        child: MaterialApp.router(
+                          title: "Goal Master Admin",
+                          theme: ThemeData(
+                            colorScheme: ColorScheme.fromSeed(
+                                seedColor: AppColors.primary),
+                            useMaterial3: true,
+                            textTheme: GoogleFonts.tajawalTextTheme(),
+                            scaffoldBackgroundColor: Colors.white,
+                          ),
+                          debugShowCheckedModeBanner: false,
+                          locale: const Locale('ar'),
+                          supportedLocales: const [Locale('ar')],
+                          localizationsDelegates: const [
+                            GlobalMaterialLocalizations.delegate,
+                            GlobalWidgetsLocalizations.delegate,
+                            GlobalCupertinoLocalizations.delegate,
+                          ],
+                          routerConfig: AppRouter.createRouter(initialRoute),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
           );
         },
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:goal_master_admin/features/notification/data/model/notification_response.dart';
+import 'package:goal_master_admin/main.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class NotificationSocketService {
@@ -24,7 +25,7 @@ class NotificationSocketService {
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
     const initSettings = InitializationSettings(android: androidSettings);
-    await _localNotificationsPlugin.initialize(initSettings);
+    await flutterLocalNotificationsPlugin.initialize(initSettings);
   }
 
   void _connectToSocket() {
@@ -81,7 +82,7 @@ class NotificationSocketService {
 
     const notificationDetails = NotificationDetails(android: androidDetails);
 
-    await _localNotificationsPlugin.show(
+    await flutterLocalNotificationsPlugin.show(
       DateTime.now().millisecondsSinceEpoch ~/ 1000,
       title,
       body,
