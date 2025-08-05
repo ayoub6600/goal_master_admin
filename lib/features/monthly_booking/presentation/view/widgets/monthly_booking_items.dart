@@ -8,6 +8,7 @@ import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/core/styles/app_text_styles.dart';
 import 'package:goal_master_admin/core/styles/assets.dart';
 import 'package:goal_master_admin/features/monthly_booking/data/model/monthly_booking_response.dart';
+import 'package:goal_master_admin/features/monthly_booking/presentation/manager/monthly_booking_cubit/monthly_booking_cubit.dart';
 import 'package:goal_master_admin/features/monthly_booking/presentation/manager/udate_monthly_booking_cubit/udate_monthly_booking_cubit.dart';
 import 'package:goal_master_admin/features/monthly_booking/presentation/manager/udate_monthly_booking_cubit/udate_monthly_booking_state.dart';
 import 'package:goal_master_admin/features/monthly_booking/presentation/view/widgets/time_formatter.dart';
@@ -145,7 +146,7 @@ class MonthlyBookingItems extends StatelessWidget {
               children: [
                 Expanded(
                   child: Chip(
-                    label: Text(booking.isMonthly == 1 ? 'شهري' : 'غير شهري'),
+                    label: Text(booking.isMonthly ? 'شهري' : 'غير شهري'),
                     backgroundColor: booking.isMonthly == 1
                         ? Colors.green.shade100
                         : Colors.grey.shade300,
@@ -153,82 +154,87 @@ class MonthlyBookingItems extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Chip(
-                    label: Text(
-                        booking.isMonthlyActive == 1 ? 'مفعل' : 'غير مفعل'),
-                    backgroundColor: booking.isMonthlyActive == 1
-                        ? Colors.green.shade100
-                        : Colors.red.shade100,
-                  ),
-                ),
+                    child: Chip(
+                  label: Text(booking.isMonthlyActive ? 'مفعل' : 'غير مفعل'),
+                  backgroundColor: booking.isMonthlyActive
+                      ? Colors.green.shade100
+                      : Colors.red.shade100,
+                )),
               ],
             ),
             const SizedBox(height: 12),
-            BlocConsumer<UpdateMonthlyBooking, UpdateMonthlyBookingState>(
-              listener: (context, state) {
-                if (state is UpdateMonthlyBookingSuccess) {
-                  showCustomSuccessToast(state.message);
-                } else if (state is UpdateMonthlyBookingFailure) {
-                  showCustomFailureToast(state.error);
-                }
-              },
-              builder: (context, state) {
-                return ButtonApp(
-                  text: "الغاء الحجز",
-                  onTap: () {
-                    DateTime? pickedDate;
-                    final dateController = TextEditingController();
+            booking.isMonthlyActive
+                ? BlocConsumer<UpdateMonthlyBooking, UpdateMonthlyBookingState>(
+                    listener: (context, state) {
+                      if (state is UpdateMonthlyBookingSuccess) {
+                        showCustomSuccessToast(state.message);
+                        context.read<MonthlyBookingCubit>().refresh();
+                      } else if (state is UpdateMonthlyBookingFailure) {
+                        showCustomFailureToast(state.error);
+                      }
+                    },
+                    builder: (context, state) {
+                      return ButtonApp(
+                        text: "الغاء الحجز",
+                        onTap: () {
+                          DateTime? pickedDate;
+                          final dateController = TextEditingController();
 
-                    baseBottomSheet(
-                      title: "تحديد تاريخ جديد",
-                      context: context,
-                      hideNavBar: false,
-                      child: Column(
-                        children: [
-                          CustomDatePicker(
-                            initialDate: pickedDate,
-                            firstDate: DateTime.now(),
-                            lastDate: DateTime.now().add(Duration(days: 3650)),
-                            onDatePicked: (value) {
-                              if (value != null) {
-                                pickedDate = value;
-                                dateController.text = DateFormat('yyyy-MM-dd')
-                                    .format(pickedDate!);
-                              }
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          ButtonApp(
-                            text: state is UpdateMonthlyBookingLoading
-                                ? "الرجاء الانتظار"
-                                : "تأكيد الغاء الحجز",
-                            onTap: () {
-                              if (pickedDate == null) {
-                                showCustomFailureToast(
-                                    "يرجى اختيار التاريخ أولًا");
-                                return;
-                              }
+                          baseBottomSheet(
+                            title: "تحديد تاريخ جديد",
+                            context: context,
+                            hideNavBar: false,
+                            child: Column(
+                              children: [
+                                CustomDatePicker(
+                                  initialDate: pickedDate,
+                                  firstDate: DateTime.now(),
+                                  lastDate:
+                                      DateTime.now().add(Duration(days: 3650)),
+                                  onDatePicked: (value) {
+                                    if (value != null) {
+                                      pickedDate = value;
+                                      dateController.text =
+                                          DateFormat('yyyy-MM-dd')
+                                              .format(pickedDate!);
+                                    }
+                                  },
+                                ),
+                                const SizedBox(height: 16),
+                                ButtonApp(
+                                  text: state is UpdateMonthlyBookingLoading
+                                      ? "الرجاء الانتظار"
+                                      : "تأكيد الغاء الحجز",
+                                  onTap: () {
+                                    if (pickedDate == null) {
+                                      showCustomFailureToast(
+                                          "يرجى اختيار التاريخ أولًا");
+                                      return;
+                                    }
 
-                              final formattedDate =
-                                  DateFormat('yyyy-MM-dd').format(pickedDate!);
+                                    final formattedDate =
+                                        DateFormat('yyyy-MM-dd')
+                                            .format(pickedDate!);
 
-                              context
-                                  .read<UpdateMonthlyBooking>()
-                                  .updateMonthlyBooking(
-                                    id: booking.id.toString(),
-                                    serviceDate: formattedDate,
-                                  );
+                                    context
+                                        .read<UpdateMonthlyBooking>()
+                                        .updateMonthlyBooking(
+                                          id: booking.id.toString(),
+                                          serviceDate: formattedDate,
+                                        );
 
-                              Navigator.pop(context); // إغلاق الشيت بعد التحديث
-                            },
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+                                    Navigator.pop(
+                                        context); // إغلاق الشيت بعد التحديث
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  )
+                : const SizedBox(),
           ],
         ),
       ),

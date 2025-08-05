@@ -53,18 +53,20 @@ class BookingItemsDetails extends StatelessWidget {
                       ),
                     ),
                   ),
-                  booking.status == 4
+                  booking.status == 4 || booking.status == 3
                       ? const Divider()
                       : Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Column(
                             children: [
-                              //  if (booking.status == 3)
-                              Row(
-                                children: [
-                                  DepositBookingButton(bookingDetails: booking),
-                                ],
-                              ),
+                              booking.status != 1
+                                  ? Row(
+                                      children: [
+                                        DepositBookingButton(
+                                            bookingDetails: booking),
+                                      ],
+                                    )
+                                  : const SizedBox.shrink(),
                               HeightSpace(16.h),
                               Row(
                                 children: [

@@ -108,11 +108,18 @@ class _AddBookingViewState extends State<AddBookingView> {
                                   showCustomSuccessToast(
                                       "تم اضافة الحجز بنجاح");
                                   // print("state.massage ${state.massage}");
-                                  pushReplacement(
-                                    RoutesKeys.kHtmlViewerScreen,
-                                    context,
-                                    extra: state.massage,
-                                  );
+                                  if (state.massage == "Successfully saved") {
+                                    pushReplacement(
+                                      RoutesKeys.kHtmlViewerScreen,
+                                      context,
+                                      extra: state.massage,
+                                    );
+                                  } else {
+                                    pushReplacement(
+                                      RoutesKeys.kHome,
+                                      context,
+                                    );
+                                  }
 
                                   //timer  go push  kHtmlViewerScreen
                                 } else if (state is AddBookingFailure) {

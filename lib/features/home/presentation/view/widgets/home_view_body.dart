@@ -226,16 +226,6 @@ class HomeViewBody extends StatelessWidget {
                       color: HexColor('#7A9D54'),
                     ),
                     ItemsShowAnalysisNew(
-                      title: "إجمالي المدفوع اليوم",
-                      count: totalPaid,
-                      color: Colors.teal,
-                    ),
-                    ItemsShowAnalysisNew(
-                      title: "إجمالي قيمة الخدمات",
-                      count: totalService,
-                      color: HexColor('#F39C12'),
-                    ),
-                    ItemsShowAnalysisNew(
                       title: "إجمالي الدخل",
                       count: incomeTotal, // ✅ مباشرة
                       color: HexColor('#9C640C'),

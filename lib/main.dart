@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -27,20 +30,50 @@ import 'core/components/no_internet_page.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    print('🔥 Caught Flutter error: ${details.exception}');
+  };
+
   await SharedPreferenceUtil.getInstance();
   setupServiceLocator();
-  await requestNotificationPermission(); // ✅ طلب الصلاحيات
-  await _initializeNotifications(); // ✅ iOS + Android init
 
-  // طباعة البيانات المحفوظة للتحقق (مفيد للاختبار)
-  AppStartCubit.debugPrintSavedData();
+  // Zone للحماية من الكراش الصامت
+  await runZonedGuarded(() async {
+    try {
+      if (Platform.isAndroid || Platform.isIOS) {
+        await requestNotificationPermission();
+        await _initializeNotifications();
+      }
+    } catch (e, s) {
+      print("🔥 Notification init error: $e\n$s");
+    }
 
-  runApp(const MyApp());
+    // طباعة البيانات المحفوظة للتحقق (مفيد للاختبار)
+    AppStartCubit.debugPrintSavedData();
+
+    runApp(const MyApp());
+  }, (e, s) {
+    print("🔥 Zone error: $e\n$s");
+  });
 }
+
+// Future<void> main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+
+//   await SharedPreferenceUtil.getInstance();
+//   setupServiceLocator();
+//   await requestNotificationPermission(); // ✅ طلب الصلاحيات
+//   await _initializeNotifications(); // ✅ iOS + Android init
+
+//   // طباعة البيانات المحفوظة للتحقق (مفيد للاختبار)
+//   AppStartCubit.debugPrintSavedData();
+
+//   runApp(const MyApp());
+// }
 
 Future<void> _initializeNotifications() async {
   // ANDROID init

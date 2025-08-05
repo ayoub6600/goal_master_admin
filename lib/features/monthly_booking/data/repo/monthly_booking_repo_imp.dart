@@ -33,7 +33,7 @@ class MonthlyBookingRepoImp extends MonthlyBookingRepo {
         data: {'service_date': serviceDate, 'id': id},
       ),
       (data) {
-        return data["message"];
+        return data["msg"];
       },
     );
   }
