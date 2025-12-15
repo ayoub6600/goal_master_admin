@@ -37,11 +37,19 @@ class AppBarBackButton extends StatelessWidget {
               : 0,
       child: CustomButtonWrapper(
         padding: EdgeInsets.all(12.r),
-        onTap:
-            onTap ??
-            () {
-              GoRouter.of(context).pop();
-            },
+        onTap: onTap ??
+    () {
+      final router = GoRouter.of(context);
+      if (allowBack) {
+        try {
+          if (router.canPop()) {
+            router.pop();
+          }
+        } on GoError catch (e) {
+          debugPrint('Ignored GoRouter pop error: $e');
+        }
+      }
+    },
         width: 44.w,
         height: 44.w,
         decoration: BoxDecoration(

@@ -29,35 +29,42 @@ class _CustomerSelectionState extends State<CustomerSelection> {
   Customer? selectedCustomer;
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const StepTitle(
-          title: "اختار العميل ",
-          description: "اختار العميل المناسب للحجز الذي تريده",
+Widget build(BuildContext context) {
+  final pageCubit = context.watch<PageViewCubit>();
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const StepTitle(
+        title: "اختار العميل ",
+        description: "اختار العميل المناسب للحجز الذي تريده",
+      ),
+      Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: CustomDropDownShimmerNew(
+          label: "الحالة",
+          hint: "اختر الحالة",
+          items: const [
+            //{"id": 0, "name_ar": "غير خالص"},
+            //{"id": 1, "name_ar": "انتظار قبول الطلب"},
+            {"id": 2, "name_ar": "موافَق عليه"},
+            //{"id": 3, "name_ar": "ملغي"},
+            {"id": 4, "name_ar": "خالص"},
+          ],
+          // نفس فكرة كود التعديل: نربطه بقيمة من الكيوبت
+          selectedValue: pageCubit.status?.toString(),
+          onChanged: (val) {
+            if (val == null) return;
+
+            // زي setSelectedStatus في شاشة التعديل
+            context.read<PageViewCubit>().updateStatus(val);
+
+            context
+                .read<PageViewCubit>()
+                .goToNextPageIfReady(widget.controller);
+          },
         ),
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: CustomDropDownShimmerNew(
-            label: "",
-            hint: "اختر الحالة",
-            items: [
-              {"id": 0, "name_ar": "غير خالص"},
-              {"id": 1, "name_ar": "انتظار قبول الطلب"},
-              {"id": 2, "name_ar": "موافَق عليه"},
-              {"id": 3, "name_ar": "ملغي"},
-              {"id": 4, "name_ar": "خالص"},
-            ],
-            selectedValue: "cubit.status",
-            onChanged: (val) {
-              context.read<PageViewCubit>().updateStatus(val ?? "");
-              context
-                  .read<PageViewCubit>()
-                  .goToNextPageIfReady(widget.controller);
-            },
-          ),
-        ),
+      ),
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(

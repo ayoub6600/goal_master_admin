@@ -54,7 +54,7 @@ class UpdateBookingStatusView extends StatelessWidget {
                       hint: "اختر الحالة",
                       items: const [
                         {"id": 0, "name_ar": "غير خالص"},
-                        {"id": 1, "name_ar": "انتظار قبول الطلب"},
+                       // {"id": 1, "name_ar": "انتظار قبول الطلب"},
                         {"id": 2, "name_ar": "موافَق عليه"},
                         {"id": 3, "name_ar": "ملغي"},
                         {"id": 4, "name_ar": "خالص"},

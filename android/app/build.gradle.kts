@@ -7,7 +7,7 @@ plugins {
 android {
     namespace = "com.rahbdev.goaladmin"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "25.2.9519653"
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -29,7 +29,7 @@ android {
 
     signingConfigs {
         create("release") {
-            keyAlias = "goalmasterkey"
+            keyAlias = "goal_master_admin"
             keyPassword = "123456789"
             storeFile = file("goal_master_admin.jks")
             storePassword = "123456789"
@@ -37,7 +37,7 @@ android {
     }
 
     buildTypes {
-        release {
+        getByName("release") {
             signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             isShrinkResources = false

@@ -7,6 +7,8 @@ part 'page_view_cubit_state.dart';
 class PageViewCubit extends Cubit<PageViewState> {
   PageViewCubit() : super(const PageViewState(currentPage: 0));
 
+  String? get status => state.status;
+
   void nextPage() {
     if (state.currentPage < 7) {
       emit(state.copyWith(currentPage: state.currentPage + 1));

@@ -4,5 +4,6 @@
     "Responce"
   ],
   "debug.enableStatusBarColor": false,
-  "dart.flutterSdkPath": ".fvm/versions/3.29.3"
+  "dart.flutterSdkPath": ".fvm/versions/3.29.3",
+  "java.configuration.updateBuildConfiguration": "interactive"
 }
