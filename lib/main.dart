@@ -21,7 +21,6 @@ import 'package:goal_master_admin/features/notification/manager/notification_cub
 import 'package:goal_master_admin/features/profail/data/repo/profile_repo_imp.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/customer_cubit/customer_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -261,7 +260,7 @@ class MyApp extends StatelessWidget {
                             colorScheme: ColorScheme.fromSeed(
                                 seedColor: AppColors.primary),
                             useMaterial3: true,
-                            textTheme: GoogleFonts.tajawalTextTheme(),
+                            textTheme: const TextTheme(),
                             scaffoldBackgroundColor: Colors.white,
                           ),
                           debugShowCheckedModeBanner: false,

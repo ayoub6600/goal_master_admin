@@ -39,23 +39,32 @@ class BookingItemResponce {
 
   static BookingItemResponce fromJson(Map<String, dynamic> json) {
     return BookingItemResponce(
-      id: json['id'],
-      status: json['status'],
-      statusName: json['statusName'],
-      paymentStatus: json['payment_status'],
-      paymentStatusName: json['paymentStatusName'],
-      customer: json['customer'],
-      customerPhoneNo: json['customer_phone_no'],
-      employee: json['employee'],
-      branch: json['branch'],
-      service: json['service'],
-      date: DateTime.parse(json['date']),
-      startTime: DateTime.parse(json['start_time']),
-      endTime: DateTime.parse(json['end_time']),
-      remarks: json['remarks'],
-      serviceAmount: json['service_amount'],
-      paidAmount: json['paid_amount'],
-      due: json['due'],
+      id: _asInt(json['id']),
+      status: _asInt(json['status']),
+      statusName: _asString(json['statusName']),
+      paymentStatus: _asInt(json['payment_status']),
+      paymentStatusName: _asString(json['paymentStatusName']),
+      customer: _asString(json['customer']),
+      customerPhoneNo: _asString(json['customer_phone_no']),
+      employee: _asString(json['employee']),
+      branch: _asString(json['branch']),
+      service: _asString(json['service']),
+      date: DateTime.parse(_asString(json['date'])),
+      startTime: DateTime.parse(_asString(json['start_time'])),
+      endTime: DateTime.parse(_asString(json['end_time'])),
+      remarks: json['remarks']?.toString(),
+      serviceAmount: _asString(json['service_amount']),
+      paidAmount: _asString(json['paid_amount']),
+      due: _asString(json['due']),
     );
+  }
+
+  static int _asInt(dynamic value) {
+    if (value is int) return value;
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  static String _asString(dynamic value) {
+    return value?.toString() ?? '';
   }
 }

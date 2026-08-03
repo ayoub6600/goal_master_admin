@@ -43,25 +43,34 @@ class BookingDetails {
 
   factory BookingDetails.fromJson(Map<String, dynamic> json) {
     return BookingDetails(
-      id: json['id'],
-      cmnCustomerId: json['cmn_customer_id'],
-      branch: json['branch'],
-      address: json['address'],
-      latitude: json['latitude'],
-      longitude: json['longitude'],
-      date: DateTime.parse(json['date']),
-      startTime: json['start_time'],
-      endTime: json['end_time'],
-      service: json['service'],
-      serviceAmount: json['service_amount'],
-      paidAmount: json['paid_amount'],
-      paymentStatus: json['payment_status'],
-      paymentName: json['payment_name'],
-      paymentType: json['payment_type'],
-      status: json['status'],
-      statusName: json['status_name'],
-      remarks: json['remarks'],
-      category: json['category'],
+      id: _asInt(json['id']),
+      cmnCustomerId: _asInt(json['cmn_customer_id']),
+      branch: _asString(json['branch']),
+      address: _asString(json['address']),
+      latitude: _asString(json['latitude']),
+      longitude: _asString(json['longitude']),
+      date: DateTime.parse(_asString(json['date'])),
+      startTime: _asString(json['start_time']),
+      endTime: _asString(json['end_time']),
+      service: _asString(json['service']),
+      serviceAmount: _asString(json['service_amount']),
+      paidAmount: _asString(json['paid_amount']),
+      paymentStatus: _asInt(json['payment_status']),
+      paymentName: _asString(json['payment_name']),
+      paymentType: _asString(json['payment_type']),
+      status: _asInt(json['status']),
+      statusName: _asString(json['status_name']),
+      remarks: json['remarks']?.toString(),
+      category: _asString(json['category']),
     );
+  }
+
+  static int _asInt(dynamic value) {
+    if (value is int) return value;
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  static String _asString(dynamic value) {
+    return value?.toString() ?? '';
   }
 }

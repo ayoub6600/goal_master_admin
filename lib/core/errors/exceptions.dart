@@ -83,6 +83,16 @@ class ServerFailure extends Failure {
           print('╚══════════════════════════════════════════════════════');
           return ServerFailure(errMessage: response['message']);
         }
+
+        if (response.containsKey('data') &&
+            response['data'] is String &&
+            (response['data'] as String).trim().isNotEmpty) {
+          print('║ 📢 SERVER DATA MESSAGE: ${response['data']}');
+          print('╠══════════════════════════════════════════════════════');
+          print('║ 📝 RETURNING SERVER DATA MESSAGE');
+          print('╚══════════════════════════════════════════════════════');
+          return ServerFailure(errMessage: response['data']);
+        }
       }
 
       print('║ ⚠️ DEFAULT VALIDATION ERROR MESSAGE');

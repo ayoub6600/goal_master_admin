@@ -33,19 +33,28 @@ class BookingHistoryResponse {
         bookingList.map((i) => Booking.fromJson(i)).toList();
 
     return BookingHistoryResponse(
-      currentPage: json['current_page'],
+      currentPage: _asInt(json['current_page']),
       bookings: bookings,
-      firstPageUrl: json['first_page_url'],
-      from: json['from'],
-      lastPage: json['last_page'],
-      lastPageUrl: json['last_page_url'],
+      firstPageUrl: _asString(json['first_page_url']),
+      from: _asInt(json['from']),
+      lastPage: _asInt(json['last_page']),
+      lastPageUrl: _asString(json['last_page_url']),
       links: (json['links'] as List).map((i) => PageLink.fromJson(i)).toList(),
-      nextPageUrl: json['next_page_url'],
-      path: json['path'],
-      perPage: json['per_page'],
-      to: json['to'],
-      total: json['total'],
+      nextPageUrl: _asString(json['next_page_url']),
+      path: _asString(json['path']),
+      perPage: _asInt(json['per_page']),
+      to: _asInt(json['to']),
+      total: _asInt(json['total']),
     );
+  }
+
+  static int _asInt(dynamic value) {
+    if (value is int) return value;
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  static String _asString(dynamic value) {
+    return value?.toString() ?? '';
   }
 }
 
@@ -90,23 +99,23 @@ class Booking {
 
   factory Booking.fromJson(Map<String, dynamic> json) {
     return Booking(
-      id: json['id'],
-      branch: json['branch'],
-      address: json['address'],
-      latitude: json['latitude'],
-      longitude: json['longitude'],
-      date: json['date'],
-      startTime: json['start_time'],
-      endTime: json['end_time'],
-      service: json['service'],
-      serviceAmount: json['service_amount'],
-      paidAmount: json['paid_amount'],
-      paymentStatus: json['payment_status'],
-      paymentType: json['payment_type'],
-      status: json['status'],
-      statusName: json['status_name'],
-      remarks: json['remarks'],
-      category: json['category'],
+      id: BookingHistoryResponse._asInt(json['id']),
+      branch: BookingHistoryResponse._asString(json['branch']),
+      address: BookingHistoryResponse._asString(json['address']),
+      latitude: BookingHistoryResponse._asString(json['latitude']),
+      longitude: BookingHistoryResponse._asString(json['longitude']),
+      date: BookingHistoryResponse._asString(json['date']),
+      startTime: BookingHistoryResponse._asString(json['start_time']),
+      endTime: BookingHistoryResponse._asString(json['end_time']),
+      service: BookingHistoryResponse._asString(json['service']),
+      serviceAmount: BookingHistoryResponse._asString(json['service_amount']),
+      paidAmount: BookingHistoryResponse._asString(json['paid_amount']),
+      paymentStatus: BookingHistoryResponse._asString(json['payment_status']),
+      paymentType: BookingHistoryResponse._asString(json['payment_type']),
+      status: BookingHistoryResponse._asInt(json['status']),
+      statusName: BookingHistoryResponse._asString(json['status_name']),
+      remarks: BookingHistoryResponse._asString(json['remarks']),
+      category: BookingHistoryResponse._asString(json['category']),
     );
   }
 }
