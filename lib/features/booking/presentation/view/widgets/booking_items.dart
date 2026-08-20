@@ -54,6 +54,12 @@ class BookingItems extends StatelessWidget {
                       ),
                     ],
                   ),
+                  Text(
+                    "( ${booking.paymentStatusName} )",
+                    style: AppTextStyles.font16Bold.copyWith(
+                      color: _getPaymentStatusColor(booking.paymentStatus),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -174,6 +180,36 @@ class BookingItems extends StatelessWidget {
                 ],
               ),
             ),
+            HeightSpace(16.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12.w),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 12.w, vertical: 6.h),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(booking.status),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Text(
+                      _getStatusText(booking.status),
+                      style: AppTextStyles.font12Regular.copyWith(
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    "السعر : ${booking.serviceAmount} دينار",
+                    style: AppTextStyles.font18Bold.copyWith(
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
             HeightSpace(12.h),
           ],
         ),
@@ -203,6 +239,18 @@ class BookingItems extends StatelessWidget {
         return 'خالص';
       default:
         return 'غير معروف';
+    }
+  }
+
+  Color _getPaymentStatusColor(int paymentStatus) {
+    switch (paymentStatus) {
+      case 1:
+        return Colors.green; // خالص
+      case 3:
+        return Colors.orange; // دفع جزئي
+      case 2:
+      default:
+        return Colors.red; // غير مدفوع
     }
   }
 

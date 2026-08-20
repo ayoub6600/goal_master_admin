@@ -31,7 +31,7 @@ class AddBookingCubit extends Cubit<AddBookingState> {
     required int serviceId,
     required String date,
     required int customerId,
-    required String status,
+    required String? status,
     required String phone,
     required String fullname,
     required dynamic startTime, // String or DateTime
@@ -49,6 +49,7 @@ class AddBookingCubit extends Cubit<AddBookingState> {
     if (!_validateBookingData(
       employeeId: employeeId,
       serviceId: serviceId,
+      status: status,
       date: formattedDate,
       startTime: startTime,
       endTime: endTime,
@@ -70,7 +71,7 @@ class AddBookingCubit extends Cubit<AddBookingState> {
       customerId: customerId,
       review: "",
       paidAmount: paidAmountController.text,
-      status: status,
+      status: status ?? "",
     );
 
     result.fold(
@@ -103,6 +104,7 @@ class AddBookingCubit extends Cubit<AddBookingState> {
   bool _validateBookingData({
     required int employeeId,
     required int serviceId,
+    required String? status,
     required String date,
     required dynamic startTime,
     required dynamic endTime,
@@ -115,6 +117,11 @@ class AddBookingCubit extends Cubit<AddBookingState> {
 
     if (date.isEmpty || startTime == null || endTime == null) {
       emit(const AddBookingFailure(massage: "يرجى اختيار التاريخ والوقت"));
+      return false;
+    }
+
+    if (status == null || status.isEmpty) {
+      emit(const AddBookingFailure(massage: "يرجى اختيار حالة الحجز"));
       return false;
     }
 

@@ -60,20 +60,21 @@ class NotificationData {
 
   factory NotificationData.fromJson(Map<String, dynamic> json) =>
       NotificationData(
-        currentPage: json["current_page"],
-        data: List<NotificationItem>.from(
-            json["data"].map((x) => NotificationItem.fromJson(x))),
+        currentPage: _asInt(json["current_page"]),
+        data: List<NotificationItem>.from((json["data"] as List<dynamic>? ?? [])
+            .map((x) => NotificationItem.fromJson(x))),
         firstPageUrl: json["first_page_url"],
-        from: json["from"],
-        lastPage: json["last_page"],
+        from: _asInt(json["from"]),
+        lastPage: _asInt(json["last_page"]),
         lastPageUrl: json["last_page_url"],
-        links: List<Link>.from(json["links"].map((x) => Link.fromJson(x))),
+        links: List<Link>.from((json["links"] as List<dynamic>? ?? [])
+            .map((x) => Link.fromJson(x))),
         nextPageUrl: json["next_page_url"],
-        path: json["path"],
-        perPage: json["per_page"],
+        path: json["path"]?.toString() ?? '',
+        perPage: _asInt(json["per_page"]),
         prevPageUrl: json["prev_page_url"],
-        to: json["to"],
-        total: json["total"],
+        to: _asInt(json["to"]),
+        total: _asInt(json["total"]),
       );
 
   Map<String, dynamic> toJson() => {
@@ -116,11 +117,12 @@ class NotificationItem {
 
   factory NotificationItem.fromJson(Map<String, dynamic> json) =>
       NotificationItem(
-        id: json["id"],
-        type: json["type"],
-        notifiableType: json["notifiable_type"],
-        notifiableId: json["notifiable_id"],
-        data: NotificationInnerData.fromJson(json["data"]),
+        id: json["id"]?.toString() ?? '',
+        type: json["type"]?.toString() ?? '',
+        notifiableType: json["notifiable_type"]?.toString() ?? '',
+        notifiableId: _asInt(json["notifiable_id"]),
+        data: NotificationInnerData.fromJson(
+            json["data"] as Map<String, dynamic>? ?? const {}),
         readAt: json["read_at"],
         createdAt: DateTime.tryParse(json["created_at"]) ?? DateTime.now(),
         updatedAt: DateTime.tryParse(json["updated_at"]) ?? DateTime.now(),
@@ -221,23 +223,49 @@ class NotificationItem {
 
 class NotificationInnerData {
   final String message;
-  final int id;
+  final int? id;
+  final int? bookingId;
+  final String? createdAt;
+  final String? type;
 
   NotificationInnerData({
     required this.message,
-    required this.id,
+    this.id,
+    this.bookingId,
+    this.createdAt,
+    this.type,
   });
 
   factory NotificationInnerData.fromJson(Map<String, dynamic> json) =>
       NotificationInnerData(
-        message: json["message"],
-        id: json["id"],
+        message: json["message"]?.toString() ?? '',
+        id: _asNullableInt(json["id"]),
+        bookingId:
+            _asNullableInt(json["booking_id"]) ?? _asNullableInt(json["id"]),
+        createdAt: json["created_at"]?.toString(),
+        type: json["type"]?.toString(),
       );
 
   Map<String, dynamic> toJson() => {
         "message": message,
         "id": id,
+        "booking_id": bookingId,
+        "created_at": createdAt,
+        "type": type,
       };
+}
+
+int _asInt(dynamic value) {
+  if (value is int) return value;
+  if (value is double) return value.toInt();
+  return int.tryParse(value?.toString() ?? '') ?? 0;
+}
+
+int? _asNullableInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is double) return value.toInt();
+  return int.tryParse(value.toString());
 }
 
 class Link {

@@ -13,8 +13,13 @@ import 'package:goal_master_admin/features/booking/presentation/manager/%20booki
 import 'package:goal_master_admin/features/booking/presentation/manager/update_booking_status_cubit/update_booking_status_cubit.dart';
 
 class UpdateBookingStatusView extends StatelessWidget {
-  const UpdateBookingStatusView({super.key, required this.id});
+  const UpdateBookingStatusView({
+    super.key,
+    required this.id,
+    this.isApprovalFlow = false,
+  });
   final int id;
+  final bool isApprovalFlow;
 
   @override
   Widget build(BuildContext context) {
@@ -34,43 +39,49 @@ class UpdateBookingStatusView extends StatelessWidget {
         return Expanded(
           child: ButtonApp(
             text: state is UpdateBookingStatusLoading
-                ? "جاري تعديل الحجز"
-                : "تعديل الحجز",
+                ? (isApprovalFlow ? "جاري قبول الحجز" : "جاري تعديل الحجز")
+                : (isApprovalFlow ? "قبول الحجز" : "تعديل الحجز"),
             textColor: Colors.white,
             backGround: AppColors.primary,
             onTap: () {
+              if (isApprovalFlow) {
+                cubit.setSelectedStatus('2');
+              }
               baseBottomSheet(
-                title: "تعديل الحجز",
+                title: isApprovalFlow ? "قبول الحجز" : "تعديل الحجز",
                 context: context,
                 child: Column(
                   children: [
                     Text(
-                      "هل انت متأكد من تعديل الحجز؟",
+                      isApprovalFlow
+                          ? "هل أنت متأكد من قبول هذا الحجز؟"
+                          : "هل انت متأكد من تعديل الحجز؟",
                       style: AppTextStyles.font16Regular,
                     ),
                     HeightSpace(20.h),
-                    CustomDropDownShimmerNew(
-                      label: "الحالة",
-                      hint: "اختر الحالة",
-                      items: const [
-                        {"id": 0, "name_ar": "غير خالص"},
-                       // {"id": 1, "name_ar": "انتظار قبول الطلب"},
-                        {"id": 2, "name_ar": "موافَق عليه"},
-                        {"id": 3, "name_ar": "ملغي"},
-                        {"id": 4, "name_ar": "خالص"},
-                      ],
-                      selectedValue: cubit.selectedStatus?.toString(),
-                      onChanged: (val) {
-                        cubit.setSelectedStatus(val!);
-                      },
-                    ),
-                    HeightSpace(20.h),
+                    if (!isApprovalFlow) ...[
+                      CustomDropDownShimmerNew(
+                        label: "الحالة",
+                        hint: "اختر الحالة",
+                        items: const [
+                          {"id": 0, "name_ar": "غير خالص"},
+                          {"id": 2, "name_ar": "موافَق عليه"},
+                          {"id": 3, "name_ar": "ملغي"},
+                          {"id": 4, "name_ar": "خالص"},
+                        ],
+                        selectedValue: cubit.selectedStatus?.toString(),
+                        onChanged: (val) {
+                          cubit.setSelectedStatus(val!);
+                        },
+                      ),
+                      HeightSpace(20.h),
+                    ],
                     Row(
                       children: [
                         Expanded(
                           child: ButtonApp(
                             backGround: AppColors.grey,
-                            text: "الغاء",
+                            text: isApprovalFlow ? "رجوع" : "الغاء",
                             onTap: () {
                               Navigator.pop(context);
                             },
@@ -79,7 +90,7 @@ class UpdateBookingStatusView extends StatelessWidget {
                         WidthSpace(20.w),
                         Expanded(
                           child: ButtonApp(
-                            text: "تأكيد",
+                            text: isApprovalFlow ? "قبول الحجز" : "تأكيد",
                             backGround: AppColors.primary,
                             textColor: Colors.white,
                             onTap: () {

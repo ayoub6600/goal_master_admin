@@ -77,6 +77,32 @@ class LoginViewBody extends StatelessWidget {
                                     textAlign: TextAlign.center,
                                     style: AppTextStyles.font18Bold
                                         .copyWith(color: Colors.white)),
+                                HeightSpace(18.h),
+                                GestureDetector(
+                                  onTap: () => GoRouter.of(context)
+                                      .push(RoutesKeys.kRegister),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 14.w,
+                                      vertical: 10.h,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.14),
+                                      borderRadius: BorderRadius.circular(99.r),
+                                      border: Border.all(
+                                        color: Colors.white
+                                            .withValues(alpha: 0.28),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      "ليس لديك حساب؟ أنشئ حساب مدير ملعب",
+                                      textAlign: TextAlign.center,
+                                      style: AppTextStyles.font14Bold
+                                          .copyWith(color: Colors.white),
+                                    ),
+                                  ),
+                                ),
                                 HeightSpace(48.h),
                               ],
                             ),

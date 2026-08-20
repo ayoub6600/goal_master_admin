@@ -14,6 +14,31 @@ import 'package:goal_master_admin/features/auth/data/repo/auth_repo.dart';
 class AuthRepoImpl implements AuthRepo {
   final ApiConsumer consumer;
   AuthRepoImpl(this.consumer);
+
+  void _storeSubscriptionPrefs(User? user) {
+    if (user == null) return;
+    SharedPreferenceUtil.putString(
+      PrefKey.subscriptionPlanName,
+      user.currentSubscription?.planName ?? '',
+    );
+    SharedPreferenceUtil.putString(
+      PrefKey.subscriptionPlanCode,
+      user.currentSubscription?.planCode ?? '',
+    );
+    SharedPreferenceUtil.putBool(
+      PrefKey.subscriptionAllowMonthlyBookings,
+      user.canUseMonthlyBookings,
+    );
+    SharedPreferenceUtil.putBool(
+      PrefKey.subscriptionAllowReports,
+      user.canUseReports,
+    );
+    SharedPreferenceUtil.putBool(
+      PrefKey.subscriptionAllowWebAccess,
+      user.canUseWebAccess,
+    );
+  }
+
   @override
   @override
   Future<Either<Failure, Unit>> deleteAccount() {
@@ -42,6 +67,7 @@ class AuthRepoImpl implements AuthRepo {
         var token = data['token'];
         SharedPreferenceUtil.putString(PrefKey.fcmToken, "${token}");
         var model = UserData.fromJson(data);
+        _storeSubscriptionPrefs(model.user);
 
         // AuthManager.saveUser(user.data?.user, user.data?.token);
         // await userInfoCubit.setUser(user, token, token);

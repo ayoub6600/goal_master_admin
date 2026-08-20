@@ -36,6 +36,7 @@ class BookingItemsDetails extends StatelessWidget {
 
             if (state is BookingDetailsSuccess) {
               final booking = state.bookingDetails;
+              final isApprovalFlow = booking.status == 1;
 
               return Column(
                 children: [
@@ -73,10 +74,12 @@ class BookingItemsDetails extends StatelessWidget {
                                   if (booking.status != 3)
                                     CancelBookingButton(
                                       id: booking.id,
+                                      isApprovalFlow: isApprovalFlow,
                                     ),
                                   WidthSpace(8.w),
                                   UpdateBookingStatusView(
                                     id: booking.id,
+                                    isApprovalFlow: isApprovalFlow,
                                   ),
                                 ],
                               ),

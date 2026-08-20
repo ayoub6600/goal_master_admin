@@ -30,18 +30,17 @@ import 'core/components/no_internet_page.dart';
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  FlutterError.onError = (FlutterErrorDetails details) {
-    FlutterError.presentError(details);
-    print('🔥 Caught Flutter error: ${details.exception}');
-  };
-
-  await SharedPreferenceUtil.getInstance();
-  setupServiceLocator();
-
-  // Zone للحماية من الكراش الصامت
   await runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+
+    FlutterError.onError = (FlutterErrorDetails details) {
+      FlutterError.presentError(details);
+      print('🔥 Caught Flutter error: ${details.exception}');
+    };
+
+    await SharedPreferenceUtil.getInstance();
+    setupServiceLocator();
+
     try {
       if (Platform.isAndroid || Platform.isIOS) {
         await requestNotificationPermission();

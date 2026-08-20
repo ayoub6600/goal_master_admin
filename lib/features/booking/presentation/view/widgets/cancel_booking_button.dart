@@ -11,8 +11,13 @@ import 'package:goal_master_admin/features/booking/presentation/manager/%20booki
 import 'package:goal_master_admin/features/booking/presentation/manager/cancel_booking_cubit/cancel_booking_cubit.dart';
 
 class CancelBookingButton extends StatelessWidget {
-  const CancelBookingButton({super.key, required this.id});
+  const CancelBookingButton({
+    super.key,
+    required this.id,
+    this.isApprovalFlow = false,
+  });
   final int id;
+  final bool isApprovalFlow;
 
   @override
   Widget build(BuildContext context) {
@@ -30,18 +35,20 @@ class CancelBookingButton extends StatelessWidget {
         return Expanded(
           child: ButtonApp(
             text: state is CancelBookingLoading
-                ? "جاري الغاء الحجز"
-                : "الغاء الحجز",
+                ? (isApprovalFlow ? "جاري رفض الحجز" : "جاري الغاء الحجز")
+                : (isApprovalFlow ? "رفض الحجز" : "الغاء الحجز"),
             textColor: Colors.white,
             backGround: AppColors.redcolor,
             onTap: () {
               baseBottomSheet(
-                title: "الغاء الحجز",
+                title: isApprovalFlow ? "رفض الحجز" : "الغاء الحجز",
                 context: context,
                 child: Column(
                   children: [
                     Text(
-                      "هل انت متأكد من الغاء الحجز؟",
+                      isApprovalFlow
+                          ? "هل أنت متأكد من رفض هذا الحجز؟"
+                          : "هل انت متأكد من الغاء الحجز؟",
                     ),
                     HeightSpace(20.h),
                     Row(
@@ -49,14 +56,14 @@ class CancelBookingButton extends StatelessWidget {
                         Expanded(
                             child: ButtonApp(
                                 backGround: AppColors.grey,
-                                text: "الغاء",
+                                text: isApprovalFlow ? "رجوع" : "الغاء",
                                 onTap: () {
                                   Navigator.pop(context);
                                 })),
                         WidthSpace(20.w),
                         Expanded(
                           child: ButtonApp(
-                            text: "تأكيد",
+                            text: isApprovalFlow ? "رفض الحجز" : "تأكيد",
                             backGround: AppColors.redcolor,
                             textColor: Colors.white,
                             onTap: () {

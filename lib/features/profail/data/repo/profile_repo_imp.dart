@@ -1,4 +1,6 @@
 import 'package:dartz/dartz.dart';
+import 'package:goal_master_admin/core/components/keys_values.dart';
+import 'package:goal_master_admin/core/components/preference_utility.dart';
 import 'package:goal_master_admin/core/databases/api/api_consumer.dart';
 import 'package:goal_master_admin/core/databases/api/api_consumer_extension.dart';
 import 'package:goal_master_admin/core/databases/api/end_points.dart';
@@ -13,6 +15,30 @@ class ProfileRepoImp extends ProfileRepo {
 
   ProfileRepoImp(this.consumer);
 
+  void _storeSubscriptionPrefs(User? user) {
+    if (user == null) return;
+    SharedPreferenceUtil.putString(
+      PrefKey.subscriptionPlanName,
+      user.currentSubscription?.planName ?? '',
+    );
+    SharedPreferenceUtil.putString(
+      PrefKey.subscriptionPlanCode,
+      user.currentSubscription?.planCode ?? '',
+    );
+    SharedPreferenceUtil.putBool(
+      PrefKey.subscriptionAllowMonthlyBookings,
+      user.canUseMonthlyBookings,
+    );
+    SharedPreferenceUtil.putBool(
+      PrefKey.subscriptionAllowReports,
+      user.canUseReports,
+    );
+    SharedPreferenceUtil.putBool(
+      PrefKey.subscriptionAllowWebAccess,
+      user.canUseWebAccess,
+    );
+  }
+
   @override
   Future<Either<Failure, User>> getProfile() {
     return consumer.handleRequest(
@@ -20,6 +46,7 @@ class ProfileRepoImp extends ProfileRepo {
       (res) {
         var data = res['data']["user"];
         var user = User.fromJson(data);
+        _storeSubscriptionPrefs(user);
         return user;
       },
     );

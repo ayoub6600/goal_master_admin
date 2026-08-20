@@ -60,8 +60,8 @@ class CmnBranch {
   final int? updatedBy; // Nullable because it can be null
   final String createdAt;
   final String updatedAt;
-  final String lat;
-  final String long;
+  final String? lat;
+  final String? long;
   final int zoneId;
 
   CmnBranch({
@@ -76,28 +76,28 @@ class CmnBranch {
     this.updatedBy, // Nullable
     required this.createdAt,
     required this.updatedAt,
-    required this.lat,
-    required this.long,
+    this.lat,
+    this.long,
     required this.zoneId,
   });
 
   // Factory constructor to convert JSON to Dart object
   factory CmnBranch.fromJson(Map<String, dynamic> json) {
     return CmnBranch(
-      id: json['id'],
-      name: json['name'],
-      phone: json['phone'],
-      email: json['email'],
-      address: json['address'],
-      order: json['order'],
-      status: json['status'],
-      createdBy: json['created_by'],
+      id: _asInt(json['id']),
+      name: _asString(json['name']),
+      phone: _asString(json['phone']),
+      email: _asString(json['email']),
+      address: _asString(json['address']),
+      order: _asInt(json['order']),
+      status: _asInt(json['status']),
+      createdBy: _asInt(json['created_by']),
       updatedBy: json['updated_by'], // Nullable
-      createdAt: json['created_at'],
-      updatedAt: json['updated_at'],
-      lat: json['lat'],
-      long: json['long'],
-      zoneId: json['zone_id'] ?? 0, // Default to 0 if zoneId is null
+      createdAt: _asString(json['created_at']),
+      updatedAt: _asString(json['updated_at']),
+      lat: json['lat']?.toString(),
+      long: json['long']?.toString(),
+      zoneId: _asInt(json['zone_id']), // Default to 0 if zoneId is null
     );
   }
 
@@ -120,4 +120,14 @@ class CmnBranch {
       'zone_id': zoneId,
     };
   }
+}
+
+int _asInt(dynamic value) {
+  if (value is int) return value;
+  if (value is double) return value.toInt();
+  return int.tryParse(value?.toString() ?? '') ?? 0;
+}
+
+String _asString(dynamic value) {
+  return value?.toString() ?? '';
 }

@@ -9,13 +9,11 @@ import 'package:goal_master_admin/core/routing/routes_keys.dart';
 import 'package:goal_master_admin/core/services/service_locator.dart';
 import 'package:goal_master_admin/features/auth/data/repo/auth_repo_imp.dart';
 import 'package:goal_master_admin/features/auth/presentation/manager/login_cubit/login_cubit.dart';
-import 'package:goal_master_admin/features/auth/presentation/manager/register_cubit/register_cubit.dart';
 import 'package:goal_master_admin/features/auth/presentation/manager/verify_email_cubit/verify_email_cubit.dart';
 import 'package:goal_master_admin/features/auth/presentation/view/forgot_password_view.dart';
 import 'package:goal_master_admin/features/auth/presentation/view/login_view.dart';
 import 'package:goal_master_admin/features/auth/presentation/view/new_password_view.dart';
 import 'package:goal_master_admin/features/auth/presentation/view/otp_view.dart';
-import 'package:goal_master_admin/features/auth/presentation/view/register_view.dart';
 import 'package:goal_master_admin/features/booking/data/repo/booking_repo_imp.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/%20booking_details_cubit/booking_details_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/add_booking_cubit/add_booking_cubit.dart';
@@ -45,6 +43,18 @@ import 'package:goal_master_admin/features/monthly_booking/data/repo/monthly_boo
 import 'package:goal_master_admin/features/monthly_booking/presentation/manager/monthly_booking_cubit/monthly_booking_cubit.dart';
 import 'package:goal_master_admin/features/monthly_booking/presentation/manager/udate_monthly_booking_cubit/udate_monthly_booking_cubit.dart';
 import 'package:goal_master_admin/features/monthly_booking/presentation/view/monthly_booking.dart';
+import 'package:goal_master_admin/features/manager_onboarding/data/repo/manager_signup_repo_imp.dart';
+import 'package:goal_master_admin/features/manager_onboarding/presentation/manager/manager_signup_cubit/manager_signup_cubit.dart';
+import 'package:goal_master_admin/features/manager_onboarding/presentation/manager/subscription_plans_cubit/subscription_plans_cubit.dart';
+import 'package:goal_master_admin/features/manager_onboarding/presentation/view/manager_signup_flow_view.dart';
+import 'package:goal_master_admin/features/manager_setup/presentation/view/add_first_venue_view.dart';
+import 'package:goal_master_admin/features/manager_setup/presentation/view/manager_booking_periods_view.dart';
+import 'package:goal_master_admin/features/manager_subscription/presentation/view/manager_subscription_view.dart';
+import 'package:goal_master_admin/features/manager_wallet/data/repo/manager_wallet_repo_imp.dart';
+import 'package:goal_master_admin/features/manager_wallet/presentation/view/manager_wallet_view.dart';
+import 'package:goal_master_admin/features/manager_wallet/presentation/view/manager_payment_settings_view.dart';
+import 'package:goal_master_admin/features/manager_wallet/presentation/manager/manager_wallet_topup_cubit/manager_wallet_topup_cubit.dart';
+import 'package:goal_master_admin/features/manager_wallet/presentation/view/widgets/manager_payment_webview_page.dart';
 import 'package:goal_master_admin/features/notification/data/repo/notifaction_repo.dart';
 import 'package:goal_master_admin/features/notification/manager/notification_logic/notification_logic_cubit.dart';
 import 'package:goal_master_admin/features/notification/presentation/view/notifaction_view.dart';
@@ -60,7 +70,7 @@ import 'package:goal_master_admin/features/profail/presentation/view/customer_vi
 import 'package:goal_master_admin/features/profail/presentation/view/profile_view.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/update_profile_view.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/widgets/items_user_detains_view.dart';
-import '../../features/profail/presentation/view/allowed_amount_view.dart';
+import 'package:goal_master_admin/features/profail/presentation/view/allowed_amount_view.dart';
 import 'app_router.dart';
 
 List<RouteBase> appRoutes = [
@@ -115,11 +125,20 @@ List<RouteBase> appRoutes = [
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
       state: state,
-      child: BlocProvider(
-        create: (context) => RegisterCubit(
-          getIt<AuthRepoImpl>(),
-        ),
-        child: const RegisterView(),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => SubscriptionPlansCubit(
+              getIt<ManagerSignupRepoImp>(),
+            ),
+          ),
+          BlocProvider(
+            create: (context) => ManagerSignupCubit(
+              getIt<ManagerSignupRepoImp>(),
+            ),
+          ),
+        ],
+        child: const ManagerSignupFlowView(),
       ),
     ),
   ),
@@ -136,6 +155,71 @@ List<RouteBase> appRoutes = [
         child: const UpdateProfileView(),
       ),
     ),
+  ),
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kAddFirstVenue,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const AddFirstVenueView(),
+    ),
+  ),
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kManagerBookingPeriods,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const ManagerBookingPeriodsView(),
+    ),
+  ),
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kManagerWallet,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const ManagerWalletView(),
+    ),
+  ),
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kManagerPaymentSettings,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const ManagerPaymentSettingsView(),
+    ),
+  ),
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kManagerSubscription,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const ManagerSubscriptionView(),
+    ),
+  ),
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kManagerPaymentWebView,
+    pageBuilder: (context, state) {
+      final extra = state.extra as Map<String, dynamic>;
+
+      return buildPageWithDefaultTransition<void>(
+        context: context,
+        state: state,
+        child: BlocProvider(
+          create: (context) => ManagerWalletTopUpCubit(
+            getIt<ManagerWalletRepoImp>(),
+          ),
+          child: ManagerPaymentScreen(
+            amount: extra['amount'] as String,
+          ),
+        ),
+      );
+    },
   ),
   // //ForgotPasswordView
   GoRoute(

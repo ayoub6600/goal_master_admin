@@ -25,6 +25,20 @@ class EndPoints {
   static String update = 'user/update';
 
   static String register = 'register';
+  static String managerRegister = 'manager/register';
+  static String managerPublicPlans = 'manager/public-subscription-plans';
+  static String managerSetupBootstrap = 'manager/setup/bootstrap';
+  static String managerCreateFirstVenue = 'manager/setup/first-venue';
+  static String managerSetupBookingPeriods = 'manager/setup/booking-periods';
+  static String managerSetupCatalog = 'manager/setup/catalog';
+  static String managerWalletSummary = 'manager/wallet/summary';
+  static String managerWalletTransactions = 'manager/wallet/transactions';
+  static String managerWalletConfirmTopUp = 'manager/wallet/confirm-topup';
+  static String managerWalletLocalPaymentSetting =
+      'manager/wallet/local-payment-setting';
+  static String managerSubscriptionCurrent = 'manager/subscription/current';
+  static String managerSubscriptionChange = 'manager/subscription/change';
+  static String managerSubscriptionAutoRenew = 'manager/subscription/auto-renew';
   static String notification = 'user/notifications/get-notification';
   static String deleteAccount = 'user/delete';
 

@@ -94,7 +94,7 @@ class AllowedAmountDialog extends StatelessWidget {
                   "📅",
                   "تاريخ الإنشاء",
                   DateFormat('yyyy/MM/dd - hh:mm a', 'ar')
-                      .format(DateTime.parse(item.createdAt))),
+                      .format(DateTime.parse(item.createdAt).toLocal())),
 
               const SizedBox(height: 16),
             ],

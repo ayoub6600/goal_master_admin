@@ -11,6 +11,7 @@ import 'package:goal_master_admin/core/styles/spaces.dart';
 import 'package:goal_master_admin/features/booking/data/repo/booking_repo_imp.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/%20booking_details_cubit/booking_details_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/%20booking_details_cubit/booking_details_state.dart';
+import 'package:goal_master_admin/features/booking/presentation/manager/update_booking_status_cubit/update_booking_status_cubit.dart';
 import 'package:goal_master_admin/features/notification/data/model/notification_response.dart';
 import 'package:goal_master_admin/features/notification/manager/notification_cubit/notification_cubit.dart';
 import 'package:goal_master_admin/features/notification/presentation/view/widgets/show_details_notification.dart';
@@ -30,7 +31,7 @@ class ItemsNotification extends StatelessWidget {
   String getFormattedDate(String isoDate) {
     final dateTime = DateTime.tryParse(isoDate);
     if (dateTime == null) return '';
-    return DateFormat('yyyy-MM-dd – HH:mm').format(dateTime);
+    return DateFormat('yyyy-MM-dd – HH:mm').format(dateTime.toLocal());
   }
 
   @override
@@ -38,7 +39,12 @@ class ItemsNotification extends StatelessWidget {
     final message = notification.data.message;
     final createdAt =
         getFormattedDate(notification.createdAt.toIso8601String());
-    final int? bookingId = notification.data.id;
+    final int? bookingId = notification.data.bookingId ?? notification.data.id;
+    final bool isPendingApproval = message.contains('انتظار قبول') ||
+        message.contains('الدفع عند الوصول') ||
+        message.contains('بانتظار قبول الطلب');
+    final bool isSubscriptionNotification =
+        (notification.data.type ?? '').startsWith('subscription');
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -107,8 +113,10 @@ class ItemsNotification extends StatelessWidget {
                         : context
                             .read<NotificationCubit>()
                             .markAsRead(notification.id);
-                    push(RoutesKeys.kBookingItemsDetails, context,
-                        extra: bookingId);
+                    if (bookingId != null) {
+                      push(RoutesKeys.kBookingItemsDetails, context,
+                          extra: bookingId);
+                    }
                   },
                   child: Row(
                     children: [
@@ -172,9 +180,91 @@ class ItemsNotification extends StatelessWidget {
                           ),
                         ),
                       ],
+                      if (isPendingApproval && bookingId != null) ...[
+                        HeightSpace(16.h),
+                        BlocProvider(
+                          create: (_) =>
+                              UpdateBookingStatusCubit(getIt<BookingRepoImp>()),
+                          child: Builder(
+                            builder: (context) => BlocConsumer<
+                                UpdateBookingStatusCubit,
+                                UpdateBookingStatusState>(
+                              listener: (context, state) {
+                                if (state is UpdateBookingStatusSuccess) {
+                                  Navigator.pop(ctx);
+                                }
+                              },
+                              builder: (context, state) {
+                                final cubit =
+                                    context.read<UpdateBookingStatusCubit>();
+
+                                return Row(
+                                  children: [
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: state
+                                                is UpdateBookingStatusLoading
+                                            ? null
+                                            : () {
+                                                cubit.setSelectedStatus('2');
+                                                cubit.updateBookingStatus(
+                                                    bookingId);
+                                              },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppColors.primary,
+                                        ),
+                                        child: Text(
+                                          'موافق عليه',
+                                          style: AppTextStyles.font12Regular
+                                              .copyWith(
+                                            color: AppColors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    WidthSpace(8.w),
+                                    Expanded(
+                                      child: OutlinedButton(
+                                        onPressed: state
+                                                is UpdateBookingStatusLoading
+                                            ? null
+                                            : () {
+                                                cubit.setSelectedStatus('3');
+                                                cubit.updateBookingStatus(
+                                                    bookingId);
+                                              },
+                                        child: Text(
+                                          'ملغي',
+                                          style: AppTextStyles.font12Regular
+                                              .copyWith(
+                                            color: Colors.red,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                   actions: [
+                    if (isSubscriptionNotification)
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          push(RoutesKeys.kManagerSubscription, context);
+                        },
+                        child: Text(
+                          'تجديد الاشتراك',
+                          style: AppTextStyles.font14SemiBold.copyWith(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
                     if (bookingId != null)
                       TextButton(
                         onPressed: () {

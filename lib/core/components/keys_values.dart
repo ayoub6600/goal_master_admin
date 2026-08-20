@@ -20,4 +20,10 @@ class PrefKey {
   static const String refreshToken = "refreshToken";
   static const String zoneId = "zoneId";
   static const String clubId = "clubId";
+  static const String subscriptionPlanName = "subscriptionPlanName";
+  static const String subscriptionPlanCode = "subscriptionPlanCode";
+  static const String subscriptionAllowMonthlyBookings =
+      "subscriptionAllowMonthlyBookings";
+  static const String subscriptionAllowReports = "subscriptionAllowReports";
+  static const String subscriptionAllowWebAccess = "subscriptionAllowWebAccess";
 }

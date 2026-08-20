@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master_admin/core/components/button_app.dart';
 import 'package:goal_master_admin/core/components/keys_values.dart';
 import 'package:goal_master_admin/core/components/page_wrapper.dart';
 import 'package:goal_master_admin/core/components/preference_utility.dart';
-import 'package:goal_master_admin/core/routing/app_router.dart';
 import 'package:goal_master_admin/core/routing/route_utils.dart';
 import 'package:goal_master_admin/core/routing/routes_keys.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/core/styles/app_text_styles.dart';
 import 'package:goal_master_admin/core/styles/assets.dart';
 import 'package:goal_master_admin/core/styles/spaces.dart';
+import 'package:goal_master_admin/features/home/presentation/view/widgets/manager_setup_pending_card.dart';
+import 'package:goal_master_admin/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/widgets/profile_header.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/widgets/profile_item.dart';
-import 'package:go_router/go_router.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -21,7 +22,7 @@ class ProfileView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PageWrapper(
-      title: "حسابي",
+      title: "حساب مدير الملعب",
       allowBack: false,
       child: Column(
         children: [
@@ -33,6 +34,34 @@ class ProfileView extends StatelessWidget {
               child: Column(
                 //  spacing: 16.h,
                 children: [
+                  BlocBuilder<ProfileCubit, ProfileState>(
+                    builder: (context, state) {
+                      if (state is! ProfileLoaded ||
+                          !state.user.needsVenueSetup) {
+                        return const SizedBox.shrink();
+                      }
+
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: 16.h),
+                        child: ManagerSetupPendingCard(
+                          user: state.user,
+                          compact: true,
+                          onPrimaryTap: () {
+                            push(RoutesKeys.kAddFirstVenue, context);
+                          },
+                          onSecondaryTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'بعد تحديث البيانات سنربط إنشاء الملعب والمحفظة في الخطوة التالية.',
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
                   Row(
                     children: [
                       Image.asset(
@@ -117,8 +146,10 @@ class ProfileView extends StatelessWidget {
                                                 PrefKey.login, "false");
                                             SharedPreferenceUtil.putBool(
                                                 PrefKey.onboardingSeen, true);
-                                            pushReplacement(
-                                                RoutesKeys.kLogin, context);
+                                            if (context.mounted) {
+                                              pushReplacement(
+                                                  RoutesKeys.kLogin, context);
+                                            }
                                           }),
                                     ),
                                     WidthSpace(16.w),

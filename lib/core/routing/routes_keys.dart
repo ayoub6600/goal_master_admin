@@ -10,6 +10,12 @@ class RoutesKeys {
   static const kChangePassword = '/kChangePassword';
   static const kContact = '/kContact';
   static const kUpdateProfile = '/kUpdateProfile';
+  static const kAddFirstVenue = '/kAddFirstVenue';
+  static const kManagerBookingPeriods = '/kManagerBookingPeriods';
+  static const kManagerWallet = '/kManagerWallet';
+  static const kManagerPaymentSettings = '/kManagerPaymentSettings';
+  static const kManagerSubscription = '/kManagerSubscription';
+  static const kManagerPaymentWebView = '/kManagerPaymentWebView';
   static const kBooking = '/kBooking';
   static const kHome = '/kHome';
   static const kNotification = '/kNotification';

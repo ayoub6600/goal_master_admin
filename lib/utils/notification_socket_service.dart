@@ -58,7 +58,8 @@ class NotificationSocketService {
 
     _socket.on('notification', (data) {
       try {
-        final notification = NotificationItem.fromJson(data);
+        final payload = _normalizeNotificationPayload(data);
+        final notification = NotificationItem.fromJson(payload);
         _showNotification(notification.data.message, '📢 إشعار جديد');
         onNotificationReceived(notification);
       } catch (e) {
@@ -78,6 +79,47 @@ class NotificationSocketService {
     _socket.on('connect_timeout', (_) {
       print('⏰ Socket connection timeout');
     });
+  }
+
+  Map<String, dynamic> _normalizeNotificationPayload(dynamic raw) {
+    if (raw is Map<String, dynamic> && raw.containsKey('data')) {
+      return raw;
+    }
+
+    final map = (raw as Map).cast<String, dynamic>();
+    final messageData = (map['message'] as Map?)?.cast<String, dynamic>() ??
+        <String, dynamic>{};
+
+    return {
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'type': 'socket_notification',
+      'notifiable_type': 'socket',
+      'notifiable_id': userId,
+      'read_at': null,
+      'created_at': DateTime.now().toIso8601String(),
+      'updated_at': DateTime.now().toIso8601String(),
+      'data': {
+        'message': messageData['message']?.toString() ??
+            messageData['msg']?.toString() ??
+            map['sender']?.toString() ??
+            'إشعار جديد',
+        'id': _extractBookingId(messageData['id']),
+        'booking_id': _extractBookingId(messageData['booking_id']) ??
+            _extractBookingId(messageData['id']),
+        'type': messageData['type']?.toString(),
+      },
+    };
+  }
+
+  int? _extractBookingId(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is Map) {
+      final id = value['id'];
+      if (id is int) return id;
+      return int.tryParse(id?.toString() ?? '');
+    }
+    return int.tryParse(value.toString());
   }
 
   Future<void> _showNotification(String title, String body) async {

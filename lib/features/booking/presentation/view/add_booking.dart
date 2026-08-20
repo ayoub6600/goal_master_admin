@@ -141,9 +141,7 @@ class _AddBookingViewState extends State<AddBookingView> {
                                                 .toString(),
                                             phone:
                                                 pageViewCubit.state.phone ?? "",
-                                            status:
-                                                pageViewCubit.state.status ??
-                                                    "1",
+                                            status: pageViewCubit.state.status,
                                             customerId: pageViewCubit
                                                     .state.customerId ??
                                                 0,
