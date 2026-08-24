@@ -4,6 +4,7 @@ class BookingItemResponce {
   final String statusName;
   final int paymentStatus;
   final String paymentStatusName;
+  final int paymentType;
   final String customer;
   final String customerPhoneNo;
   final String employee;
@@ -23,6 +24,7 @@ class BookingItemResponce {
     required this.statusName,
     required this.paymentStatus,
     required this.paymentStatusName,
+    required this.paymentType,
     required this.customer,
     required this.customerPhoneNo,
     required this.employee,
@@ -44,6 +46,7 @@ class BookingItemResponce {
       statusName: _asString(json['statusName']),
       paymentStatus: _asInt(json['payment_status']),
       paymentStatusName: _asString(json['paymentStatusName']),
+      paymentType: _asInt(json['payment_type']),
       customer: _asString(json['customer']),
       customerPhoneNo: _asString(json['customer_phone_no']),
       employee: _asString(json['employee']),

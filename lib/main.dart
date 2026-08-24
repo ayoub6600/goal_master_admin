@@ -1,17 +1,23 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master_admin/core/app_update/app_update_gate.dart';
 import 'package:goal_master_admin/core/components/keys_values.dart';
 import 'package:goal_master_admin/core/components/preference_utility.dart';
 import 'package:goal_master_admin/core/routing/app_router.dart';
 import 'package:goal_master_admin/core/routing/appstart_state.dart';
 import 'package:goal_master_admin/core/routing/routes_keys.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:goal_master_admin/core/services/notification_navigation_service.dart';
+import 'package:goal_master_admin/core/services/push_notification_service.dart';
 import 'package:goal_master_admin/core/services/service_locator.dart';
+import 'package:goal_master_admin/firebase_options.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/features/booking/data/repo/booking_repo.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/add_customer_cubit/add_customer_cubit.dart';
@@ -38,6 +44,7 @@ Future<void> main() async {
       print('🔥 Caught Flutter error: ${details.exception}');
     };
 
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
     await SharedPreferenceUtil.getInstance();
     setupServiceLocator();
 
@@ -45,6 +52,8 @@ Future<void> main() async {
       if (Platform.isAndroid || Platform.isIOS) {
         await requestNotificationPermission();
         await _initializeNotifications();
+        await PushNotificationService.initialize();
+        await PushNotificationService.registerTokenIfLoggedIn();
       }
     } catch (e, s) {
       print("🔥 Notification init error: $e\n$s");
@@ -53,7 +62,14 @@ Future<void> main() async {
     // طباعة البيانات المحفوظة للتحقق (مفيد للاختبار)
     AppStartCubit.debugPrintSavedData();
 
+    // App opened by tapping a notification while backgrounded (not terminated).
+    FirebaseMessaging.onMessageOpenedApp
+        .listen(NotificationNavigationService.handleMessageTap);
+
     runApp(const MyApp());
+
+    // App launched fresh by tapping a notification (was fully terminated).
+    NotificationNavigationService.handleInitialMessage();
   }, (e, s) {
     print("🔥 Zone error: $e\n$s");
   });
@@ -253,24 +269,27 @@ class MyApp extends StatelessWidget {
                         context.read<NotificationCubit>().startSocket();
                       });
                       return OKToast(
-                        child: MaterialApp.router(
-                          title: "Goal Master Admin",
-                          theme: ThemeData(
-                            colorScheme: ColorScheme.fromSeed(
-                                seedColor: AppColors.primary),
-                            useMaterial3: true,
-                            textTheme: const TextTheme(),
-                            scaffoldBackgroundColor: Colors.white,
+                        child: AppUpdateGate(
+                          appKey: 'manager',
+                          child: MaterialApp.router(
+                            title: "Goal Master Admin",
+                            theme: ThemeData(
+                              colorScheme: ColorScheme.fromSeed(
+                                  seedColor: AppColors.primary),
+                              useMaterial3: true,
+                              textTheme: const TextTheme(),
+                              scaffoldBackgroundColor: Colors.white,
+                            ),
+                            debugShowCheckedModeBanner: false,
+                            locale: const Locale('ar'),
+                            supportedLocales: const [Locale('ar')],
+                            localizationsDelegates: const [
+                              GlobalMaterialLocalizations.delegate,
+                              GlobalWidgetsLocalizations.delegate,
+                              GlobalCupertinoLocalizations.delegate,
+                            ],
+                            routerConfig: AppRouter.createRouter(initialRoute),
                           ),
-                          debugShowCheckedModeBanner: false,
-                          locale: const Locale('ar'),
-                          supportedLocales: const [Locale('ar')],
-                          localizationsDelegates: const [
-                            GlobalMaterialLocalizations.delegate,
-                            GlobalWidgetsLocalizations.delegate,
-                            GlobalCupertinoLocalizations.delegate,
-                          ],
-                          routerConfig: AppRouter.createRouter(initialRoute),
                         ),
                       );
                     },

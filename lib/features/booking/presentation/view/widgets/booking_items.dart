@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master_admin/core/components/button_app.dart';
+import 'package:goal_master_admin/core/components/custom_failure_toast.dart';
+import 'package:goal_master_admin/core/components/custom_success_toast.dart';
 import 'package:goal_master_admin/core/routing/route_utils.dart';
 import 'package:goal_master_admin/core/routing/routes_keys.dart';
+import 'package:goal_master_admin/core/services/service_locator.dart';
 import 'package:intl/intl.dart';
 
 import 'package:goal_master_admin/core/styles/app_colors.dart';
@@ -9,10 +14,42 @@ import 'package:goal_master_admin/core/styles/app_text_styles.dart';
 import 'package:goal_master_admin/core/styles/assets.dart';
 import 'package:goal_master_admin/core/styles/spaces.dart';
 import 'package:goal_master_admin/features/booking/data/model/booking_all_list_response.dart';
+import 'package:goal_master_admin/features/booking/data/repo/booking_repo_imp.dart';
+import 'package:goal_master_admin/features/booking/presentation/manager/booking_cubit/booking_cubit.dart';
 
-class BookingItems extends StatelessWidget {
+class BookingItems extends StatefulWidget {
   const BookingItems({super.key, required this.booking});
   final BookingItemResponce booking;
+
+  @override
+  State<BookingItems> createState() => _BookingItemsState();
+}
+
+class _BookingItemsState extends State<BookingItems> {
+  bool _isUpdating = false;
+
+  BookingItemResponce get booking => widget.booking;
+
+  Future<void> _updateStatus(BuildContext context, String status) async {
+    setState(() => _isUpdating = true);
+
+    final result = await getIt<BookingRepoImp>()
+        .updateStatusBooking(booking.id, status);
+
+    if (!mounted) return;
+    setState(() => _isUpdating = false);
+
+    result.fold(
+      (failure) => showCustomFailureToast(failure.errMessage),
+      (message) {
+        CustomSuccessToast(toastText: message);
+        final bookingState = context.read<BookingCubit>().state;
+        if (bookingState is BookingSuccess) {
+          bookingState.pagingController.refresh();
+        }
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -210,6 +247,48 @@ class BookingItems extends StatelessWidget {
                 ],
               ),
             ),
+            if (booking.paymentType == 1) ...[
+              HeightSpace(8.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.w),
+                child: Text(
+                  'العميل يريد الدفع عند الوصول',
+                  style: AppTextStyles.font14Regular
+                      .copyWith(color: Colors.orange[800]),
+                ),
+              ),
+            ],
+            if (booking.status == 1) ...[
+              HeightSpace(12.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.w),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ButtonApp(
+                        text: _isUpdating ? "جاري التنفيذ" : "رفض",
+                        textColor: Colors.white,
+                        backGround: Colors.red,
+                        onTap: _isUpdating
+                            ? null
+                            : () => _updateStatus(context, '3'),
+                      ),
+                    ),
+                    WidthSpace(12.w),
+                    Expanded(
+                      child: ButtonApp(
+                        text: _isUpdating ? "جاري التنفيذ" : "قبول",
+                        textColor: Colors.white,
+                        backGround: AppColors.primary,
+                        onTap: _isUpdating
+                            ? null
+                            : () => _updateStatus(context, '2'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             HeightSpace(12.h),
           ],
         ),

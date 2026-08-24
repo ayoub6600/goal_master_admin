@@ -8,6 +8,7 @@ class EndPoints {
 
   //# parent
   static String login = 'login';
+  static String saveFcmToken = 'user/save-fcm-token';
 
   static String banner = "list/slider";
 
@@ -50,6 +51,7 @@ class EndPoints {
   static String changePasswordUser = 'user/change-password-user';
 
   static String refresh = 'user/refresh';
+  static String appVersionCheck = 'app-version/check';
 
   static String profile = 'user/profile';
   static String analysis = "manager/dashboard/analysis";
@@ -91,6 +93,10 @@ class EndPoints {
       'manager/booking/change-service-booking-status';
 
   static String depositBookingPayment = 'manager/booking/depoist-money';
+
+  static String getPaidBookings(String type) =>
+      'user/booking/get-paid-bookings?type=$type';
+  static String getDueBookings = 'user/booking/get-due-bookings';
 }
 
 //doctors/top-ratings

@@ -35,6 +35,8 @@ class BuildDetailsSection extends StatelessWidget {
                   color: AppColors.fontColor,
                 ),
               ),
+              
+              
               Container(
                 margin: EdgeInsets.symmetric(horizontal: 4.w),
                 padding: EdgeInsets.symmetric(horizontal: 8.w),

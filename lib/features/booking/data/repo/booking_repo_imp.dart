@@ -3,6 +3,7 @@ import 'package:goal_master_admin/core/components/paginated_response.dart';
 import 'package:goal_master_admin/core/databases/api/api_consumer.dart';
 import 'package:goal_master_admin/core/databases/api/api_consumer_extension.dart';
 import 'package:goal_master_admin/core/databases/api/end_points.dart';
+import 'package:goal_master_admin/features/home/data/model/booking_drilldown_item.dart';
 import 'package:goal_master_admin/features/booking/data/model/booking_all_list_response.dart';
 import 'package:goal_master_admin/features/booking/data/model/booking_details.dart';
 import 'package:goal_master_admin/features/booking/data/model/cancel_booking_response.dart';
@@ -304,6 +305,29 @@ class BookingRepoImp extends BookingRepo {
         } else {
           throw Exception("Customer ID not found in response");
         }
+      },
+    );
+  }
+
+  Future<Either<Failure, List<BookingDrilldownItem>>> getPaidBookings(
+      String type) {
+    return apiConsumer.handleRequest(
+      () => apiConsumer.get(EndPoints.getPaidBookings(type)),
+      (data) {
+        return (data['data'] as List<dynamic>)
+            .map((e) => BookingDrilldownItem.fromJson(e as Map<String, dynamic>))
+            .toList();
+      },
+    );
+  }
+
+  Future<Either<Failure, List<BookingDrilldownItem>>> getDueBookings() {
+    return apiConsumer.handleRequest(
+      () => apiConsumer.get(EndPoints.getDueBookings),
+      (data) {
+        return (data['data'] as List<dynamic>)
+            .map((e) => BookingDrilldownItem.fromJson(e as Map<String, dynamic>))
+            .toList();
       },
     );
   }

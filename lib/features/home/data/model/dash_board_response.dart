@@ -45,9 +45,11 @@ class DashboardData {
           .toList(),
       totalForgevin:
           TotalForgevin.fromJson(json['totalForgevin'] as Map<String, dynamic>),
-      // المفاتيح هنا بالحروف الكبيرة زي الـ JSON
-      totalIncome: _parseDouble(json['TotalIncome']),
-      totalDue: _parseDouble(json['TotalDue']),
+      // Backend (ManagerController::analysis) sends lowercase-first keys —
+      // this used to read 'TotalIncome'/'TotalDue' (capital T), which never
+      // matched anything, so these tiles always fell back to 0.0.
+      totalIncome: _parseDouble(json['totalIncome']),
+      totalDue: _parseDouble(json['totalDue']),
     );
   }
 }

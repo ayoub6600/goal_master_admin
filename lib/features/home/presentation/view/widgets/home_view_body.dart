@@ -15,6 +15,7 @@ import 'package:goal_master_admin/features/home/presentation/manager/analysis_cu
 import 'package:goal_master_admin/features/home/presentation/view/widgets/analysis_view.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/app_drawer.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/items_show_analysis_new.dart';
+import 'package:goal_master_admin/features/home/presentation/view/widgets/booking_drilldown_view.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/manager_setup_pending_card.dart';
 import 'package:goal_master_admin/features/home/presentation/view/widgets/top_service_section.dart';
 import 'package:goal_master_admin/features/notification/manager/notification_cubit/notification_cubit.dart';
@@ -444,21 +445,35 @@ class HomeViewBody extends StatelessWidget {
                           title: "كمية المسامح كريم اليومية",
                           count: totalForgevin.dailyTotal,
                           color: HexColor('#418946'),
+                          onTap: () => push(RoutesKeys.kAllowedAmount, context),
                         ),
                         ItemsShowAnalysisNew(
                           title: "كمية المسامح كريم الشاملة",
                           count: totalForgevin.total,
                           color: HexColor('#2C5C30'),
+                          onTap: () => push(RoutesKeys.kAllowedAmount, context),
                         ),
                         ItemsShowAnalysisNew(
                           title: "إجمالي المدفوع نقدًا",
                           count: totalCash,
                           color: HexColor('#367C82'),
+                          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                            builder: (_) => const BookingDrilldownView(
+                              title: 'إجمالي المدفوع نقدًا',
+                              kind: BookingDrilldownKind.paidCash,
+                            ),
+                          )),
                         ),
                         ItemsShowAnalysisNew(
                           title: "إجمالي المدفوع عبر الإنترنت",
                           count: totalOnline,
                           color: HexColor('#7A9D54'),
+                          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                            builder: (_) => const BookingDrilldownView(
+                              title: 'إجمالي المدفوع عبر الإنترنت',
+                              kind: BookingDrilldownKind.paidOnline,
+                            ),
+                          )),
                         ),
                         ItemsShowAnalysisNew(
                           title: "إجمالي الدخل",
@@ -469,6 +484,12 @@ class HomeViewBody extends StatelessWidget {
                           title: "إجمالي المستحق",
                           count: dueTotal, // ✅ مباشرة
                           color: HexColor('#BA4A00'),
+                          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                            builder: (_) => const BookingDrilldownView(
+                              title: 'إجمالي المستحق',
+                              kind: BookingDrilldownKind.due,
+                            ),
+                          )),
                         ),
                       ];
 

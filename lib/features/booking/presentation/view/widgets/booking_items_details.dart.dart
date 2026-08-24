@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master_admin/core/styles/app_text_styles.dart';
 
 import 'package:goal_master_admin/core/styles/spaces.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/%20booking_details_cubit/booking_details_cubit.dart';
@@ -54,6 +55,17 @@ class BookingItemsDetails extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (booking.paymentType == 1) ...[
+              HeightSpace(8.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.w),
+                child: Text(
+                  'العميل يريد الدفع عند الوصول',
+                  style: AppTextStyles.font14Regular
+                      .copyWith(color: Colors.orange[800]),
+                ),
+              ),
+            ],
                   booking.status == 4 || booking.status == 3
                       ? const Divider()
                       : Padding(

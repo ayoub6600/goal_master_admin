@@ -22,8 +22,16 @@ extension GoRouterExtension on GoRouter {
 }
 
 abstract class AppRouter {
+  static GoRouter? _router;
+
+  /// The most recently created router — usable for imperative navigation
+  /// (e.g. from a push-notification tap handler) where no BuildContext is
+  /// available to call `GoRouter.of(context)`.
+  static GoRouter get router => _router!;
+  static bool get hasRouter => _router != null;
+
   static GoRouter createRouter(String initialRoute) {
-    return GoRouter(
+    return _router = GoRouter(
       navigatorKey: parentKey,
       observers: [ChuckerFlutter.navigatorObserver],
       routes: appRoutes,

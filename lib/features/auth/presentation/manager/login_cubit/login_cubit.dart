@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master_admin/core/components/keys_values.dart';
 import 'package:goal_master_admin/core/components/preference_utility.dart';
+import 'package:goal_master_admin/core/services/push_notification_service.dart';
 import 'package:goal_master_admin/features/auth/data/model/login_model/user.dart';
 import 'package:goal_master_admin/features/auth/data/repo/auth_repo.dart';
 import 'package:goal_master_admin/utils/input_validator.dart';
@@ -62,6 +63,7 @@ class LoginCubit extends Cubit<LoginState> {
 
       // حفظ حالة تسجيل الدخول
       await SharedPreferenceUtil.putString(PrefKey.login, "true");
+      PushNotificationService.registerTokenIfLoggedIn();
 
       await SharedPreferenceUtil.putInt(
           PrefKey.zoneId, userData.user?.zoneId ?? 0);

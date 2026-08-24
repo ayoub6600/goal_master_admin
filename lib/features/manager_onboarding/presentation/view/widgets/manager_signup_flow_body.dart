@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:goal_master_admin/core/components/button_app.dart';
 import 'package:goal_master_admin/core/components/custom_failure_toast.dart';
 import 'package:goal_master_admin/core/components/custom_success_toast.dart';
 import 'package:goal_master_admin/core/routing/routes_keys.dart';
@@ -26,6 +27,12 @@ class ManagerSignupFlowBody extends StatefulWidget {
 class _ManagerSignupFlowBodyState extends State<ManagerSignupFlowBody> {
   SubscriptionPlanOption? selectedPlan;
   String billingCycle = 'monthly';
+
+  // Step 0 = choose a plan and confirm; step 1 = create the manager
+  // account. Kept as two steps of the same widget (not two separate
+  // routes) so `ManagerSignupCubit`'s text controllers, provided once at
+  // the route level, survive the transition between them.
+  int _step = 0;
 
   @override
   void initState() {
@@ -93,75 +100,108 @@ class _ManagerSignupFlowBodyState extends State<ManagerSignupFlowBody> {
                           ),
                           HeightSpace(10.h),
                           Text(
-                            'اختر الباقة المناسبة ثم أنشئ حساب مدير الملعب. تفعيل الدفع والـ OTP سنضيفه في المرحلة التالية فوق نفس الهيكل.',
+                            _step == 0
+                                ? 'اختر الباقة المناسبة لملعبك، ثم تابع لإنشاء حساب المدير.'
+                                : 'أدخل بيانات مدير الملعب لإنشاء الحساب. تفعيل الدفع والـ OTP سنضيفه في المرحلة التالية فوق نفس الهيكل.',
                             style: AppTextStyles.font14Regular.copyWith(
                               color: Colors.white.withValues(alpha: 0.85),
                               height: 1.5,
                             ),
                           ),
                           HeightSpace(20.h),
-                          _buildCycleToggle(),
-                          HeightSpace(18.h),
-                          BlocBuilder<SubscriptionPlansCubit,
-                              SubscriptionPlansState>(
-                            builder: (context, state) {
-                              if (state is SubscriptionPlansLoading) {
-                                return const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(24),
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
+                          if (_step == 0) ...[
+                            _buildCycleToggle(),
+                            HeightSpace(18.h),
+                            BlocBuilder<SubscriptionPlansCubit,
+                                SubscriptionPlansState>(
+                              builder: (context, state) {
+                                if (state is SubscriptionPlansLoading) {
+                                  return const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(24),
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                  ),
-                                );
-                              }
-
-                              if (state is SubscriptionPlansError) {
-                                return _buildErrorState(context, state.message);
-                              }
-
-                              if (state is SubscriptionPlansLoaded) {
-                                if (selectedPlan == null &&
-                                    state.plans.isNotEmpty) {
-                                  selectedPlan = state.plans.first;
+                                  );
                                 }
 
-                                return Column(
-                                  children: [
-                                    ...state.plans.map(
-                                      (plan) => Padding(
-                                        padding: EdgeInsets.only(bottom: 12.h),
-                                        child: SubscriptionPlanCard(
-                                          plan: plan,
-                                          billingCycle: billingCycle,
-                                          isSelected:
-                                              selectedPlan?.id == plan.id,
-                                          onTap: () {
-                                            setState(() {
-                                              selectedPlan = plan;
-                                            });
-                                          },
+                                if (state is SubscriptionPlansError) {
+                                  return _buildErrorState(
+                                      context, state.message);
+                                }
+
+                                if (state is SubscriptionPlansLoaded) {
+                                  if (selectedPlan == null &&
+                                      state.plans.isNotEmpty) {
+                                    selectedPlan = state.plans.first;
+                                  }
+
+                                  return Column(
+                                    children: [
+                                      ...state.plans.map(
+                                        (plan) => Padding(
+                                          padding:
+                                              EdgeInsets.only(bottom: 12.h),
+                                          child: SubscriptionPlanCard(
+                                            plan: plan,
+                                            billingCycle: billingCycle,
+                                            isSelected:
+                                                selectedPlan?.id == plan.id,
+                                            onTap: () {
+                                              setState(() {
+                                                selectedPlan = plan;
+                                              });
+                                            },
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    HeightSpace(10.h),
-                                    if (selectedPlan != null)
-                                      SelectedPlanSummary(
-                                        plan: selectedPlan!,
-                                        billingCycle: billingCycle,
+                                      HeightSpace(10.h),
+                                      if (selectedPlan != null)
+                                        SelectedPlanSummary(
+                                          plan: selectedPlan!,
+                                          billingCycle: billingCycle,
+                                        ),
+                                      HeightSpace(18.h),
+                                      ButtonApp(
+                                        text: ' متابعة',
+                                        backGround: AppColors.primary,
+                                        onTap: selectedPlan == null
+                                            ? null
+                                            : () =>
+                                                setState(() => _step = 1),
                                       ),
-                                    HeightSpace(18.h),
-                                    ManagerSignupFormSection(
-                                      selectedPlan: selectedPlan,
-                                      billingCycle: billingCycle,
-                                    ),
-                                  ],
-                                );
-                              }
+                                    ],
+                                  );
+                                }
 
-                              return const SizedBox.shrink();
-                            },
-                          ),
+                                return const SizedBox.shrink();
+                              },
+                            ),
+                          ] else if (selectedPlan != null) ...[
+                            SelectedPlanSummary(
+                              plan: selectedPlan!,
+                              billingCycle: billingCycle,
+                            ),
+                            HeightSpace(8.h),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: () => setState(() => _step = 0),
+                                child: Text(
+                                  'تغيير الباقة',
+                                  style: AppTextStyles.font14Bold.copyWith(
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            HeightSpace(10.h),
+                            ManagerSignupFormSection(
+                              selectedPlan: selectedPlan,
+                              billingCycle: billingCycle,
+                            ),
+                          ],
                         ],
                       ),
                     ),
