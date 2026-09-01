@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:goal_master_admin/features/booking/presentation/view/widgets/attendance_actions_sheet.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master_admin/core/components/button_app.dart';
@@ -30,11 +31,16 @@ class _BookingItemsState extends State<BookingItems> {
 
   BookingItemResponce get booking => widget.booking;
 
+  /// Whether this booking's slot has already finished.
+  ///
+  /// Compared in wall-clock, the same frame the booking was written in —
+  /// deriving it from a UTC-serialised timestamp is what once showed
+  /// Saturday for a Sunday booking.
   Future<void> _updateStatus(BuildContext context, String status) async {
     setState(() => _isUpdating = true);
 
-    final result = await getIt<BookingRepoImp>()
-        .updateStatusBooking(booking.id, status);
+    final result =
+        await getIt<BookingRepoImp>().updateStatusBooking(booking.id, status);
 
     if (!mounted) return;
     setState(() => _isUpdating = false);
@@ -225,8 +231,8 @@ class _BookingItemsState extends State<BookingItems> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 12.w, vertical: 6.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                     decoration: BoxDecoration(
                       color: _getStatusColor(booking.status),
                       borderRadius: BorderRadius.circular(12.r),
@@ -289,6 +295,49 @@ class _BookingItemsState extends State<BookingItems> {
                 ),
               ),
             ],
+
+            // An approved booking whose slot has finished still needs an
+            // answer: settlement waits on it, and silence eventually settles
+            // it anyway. Offered here so the venue never has to hunt for it.
+            //
+            // The SERVER decides when that moment arrives. This used to be
+            // worked out here from displayEndTime — which the booking-list
+            // endpoint never sent for a normal booking — so it fell back to
+            // "ends 23:59" and withheld the button for two hours after the
+            // slot actually ended. A client holding its own opinion about when
+            // money becomes reportable is the bug, not the arithmetic.
+            if (booking.canReportAttendance) ...[
+              HeightSpace(12.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.w),
+                child: _ReportOutcomeAction(
+                  onTap: () async {
+                    final changed = await AttendanceActionsSheet.show(
+                      context,
+                      booking.id,
+                      payOnArrival: booking.paymentType == 1,
+                    );
+
+                    if (changed == true && context.mounted) {
+                      context.read<BookingCubit>().filterBooking();
+                    }
+                  },
+                ),
+              ),
+            ],
+
+            // Already answered. The result is shown, and there is no way back
+            // to the sheet: a venue that could switch «لم يحضر» to «تم اللعب»
+            // after the customer contested it would be marking its own
+            // homework. The backend refuses the change too — this is not the
+            // only guard, just the honest UI for it.
+            if (!booking.canReportAttendance && booking.hasRecordedResult) ...[
+              HeightSpace(12.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.w),
+                child: _RecordedResult(booking: booking),
+              ),
+            ],
             HeightSpace(12.h),
           ],
         ),
@@ -348,5 +397,163 @@ class _BookingItemsState extends State<BookingItems> {
       default:
         return Colors.grey;
     }
+  }
+}
+
+/// The final, non-editable result of a booking.
+///
+/// A no-show additionally shows where the customer's answer stands — pending,
+/// confirmed, or contested. That is information, not another decision: the
+/// venue's report is fixed whatever the customer says.
+class _RecordedResult extends StatelessWidget {
+  const _RecordedResult({required this.booking});
+
+  final BookingItemResponce booking;
+
+  @override
+  Widget build(BuildContext context) {
+    final (icon, colour) = switch (booking.attendanceStatus) {
+      'attended' => ('✓', const Color(0xFF2E7D32)),
+      'no_show' => ('🚫', const Color(0xFFBA4A00)),
+      'venue_issue' => ('⚠️', const Color(0xFF1565C0)),
+      _ => ('•', AppColors.fontColor),
+    };
+
+    // What the customer has said, if anything. Information only — the venue's
+    // own report is fixed either way.
+    final pending = switch (booking.attendanceStatus) {
+      'no_show' => switch (booking.customerConfirmation) {
+          'pending' => 'بانتظار تأكيد الزبون',
+          'did_not_attend' => 'الزبون أكّد عدم الحضور',
+          'attended' => 'الزبون اعترض وقال إنه حضر',
+          _ => null,
+        },
+      'venue_issue' => switch (booking.customerConfirmation) {
+          'pending' => 'بانتظار تأكيد الزبون',
+          'venue_fault_confirmed' => 'تم تأكيد المشكلة من الزبون',
+          'venue_fault_disputed' => 'اعترض الزبون على السبب المسجل',
+          _ => null,
+        },
+      _ => null,
+    };
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: colour.withValues(alpha: 0.35)),
+        color: colour.withValues(alpha: 0.06),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$icon تم تسجيل: ${booking.attendanceStatus == 'venue_issue' ? 'تعذّر اللعب بسبب الملعب' : booking.attendanceLabel}',
+            style: AppTextStyles.font14Bold.copyWith(color: colour),
+          ),
+          if (booking.venueFaultReasonLabel.isNotEmpty) ...[
+            HeightSpace(2.h),
+            Text(
+              'السبب المسجل: ${booking.venueFaultReasonLabel}',
+              style: AppTextStyles.font12Regular
+                  .copyWith(color: AppColors.fontColor),
+            ),
+          ],
+          if (pending != null) ...[
+            HeightSpace(2.h),
+            Text(
+              pending,
+              style: AppTextStyles.font12Regular
+                  .copyWith(color: AppColors.fontColor),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// The venue's answer to "what happened at this booking?".
+///
+/// This was a solid green ButtonApp, which was wrong twice over. Green on this
+/// card already means «موافَق عليه» — a positive status — so a green button
+/// pre-answered a question with three answers, one of which is «الزبون لم
+/// يحضر». And a filled primary button is the shape of a commit action, while
+/// this one only opens a sheet where the real choice is made.
+///
+/// So: the app's navy rather than any status colour, an icon that says
+/// "record an outcome", and a chevron that says "this opens something". It
+/// stays prominent because the money waits on it — a venue that skips this
+/// does not get paid.
+class _ReportOutcomeAction extends StatelessWidget {
+  const _ReportOutcomeAction({required this.onTap});
+
+  final Future<void> Function() onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14.r),
+        onTap: onTap,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: AppColors.dark,
+            borderRadius: BorderRadius.circular(14.r),
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+            child: Row(
+              children: [
+                Container(
+                  width: 34.w,
+                  height: 34.w,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.fact_check_outlined,
+                    size: 18.w,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'تسجيل نتيجة الحجز',
+                        style: AppTextStyles.font16Bold
+                            .copyWith(color: Colors.white),
+                      ),
+                      SizedBox(height: 2.h),
+                      // The consequence, which appears nowhere else on the
+                      // card: «تم اللعب» is what moves the money.
+                      Text(
+                        'سجّل ما حدث ليُغلق الحجز ويُصرف المبلغ',
+                        style: AppTextStyles.font12Regular.copyWith(
+                          color: Colors.white.withValues(alpha: 0.72),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_left,
+                  size: 20.w,
+                  color: Colors.white.withValues(alpha: 0.7),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -69,14 +69,21 @@ class WalletSummaryData {
   final int transactionsCount;
   final List<WalletTransactionItem> recentTransactions;
 
+  /// Money customers have already paid for sessions not yet played.
+  final WalletHeldData held;
+
   const WalletSummaryData({
     required this.currentBalance,
     required this.transactionsCount,
     required this.recentTransactions,
+    this.held = const WalletHeldData(),
   });
 
   factory WalletSummaryData.fromJson(Map<String, dynamic> json) {
     return WalletSummaryData(
+      held: WalletHeldData.fromJson(
+        json['held'] as Map<String, dynamic>? ?? const {},
+      ),
       currentBalance: _toDouble(json['current_balance']),
       transactionsCount: _toInt(json['transactions_count']),
       recentTransactions: (json['recent_transactions'] as List<dynamic>? ?? [])
@@ -86,6 +93,38 @@ class WalletSummaryData {
             ),
           )
           .toList(),
+    );
+  }
+}
+
+/// Funds held by the platform on the venue's behalf.
+///
+/// A monthly booking is paid in full up front, but the venue is paid one
+/// session at a time as each is played — so a cancelled session is refunded
+/// out of money still held, never clawed back from a manager who may already
+/// have spent it. Shown because four booked sessions and an unchanged balance
+/// otherwise look like a payment that went missing.
+class WalletHeldData {
+  final double amount;
+  final int seriesCount;
+  final int sessionsPending;
+  final String note;
+
+  const WalletHeldData({
+    this.amount = 0,
+    this.seriesCount = 0,
+    this.sessionsPending = 0,
+    this.note = '',
+  });
+
+  bool get hasHeldFunds => amount > 0;
+
+  factory WalletHeldData.fromJson(Map<String, dynamic> json) {
+    return WalletHeldData(
+      amount: _toDouble(json['amount']),
+      seriesCount: _toInt(json['series_count']),
+      sessionsPending: _toInt(json['sessions_pending']),
+      note: json['note']?.toString() ?? '',
     );
   }
 }

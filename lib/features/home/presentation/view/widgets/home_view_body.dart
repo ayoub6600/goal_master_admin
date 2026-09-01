@@ -457,7 +457,8 @@ class HomeViewBody extends StatelessWidget {
                           title: "إجمالي المدفوع نقدًا",
                           count: totalCash,
                           color: HexColor('#367C82'),
-                          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                          onTap: () =>
+                              Navigator.of(context).push(MaterialPageRoute(
                             builder: (_) => const BookingDrilldownView(
                               title: 'إجمالي المدفوع نقدًا',
                               kind: BookingDrilldownKind.paidCash,
@@ -468,7 +469,8 @@ class HomeViewBody extends StatelessWidget {
                           title: "إجمالي المدفوع عبر الإنترنت",
                           count: totalOnline,
                           color: HexColor('#7A9D54'),
-                          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                          onTap: () =>
+                              Navigator.of(context).push(MaterialPageRoute(
                             builder: (_) => const BookingDrilldownView(
                               title: 'إجمالي المدفوع عبر الإنترنت',
                               kind: BookingDrilldownKind.paidOnline,
@@ -484,7 +486,8 @@ class HomeViewBody extends StatelessWidget {
                           title: "إجمالي المستحق",
                           count: dueTotal, // ✅ مباشرة
                           color: HexColor('#BA4A00'),
-                          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                          onTap: () =>
+                              Navigator.of(context).push(MaterialPageRoute(
                             builder: (_) => const BookingDrilldownView(
                               title: 'إجمالي المستحق',
                               kind: BookingDrilldownKind.due,

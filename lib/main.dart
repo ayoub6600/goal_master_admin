@@ -32,6 +32,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'core/components/no_internet_page.dart';
+import 'package:goal_master_admin/features/booking/presentation/manager/manager_customers_cubit/manager_customers_cubit.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -250,6 +251,13 @@ class MyApp extends StatelessWidget {
                   ),
                   BlocProvider(
                     create: (_) => AddCustomerCubit(getIt<BookingRepo>()),
+                  ),
+                  // The manager's own customer book, shared with the booking
+                  // flow so a customer added mid-booking is immediately
+                  // selectable.
+                  BlocProvider(
+                    create: (_) =>
+                        ManagerCustomersCubit(getIt<BookingRepo>()),
                   ),
                   BlocProvider(create: (_) => LayoutCubit()),
                   BlocProvider(

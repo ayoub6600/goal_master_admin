@@ -14,11 +14,9 @@ import 'package:goal_master_admin/core/styles/assets.dart';
 import 'package:goal_master_admin/core/styles/spaces.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/add_booking_cubit/add_booking_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/employee_cubit/employee_cubit.dart';
-import 'package:goal_master_admin/features/booking/presentation/view/widgets/choose_payment.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/event_card.dart';
 import 'package:goal_master_admin/features/home/data/model/booking_slots_response.dart';
 import 'package:goal_master_admin/features/home/presentation/manager/page_view_new_booking_cubit/page_view_new_booking_cubit.dart';
-import 'package:goal_master_admin/features/home/presentation/view/widgets/employee_selection_new.dart';
 
 import '../../../../../core/components/button_app.dart';
 
@@ -86,11 +84,18 @@ class BookingItem extends StatelessWidget {
                     ],
                   ),
                   HeightSpace(16.h),
+                  // Into the one booking flow.
+                  //
+                  // This used to open a second, partial implementation:
+                  // «اختر الحجز» followed by a payment page, whose «تأكيد
+                  // الحجز» button was commented out and only printed to the
+                  // console. A manager could walk the whole thing and create
+                  // nothing. It also still exposed the band picker that the
+                  // unified flow exists to remove.
                   ButtonApp(
                       text: "حجز",
                       onTap: () {
-                        push(RoutesKeys.kAddNewBooking, context,
-                            extra: booking);
+                        push(RoutesKeys.kAddBooking, context);
                       })
                 ],
               ),
@@ -98,133 +103,6 @@ class BookingItem extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class AddNewBooking extends StatefulWidget {
-  const AddNewBooking({super.key, required this.booking});
-  final BookingSlot booking;
-
-  @override
-  State<AddNewBooking> createState() => _AddNewBookingState();
-}
-
-class _AddNewBookingState extends State<AddNewBooking> {
-  final PageController _controller = PageController();
-  @override
-  void initState() {
-    context.read<EmployeeCubit>().listEmployee(widget.booking.clubId);
-    // TODO: implement initState
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final pageViewCubit = context.read<PageViewNewBookingCubit>();
-
-    return Stack(
-      children: [
-        PageWrapper(
-          title: "إضافة الحجز",
-          allowBack: false,
-          child: BlocBuilder<PageViewNewBookingCubit, PageViewNewBookingState>(
-            builder: (context, state) {
-              return Column(
-                children: [
-                  Expanded(
-                    child: PageView(
-                      controller: _controller,
-                      physics: NeverScrollableScrollPhysics(),
-                      children: [
-                        EmployeeSelectionNew(controller: _controller),
-                        ChoosePayment(controller: _controller),
-                      ],
-                    ),
-                  ),
-                  if (state.currentPage > 0)
-                    EventCard(
-                      date: widget.booking.date,
-                      startTime: widget.booking.startTime,
-                      endTime: widget.booking.endTime,
-                      categoryName: widget.booking.categoryName,
-                      serviceTitle: widget.booking.serviceTitle,
-                    ),
-                  if (state.currentPage > 0)
-                    Padding(
-                      padding: EdgeInsets.all(16.w),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: ButtonApp(
-                              backGround: AppColors.grey,
-                              text: "رجوع",
-                              onTap: () {
-                                pageViewCubit.previousPage();
-                                _controller.previousPage(
-                                  duration: Duration(milliseconds: 300),
-                                  curve: Curves.ease,
-                                );
-                              },
-                            ),
-                          ),
-                          SizedBox(width: 8.w),
-
-                          //  if (state.currentPage == 2)
-                          BlocConsumer<AddBookingCubit, AddBookingState>(
-                            listener: (context, state) {
-                              if (state is AddBookingSuccess) {
-                                showCustomSuccessToast("تم اضافة الحجز بنجاح");
-                                pushReplacement(RoutesKeys.kHome, context);
-                              } else if (state is AddBookingFailure) {
-                                showCustomFailureToast(state.massage);
-                              }
-                            },
-                            builder: (context, state) {
-                              return Expanded(
-                                child: ButtonApp(
-                                  text: "تأكيد الحجز",
-                                  onTap: () {
-                                    print(
-                                        "employeeId ${pageViewCubit.state.employeeId} serviceId ${widget.booking.serviceId} zoneId ${pageViewCubit.state.zoneId} clubId ${widget.booking.clubId} date ${widget.booking.date} startTime ${widget.booking.startTime} endTime ${widget.booking.endTime}");
-                                    // context.read<AddBookingCubit>().addBooking(
-
-                                    //       customerId: 0,
-                                    //       employeeId:
-                                    //           pageViewCubit.state.employeeId ??
-                                    //               0,
-                                    //       serviceId: widget.booking.serviceId,
-                                    //       date: widget.booking.date,
-                                    //       startTime: widget.booking.startTime,
-                                    //       endTime: widget.booking.endTime,
-                                    //     );
-                                  },
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              );
-            },
-          ),
-        ),
-        BlocBuilder<AddBookingCubit, AddBookingState>(
-          builder: (context, state) {
-            if (state is AddBookingLoading) {
-              return Container(
-                color: Colors.black.withOpacity(0.5),
-                child: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
-      ],
     );
   }
 }

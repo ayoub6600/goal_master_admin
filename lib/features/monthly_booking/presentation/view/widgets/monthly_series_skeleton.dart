@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
 
-class MonthlyBookingLoading extends StatelessWidget {
-  const MonthlyBookingLoading({super.key, this.itemCount = 4});
+class MonthlySeriesSkeleton extends StatelessWidget {
+  const MonthlySeriesSkeleton({super.key, this.itemCount = 4});
 
   final int itemCount;
 

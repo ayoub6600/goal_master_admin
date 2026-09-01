@@ -1,7 +1,24 @@
 // ignore: avoid_classes_with_only_static_members
 class EndPoints {
   //********  base url
-  static const String baserUrl = 'http://127.0.0.1:8000/api/';
+  /// Where the API lives, chosen at BUILD time.
+  ///
+  /// `127.0.0.1` means different things on different devices: the Simulator
+  /// borrows the Mac's network stack so loopback reaches `artisan serve`,
+  /// while on a real iPhone loopback is the phone itself and every request is
+  /// refused. The default keeps the Simulator working untouched; a device
+  /// passes the Mac's LAN address instead:
+  ///
+  ///   flutter run --dart-define=API_BASE=http://192.168.1.x:8000/api/
+  ///
+  /// Deliberately `String.fromEnvironment`, so this stays a compile-time
+  /// constant baked into the binary — a machine-specific address is never
+  /// committed, and there is no runtime lookup on every request. Mirrors the
+  /// customer app, which reached this shape first.
+  static const String baserUrl = String.fromEnvironment(
+    'API_BASE',
+    defaultValue: 'http://127.0.0.1:8000/api/',
+  );
 
   //******* routes
   static const String id = 'id'; //! example route, remove this
@@ -40,6 +57,15 @@ class EndPoints {
   static String managerSubscriptionCurrent = 'manager/subscription/current';
   static String managerSubscriptionChange = 'manager/subscription/change';
   static String managerSubscriptionAutoRenew = 'manager/subscription/auto-renew';
+
+  /// Every plan with what it means for THIS manager right now — the action to
+  /// show on each card, and for an upgrade the figures behind it. The lifecycle
+  /// decision and every amount are the server's.
+  static String managerSubscriptionOptions = 'manager/subscription/options';
+
+  /// Drop a downgrade or plan switch scheduled for the next cycle.
+  static String managerSubscriptionCancelScheduled =
+      'manager/subscription/cancel-scheduled-change';
   static String notification = 'user/notifications/get-notification';
   static String deleteAccount = 'user/delete';
 
@@ -61,6 +87,13 @@ class EndPoints {
       'user/booking/getMonthlyBookingList?page=$id';
 
   static String cancelBooking = 'user/booking/cancel-booking';
+  static String pendingExceptions = 'manager/cases/pending-exceptions';
+  static String decideException = 'manager/cases/decide-exception';
+  static String awaitingAttendance = 'manager/cases/awaiting-attendance';
+  static String markAttendance = 'manager/cases/mark-attendance';
+  static String restrictCustomer = 'manager/cases/restrict-customer';
+  static String releaseRestriction = 'manager/cases/release-restriction';
+  static String cancelManagerSeries = 'user/booking/manager-series-cancel';
 
   static String listZone = 'list/zone';
   static String listClub = 'list/club';
@@ -73,13 +106,32 @@ class EndPoints {
 
   static String listTimeslot = 'list/timeslot';
 
+  /// One operational night with the internal time bands already merged. The
+  /// manager picks a night; the server says which calendar day each slot falls
+  /// on. Supersedes [listTimeslot] for the booking flow — that route stays for
+  /// builds already in the field.
+  static String operationalAvailability = 'list/operational-availability';
+
+  /// Whether the night already in progress still has future slots, and which
+  /// night that is. Never computed from the device clock.
+  static String operationalNightContext = 'list/operational-night-context';
+
   static String addBooking = 'user/booking/store-booking';
+
+  /// The four appointments a recurring booking would create, and which of them
+  /// are taken. Same endpoint the customer app uses — one recurrence engine.
+  static String seriesPreview = 'user/booking/series/preview';
 
   static String charge = 'user/card/charge';
   //user/card/balance
 
   static String balance = 'user/card/balance';
   static String listCustomer = "list/customers";
+
+  /// The manager's own customer book: alias-aware, searchable across alias,
+  /// platform name and phone, paginated, and reachable before a customer's
+  /// first booking.
+  static String managerCustomers = "manager/customers";
   //user/booking/updateMonthlyBooking
 
   static String updateMonthlyBooking = 'user/booking/updateMonthlyBooking';
@@ -97,6 +149,20 @@ class EndPoints {
   static String getPaidBookings(String type) =>
       'user/booking/get-paid-bookings?type=$type';
   static String getDueBookings = 'user/booking/get-due-bookings';
+
+  /// The venue's view of one recurring booking, and the single decision that
+  /// covers all of its sessions.
+  static String managerSeries(int id) => 'user/booking/manager-series/$id';
+  static String managerSeriesDecision = 'user/booking/manager-series-decision';
+
+  /// Calls off the remaining sessions of one recurring booking, in a single
+  /// action, through the same service the customer's own "cancel the rest"
+  /// uses — so refunds and the ledger behave identically whoever pressed it.
+  static String managerSeriesCancel = 'user/booking/manager-series-cancel';
+
+  /// Editing one existing booking. Used here to move a single session of a
+  /// recurring booking without touching the rest of it.
+  static String updateBooking = 'user/booking/update-booking';
 }
 
 //doctors/top-ratings

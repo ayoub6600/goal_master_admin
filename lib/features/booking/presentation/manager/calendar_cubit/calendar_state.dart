@@ -1,193 +1,156 @@
 import 'package:equatable/equatable.dart';
+import 'package:goal_master_admin/features/booking/data/model/operational_slot.dart';
 
+/// The booking flow's date and time state.
+///
+/// Two things live here and they are not the same thing:
+///
+///   [selectedDay] / [focusedDay] — the OPERATIONAL NIGHT being browsed. A
+///   listing key and a grouping key. Never a booking date.
+///
+///   [selectedSlot] — the occurrence the manager actually picked, exactly as
+///   the server described it, carrying its own calendar date, its real end,
+///   its band and its price.
+///
+/// Confusing the two is what booked after-midnight slots a day early.
 abstract class CalendarState extends Equatable {
-  final DateTime selectedDay;
-  final DateTime focusedDay;
-  final Map<DateTime, List<dynamic>> selectedEvents;
-  final dynamic selectedTime;
-  final DateTime? selectedTimeEnd; // Added selectedTimeEnd
-
   const CalendarState({
     required this.selectedDay,
     required this.focusedDay,
     required this.selectedEvents,
-    this.selectedTime,
-    this.selectedTimeEnd, // Pass selectedTimeEnd to constructor
+    this.selectedSlot,
   });
+
+  final DateTime selectedDay;
+  final DateTime focusedDay;
+  final Map<DateTime, List<dynamic>> selectedEvents;
+  final OperationalSlot? selectedSlot;
 
   CalendarState copyWith({
     DateTime? selectedDay,
     DateTime? focusedDay,
     Map<DateTime, List<dynamic>>? selectedEvents,
-    dynamic selectedTime,
-    DateTime? selectedTimeEnd, // Added selectedTimeEnd to copyWith
+    OperationalSlot? selectedSlot,
   });
 
   @override
-  List<Object?> get props =>
-      [selectedDay, focusedDay, selectedEvents, selectedTime, selectedTimeEnd];
+  List<Object?> get props => [
+        selectedDay,
+        focusedDay,
+        selectedEvents,
+        selectedSlot?.startAt,
+        selectedSlot?.endAt,
+        selectedSlot?.employeeId,
+      ];
 }
 
 class CalendarInitial extends CalendarState {
   const CalendarInitial({
-    required DateTime selectedDay,
-    required DateTime focusedDay,
-    required Map<DateTime, List<dynamic>> selectedEvents,
-    dynamic selectedTime,
-    DateTime? selectedTimeEnd, // Added selectedTimeEnd
-  }) : super(
-          selectedDay: selectedDay,
-          focusedDay: focusedDay,
-          selectedEvents: selectedEvents,
-          selectedTime: selectedTime,
-          selectedTimeEnd: selectedTimeEnd, // Pass selectedTimeEnd here
-        );
+    required super.selectedDay,
+    required super.focusedDay,
+    required super.selectedEvents,
+    super.selectedSlot,
+  });
 
   @override
   CalendarInitial copyWith({
     DateTime? selectedDay,
     DateTime? focusedDay,
     Map<DateTime, List<dynamic>>? selectedEvents,
-    dynamic selectedTime,
-    DateTime? selectedTimeEnd, // Added selectedTimeEnd
+    OperationalSlot? selectedSlot,
   }) {
     return CalendarInitial(
       selectedDay: selectedDay ?? this.selectedDay,
       focusedDay: focusedDay ?? this.focusedDay,
       selectedEvents: selectedEvents ?? this.selectedEvents,
-      selectedTime: selectedTime ?? this.selectedTime,
-      selectedTimeEnd:
-          selectedTimeEnd ?? this.selectedTimeEnd, // Added selectedTimeEnd here
+      selectedSlot: selectedSlot ?? this.selectedSlot,
     );
   }
 }
 
 class TimeLoading extends CalendarState {
-  TimeLoading({
-    required DateTime selectedDay,
-    required DateTime focusedDay,
-    required Map<DateTime, List<dynamic>> selectedEvents,
-    dynamic selectedTime,
-    DateTime? selectedTimeEnd, // Added selectedTimeEnd
-  }) : super(
-          selectedDay: selectedDay,
-          focusedDay: focusedDay,
-          selectedEvents: selectedEvents,
-          selectedTime: selectedTime,
-          selectedTimeEnd: selectedTimeEnd, // Pass selectedTimeEnd here
-        );
+  const TimeLoading({
+    required super.selectedDay,
+    required super.focusedDay,
+    required super.selectedEvents,
+    super.selectedSlot,
+  });
 
   @override
   TimeLoading copyWith({
     DateTime? selectedDay,
     DateTime? focusedDay,
     Map<DateTime, List<dynamic>>? selectedEvents,
-    dynamic selectedTime,
-    DateTime? selectedTimeEnd, // Added selectedTimeEnd
+    OperationalSlot? selectedSlot,
   }) {
     return TimeLoading(
       selectedDay: selectedDay ?? this.selectedDay,
       focusedDay: focusedDay ?? this.focusedDay,
       selectedEvents: selectedEvents ?? this.selectedEvents,
-      selectedTime: selectedTime ?? this.selectedTime,
-      selectedTimeEnd:
-          selectedTimeEnd ?? this.selectedTimeEnd, // Added selectedTimeEnd here
+      selectedSlot: selectedSlot ?? this.selectedSlot,
     );
   }
 }
 
 class TimeSuccess extends CalendarState {
-  final List<dynamic> time;
+  const TimeSuccess({
+    required this.night,
+    required super.selectedDay,
+    required super.focusedDay,
+    required super.selectedEvents,
+    super.selectedSlot,
+  });
 
-  TimeSuccess({
-    required this.time,
-    required DateTime selectedDay,
-    required DateTime focusedDay,
-    required Map<DateTime, List<dynamic>> selectedEvents,
-    dynamic selectedTime,
-    DateTime? selectedTimeEnd, // Added selectedTimeEnd
-  }) : super(
-          selectedDay: selectedDay,
-          focusedDay: focusedDay,
-          selectedEvents: selectedEvents,
-          selectedTime: selectedTime,
-          selectedTimeEnd: selectedTimeEnd, // Pass selectedTimeEnd here
-        );
+  final OperationalNight night;
 
   @override
   TimeSuccess copyWith({
     DateTime? selectedDay,
     DateTime? focusedDay,
     Map<DateTime, List<dynamic>>? selectedEvents,
-    dynamic selectedTime,
-    DateTime? selectedTimeEnd, // Added selectedTimeEnd
+    OperationalSlot? selectedSlot,
+    OperationalNight? night,
   }) {
     return TimeSuccess(
-      time: time,
+      night: night ?? this.night,
       selectedDay: selectedDay ?? this.selectedDay,
       focusedDay: focusedDay ?? this.focusedDay,
       selectedEvents: selectedEvents ?? this.selectedEvents,
-      selectedTime: selectedTime ?? this.selectedTime,
-      selectedTimeEnd:
-          selectedTimeEnd ?? this.selectedTimeEnd, // Added selectedTimeEnd here
+      selectedSlot: selectedSlot ?? this.selectedSlot,
     );
   }
 
   @override
-  List<Object?> get props => [
-        time,
-        selectedDay,
-        focusedDay,
-        selectedEvents,
-        selectedTime,
-        selectedTimeEnd
-      ];
+  List<Object?> get props => [...super.props, night.operationalDate, night.slots.length];
 }
 
 class TimeFailure extends CalendarState {
-  final String message;
-
-  TimeFailure({
+  const TimeFailure({
     required this.message,
-    required DateTime selectedDay,
-    required DateTime focusedDay,
-    required Map<DateTime, List<dynamic>> selectedEvents,
-    dynamic selectedTime,
-    DateTime? selectedTimeEnd, // Added selectedTimeEnd
-  }) : super(
-          selectedDay: selectedDay,
-          focusedDay: focusedDay,
-          selectedEvents: selectedEvents,
-          selectedTime: selectedTime,
-          selectedTimeEnd: selectedTimeEnd, // Pass selectedTimeEnd here
-        );
+    required super.selectedDay,
+    required super.focusedDay,
+    required super.selectedEvents,
+    super.selectedSlot,
+  });
+
+  final String message;
 
   @override
   TimeFailure copyWith({
     DateTime? selectedDay,
     DateTime? focusedDay,
     Map<DateTime, List<dynamic>>? selectedEvents,
-    dynamic selectedTime,
-    DateTime? selectedTimeEnd, // Added selectedTimeEnd
+    OperationalSlot? selectedSlot,
   }) {
     return TimeFailure(
       message: message,
       selectedDay: selectedDay ?? this.selectedDay,
       focusedDay: focusedDay ?? this.focusedDay,
       selectedEvents: selectedEvents ?? this.selectedEvents,
-      selectedTime: selectedTime ?? this.selectedTime,
-      selectedTimeEnd:
-          selectedTimeEnd ?? this.selectedTimeEnd, // Added selectedTimeEnd here
+      selectedSlot: selectedSlot ?? this.selectedSlot,
     );
   }
 
   @override
-  List<Object?> get props => [
-        message,
-        selectedDay,
-        focusedDay,
-        selectedEvents,
-        selectedTime,
-        selectedTimeEnd
-      ];
+  List<Object?> get props => [...super.props, message];
 }

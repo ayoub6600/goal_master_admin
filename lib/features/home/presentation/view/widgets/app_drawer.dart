@@ -147,8 +147,7 @@ class AppDrawer extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: const Color(0xffFFF4E5),
                             borderRadius: BorderRadius.circular(10.r),
-                            border:
-                                Border.all(color: const Color(0xffF3C98A)),
+                            border: Border.all(color: const Color(0xffF3C98A)),
                           ),
                           child: Row(
                             children: [
@@ -314,7 +313,10 @@ class AppDrawer extends StatelessWidget {
                     title: "بيانات الملعب",
                     icon: Assets.imagesPngImageProfile,
                     onTap: () {
-                      push(RoutesKeys.kAddFirstVenue, context);
+                      // The venue's profile, not the setup wizard. The wizard
+                      // still owns «إعداد بيانات الملعب» above, and is
+                      // unchanged.
+                      push(RoutesKeys.kVenueProfile, context);
                     },
                   ),
                   Container(

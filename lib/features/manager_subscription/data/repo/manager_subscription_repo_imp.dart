@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:goal_master_admin/features/manager_subscription/data/model/subscription_lifecycle.dart';
 import 'package:dio/dio.dart';
 import 'package:goal_master_admin/core/databases/api/api_consumer.dart';
 import 'package:goal_master_admin/core/databases/api/api_consumer_extension.dart';
@@ -98,6 +99,30 @@ class ManagerSubscriptionRepoImp implements ManagerSubscriptionRepo {
       (response) async => ManagerCurrentSubscription.fromJson(
         Map<String, dynamic>.from(response['data'] as Map),
       ),
+    );
+  }
+
+  @override
+  Future<Either<Failure, SubscriptionLifecycle>> loadLifecycle() {
+    return consumer.handleRequest(
+      () => consumer.get(EndPoints.managerSubscriptionOptions),
+      (data) => SubscriptionLifecycle.fromJson(
+        Map<String, dynamic>.from(data['data'] as Map),
+      ),
+    );
+  }
+
+  @override
+  Future<Either<Failure, ManagerCurrentSubscription?>> cancelScheduledChange() {
+    return consumer.handleRequest(
+      () => consumer.post(EndPoints.managerSubscriptionCancelScheduled),
+      (data) {
+        final payload = data['data'];
+        return payload is Map
+            ? ManagerCurrentSubscription.fromJson(
+                Map<String, dynamic>.from(payload))
+            : null;
+      },
     );
   }
 }

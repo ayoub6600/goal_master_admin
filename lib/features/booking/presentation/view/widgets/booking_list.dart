@@ -9,6 +9,7 @@ import 'package:goal_master_admin/core/styles/assets.dart';
 import 'package:goal_master_admin/core/styles/spaces.dart';
 import 'package:goal_master_admin/features/booking/data/model/booking_all_list_response.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/booking_cubit/booking_cubit.dart';
+import 'package:goal_master_admin/features/booking/presentation/view/widgets/monthly_booking_card.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/booking_items.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
 
@@ -29,7 +30,17 @@ class BookingList extends StatelessWidget {
             pagingController: state.pagingController,
             builderDelegate: PagedChildBuilderDelegate<BookingItemResponce>(
               itemBuilder: (context, booking, index) {
-                return BookingItems(booking: booking);
+                // A recurring booking gets its own card: it is one decision
+                // covering four sessions, and it should not read like the
+                // one-off bookings it sits among.
+                return booking.isMonthly
+                    ? MonthlyBookingCard(
+                        booking: booking,
+                        // Refetch after a decision so the row reflects what
+                        // the server recorded, not a local guess.
+                        onChanged: () => state.pagingController.refresh(),
+                      )
+                    : BookingItems(booking: booking);
               },
               firstPageErrorIndicatorBuilder: (context) {
                 return ErrorStateWidget(

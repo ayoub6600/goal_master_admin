@@ -266,6 +266,13 @@ class _WalletHeroCard extends StatelessWidget {
             '${data.wallet.currentBalance.toStringAsFixed(2)} د.ل',
             style: AppTextStyles.font24Bold.copyWith(color: Colors.white),
           ),
+          // Held funds sit directly under the balance, because the question
+          // they answer — "where is the money from that monthly booking?" —
+          // is asked while looking at the balance.
+          if (data.wallet.held.hasHeldFunds) ...[
+            HeightSpace(12.h),
+            _HeldFundsPanel(held: data.wallet.held),
+          ],
           HeightSpace(14.h),
           Text(
             'الباقة الحالية: $planName',
@@ -290,6 +297,68 @@ class _WalletHeroCard extends StatelessWidget {
             textColor: AppColors.primary,
             onTap: onTopUpTap,
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Money already paid that is not the venue's yet.
+///
+/// Deliberately shown as its own figure rather than folded into the balance:
+/// it is not spendable, and adding it would overstate what the manager can
+/// withdraw. Says plainly when it arrives, so the arrangement reads as a
+/// schedule rather than a problem.
+class _HeldFundsPanel extends StatelessWidget {
+  const _HeldFundsPanel({required this.held});
+
+  final WalletHeldData held;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.lock_clock, size: 16.sp, color: Colors.white),
+              WidthSpace(6.w),
+              Expanded(
+                child: Text(
+                  'مبالغ محجوزة لك',
+                  style: AppTextStyles.font14Bold.copyWith(color: Colors.white),
+                ),
+              ),
+              Text(
+                '${held.amount.toStringAsFixed(2)} د.ل',
+                style: AppTextStyles.font16Bold.copyWith(color: Colors.white),
+              ),
+            ],
+          ),
+          HeightSpace(6.h),
+          Text(
+            '${held.seriesCount} حجز شهري • ${held.sessionsPending} موعد لم يُلعب بعد',
+            style: AppTextStyles.font12Regular
+                .copyWith(color: Colors.white.withValues(alpha: 0.80)),
+          ),
+          if (held.note.isNotEmpty) ...[
+            HeightSpace(6.h),
+            Text(
+              held.note,
+              style: AppTextStyles.font12Regular.copyWith(
+                color: Colors.white.withValues(alpha: 0.80),
+                height: 1.45,
+              ),
+            ),
+          ],
         ],
       ),
     );

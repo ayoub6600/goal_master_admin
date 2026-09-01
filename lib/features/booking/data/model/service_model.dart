@@ -65,8 +65,7 @@ class Service {
       durationInDays: json['duration_in_days'],
       durationInTime: json['duration_in_time']?.toString() ?? '00:00:00',
       timeSlotInTime: json['time_slot_in_time']?.toString() ?? '00:00:00',
-      paddingTimeBefore:
-          json['padding_time_before']?.toString() ?? '00:00:00',
+      paddingTimeBefore: json['padding_time_before']?.toString() ?? '00:00:00',
       paddingTimeAfter: json['padding_time_after']?.toString() ?? '00:00:00',
       appointmentLimitType: json['appoinntment_limit_type'],
       appointmentLimit: json['appoinntment_limit'],

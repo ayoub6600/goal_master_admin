@@ -14,6 +14,8 @@ import 'package:goal_master_admin/features/manager_onboarding/presentation/view/
 import 'package:goal_master_admin/features/manager_subscription/data/model/manager_subscription_response.dart';
 import 'package:goal_master_admin/features/manager_subscription/presentation/manager/manager_subscription_cubit/manager_subscription_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
+import 'package:goal_master_admin/core/utils/arabic_dates.dart';
+import 'package:goal_master_admin/features/manager_subscription/data/model/subscription_lifecycle.dart';
 
 class ManagerSubscriptionBody extends StatefulWidget {
   const ManagerSubscriptionBody({super.key});
@@ -98,6 +100,13 @@ class _ManagerSubscriptionBodyState extends State<ManagerSubscriptionBody> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (current != null) _buildCurrentPlanCard(current),
+                      // A change waiting for the cycle to end belongs beside
+                      // the current plan, not buried in a card the manager has
+                      // to go looking for.
+                      if (current?.scheduledChange != null) ...[
+                        HeightSpace(12.h),
+                        _buildScheduledChangeBanner(current!.scheduledChange!),
+                      ],
                       HeightSpace(18.h),
                       Text('اختر باقة', style: AppTextStyles.font18Bold),
                       HeightSpace(10.h),
@@ -105,21 +114,31 @@ class _ManagerSubscriptionBodyState extends State<ManagerSubscriptionBody> {
                       HeightSpace(16.h),
                       _buildPlansCard(plans),
                       HeightSpace(18.h),
-                      ButtonApp(
-                        text: isSubmitting
-                            ? 'جارٍ الحفظ...'
-                            : (current != null &&
-                                    _selectedPlan?.id == current.planId
-                                ? 'تجديد الاشتراك الحالي'
-                                : 'تبديل إلى هذه الباقة'),
-                        onTap: isSubmitting || _selectedPlan == null
-                            ? null
-                            : () {
-                                context.read<ManagerSubscriptionCubit>().changePlan(
-                                      subscriptionPlanId: _selectedPlan!.id,
-                                      billingCycle: _billingCycle,
-                                    );
-                              },
+                      Builder(
+                        builder: (context) {
+                          final cubit = context.read<ManagerSubscriptionCubit>();
+                          final action = _selectedPlan == null
+                              ? null
+                              : cubit.actionFor(_selectedPlan!.id);
+
+                          // The words and the behaviour both come from the
+                          // server's classification. The plan the manager
+                          // already holds is not purchasable, so its button
+                          // does nothing rather than sending a charge.
+                          return ButtonApp(
+                            text: isSubmitting
+                                ? 'جارٍ الحفظ...'
+                                : (action?.label ?? 'اشترك'),
+                            backGround: (action?.isActionable ?? true)
+                                ? null
+                                : AppColors.grey,
+                            onTap: isSubmitting ||
+                                    _selectedPlan == null ||
+                                    !(action?.isActionable ?? true)
+                                ? null
+                                : () => _confirmAction(context, action!),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -412,6 +431,241 @@ class _ManagerSubscriptionBodyState extends State<ManagerSubscriptionBody> {
               ),
             )
             .toList(),
+      ),
+    );
+  }
+
+  /// A change the manager has already asked for, waiting for the cycle to end.
+  Widget _buildScheduledChangeBanner(ScheduledSubscriptionChange scheduled) {
+    final when = scheduled.effectiveAt;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: AppColors.primaryBlueLight2,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.event_repeat, size: 18.w, color: AppColors.primary),
+              SizedBox(width: 8.w),
+              Text('تغيير مجدول',
+                  style: AppTextStyles.font16Bold
+                      .copyWith(color: AppColors.primary)),
+            ],
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            when == null
+                ? 'سيتم التحويل إلى باقة ${scheduled.planName} عند انتهاء اشتراكك الحالي.'
+                : 'سيتم التحويل إلى باقة ${scheduled.planName} عند انتهاء '
+                    'اشتراكك الحالي في ${arabicDayAndDateOf(when)}.',
+            style: AppTextStyles.font14Regular
+                .copyWith(color: AppColors.uiBlack),
+          ),
+          SizedBox(height: 10.h),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () => _confirmCancelScheduled(context, scheduled),
+              style: OutlinedButton.styleFrom(
+                minimumSize: Size(0, 44.h),
+                side: BorderSide(color: AppColors.primary),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+              ),
+              child: Text('إلغاء التغيير',
+                  style: AppTextStyles.font14Bold
+                      .copyWith(color: AppColors.primary)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmCancelScheduled(
+    BuildContext context,
+    ScheduledSubscriptionChange scheduled,
+  ) async {
+    final cubit = context.read<ManagerSubscriptionCubit>();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: const Text('إلغاء تغيير الباقة؟'),
+          content: Text(
+            'ستستمر على باقتك الحالية ولن يتم التحويل إلى ${scheduled.planName}.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('رجوع'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('إلغاء التغيير'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed == true) {
+      await cubit.cancelScheduledChange();
+    }
+  }
+
+  /// Everything a financial or scheduling tap has to say before it happens.
+  ///
+  /// Amounts shown here are the server's, carried on the lifecycle payload —
+  /// the app never recomputes what an upgrade costs.
+  Future<void> _confirmAction(BuildContext context, PlanAction action) async {
+    final cubit = context.read<ManagerSubscriptionCubit>();
+    final plan = _selectedPlan!;
+    final info = cubit.lifecycleFor(plan.id);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: Text(switch (action) {
+            PlanAction.upgrade => 'ترقية الباقة',
+            PlanAction.renew => 'تجديد الاشتراك',
+            PlanAction.scheduleDowngrade ||
+            PlanAction.scheduleSwitch =>
+              'تغيير الباقة',
+            _ => 'تأكيد الاشتراك',
+          }),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: _confirmationLines(action, plan.name, info),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('رجوع'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: Text(switch (action) {
+                PlanAction.upgrade => 'تأكيد الترقية',
+                PlanAction.renew => 'تأكيد التجديد',
+                _ => 'تأكيد التغيير',
+              }),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    await cubit.changePlan(
+      subscriptionPlanId: plan.id,
+      billingCycle: _billingCycle,
+    );
+  }
+
+  List<Widget> _confirmationLines(
+    PlanAction action,
+    String planName,
+    PlanLifecycle? info,
+  ) {
+    final preview = info?.upgradePreview;
+    final money = (double v) => '${v.toStringAsFixed(2)} د.ل';
+
+    if (action == PlanAction.upgrade && preview != null) {
+      return [
+        _confirmRow('الباقة الحالية', preview.currentPlanName),
+        _confirmRow('الباقة الجديدة', planName),
+        if (preview.cycleEndsAt != null)
+          _confirmRow('باقتك الحالية مستمرة حتى',
+              arabicDayAndDateOf(preview.cycleEndsAt!)),
+        const Divider(),
+        _confirmRow('قيمة الفترة المتبقية من باقتك الحالية',
+            money(preview.unusedCurrentValue)),
+        _confirmRow('قيمة الباقة الجديدة للفترة المتبقية',
+            money(preview.targetPeriodValue)),
+        _confirmRow('المبلغ المطلوب الآن', money(preview.amountDue), bold: true),
+        SizedBox(height: 8.h),
+        Text('لن تبدأ دورة جديدة. سيبقى تاريخ انتهاء اشتراكك كما هو.',
+            style: AppTextStyles.font12Regular
+                .copyWith(color: AppColors.fontColor)),
+      ];
+    }
+
+    if (action.isScheduled) {
+      return [
+        Text('ستستمر باقتك الحالية حتى نهاية الدورة، ثم سيتم التحويل إلى '
+            '$planName.'),
+        SizedBox(height: 8.h),
+        Text(
+          action == PlanAction.scheduleSwitch
+              ? 'لن يتم تغيير مزايا باقتك الحالية الآن. لن يتم خصم أي مبلغ الآن.'
+              : 'لن يتم خصم أي مبلغ الآن.',
+          style: AppTextStyles.font12Regular
+              .copyWith(color: AppColors.fontColor),
+        ),
+      ];
+    }
+
+    // Renewal or a first purchase.
+    return [
+      _confirmRow('الباقة', planName),
+      if (info != null && info.hasPromotionalPrice) ...[
+        _confirmRow('السعر الأساسي', money(info.listPrice)),
+        _confirmRow('سعر العرض', money(info.effectivePrice)),
+      ],
+      _confirmRow(
+        'المبلغ النهائي',
+        money(info?.effectivePrice ?? 0),
+        bold: true,
+      ),
+    ];
+  }
+
+  /// One line of a confirmation sheet.
+  ///
+  /// The label and the value share a row, and «قيمة الفترة المتبقية من باقتك
+  /// الحالية» beside an amount is wider than a dialog — so both sides flex and
+  /// the label is allowed to wrap rather than overflowing the edge.
+  Widget _confirmRow(String label, String value, {bool bold = false}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 3.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: AppTextStyles.font12Regular
+                  .copyWith(color: AppColors.fontColor),
+            ),
+          ),
+          SizedBox(width: 10.w),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: bold
+                  ? AppTextStyles.font14Bold
+                  : AppTextStyles.font14Regular,
+            ),
+          ),
+        ],
       ),
     );
   }

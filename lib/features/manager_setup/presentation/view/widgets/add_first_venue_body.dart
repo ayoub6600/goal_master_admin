@@ -146,6 +146,7 @@ class _AddFirstVenueBodyState extends State<AddFirstVenueBody> {
               slotMinutes: 60,
               supportsEvening: item.supportsEvening,
               supportsAfterMidnight: item.supportsAfterMidnight,
+              isNew: false,
             ),
           ),
         );
@@ -342,19 +343,27 @@ class _AddFirstVenueBodyState extends State<AddFirstVenueBody> {
         return;
       }
 
-      if (!draft.supportsEvening && !draft.supportsAfterMidnight) {
-        _showError(
-            'كل خدمة يجب أن ترتبط بالمسائي أو بعد منتصف الليل أو بهما معًا.');
-        return;
-      }
-
       services.add({
         'title': title,
         'price': price,
         'slot_minutes': draft.slotMinutes,
         'remarks': remarks,
-        'supports_evening': draft.supportsEvening,
-        'supports_after_midnight': draft.supportsAfterMidnight,
+        // Derived, not asked.
+        //
+        // An existing pitch keeps exactly the bands it already had: the server
+        // deactivates any pitch missing from a band's list, so sending "both"
+        // for everything would widen a pitch that was only ever available in
+        // the evening.
+        //
+        // A pitch being added for the first time becomes available whenever
+        // the venue is open — every band that is currently switched on. It is
+        // deliberately NOT added to a disabled after-midnight band: the same
+        // save would re-create that band as enabled, quietly reopening hours
+        // the venue had closed.
+        'supports_evening': draft.isNew ? true : draft.supportsEvening,
+        'supports_after_midnight': draft.isNew
+            ? _afterMidnightBandEnabled
+            : draft.supportsAfterMidnight,
       });
     }
 
@@ -362,6 +371,22 @@ class _AddFirstVenueBodyState extends State<AddFirstVenueBody> {
           categoryTypeId: _selectedCategoryType!.id,
           services: services,
         );
+  }
+
+  /// Whether the venue's after-midnight band is switched on right now.
+  ///
+  /// Read from the same record «فترات الحجز» writes, so a new pitch inherits
+  /// the hours the venue actually keeps rather than a hardcoded assumption.
+  bool get _afterMidnightBandEnabled {
+    final employees =
+        context.read<ManagerSetupCubit>().bootstrapResponse?.data.catalog.employees ??
+            const [];
+
+    for (final e in employees) {
+      if (e.employeeId.contains('AFTER-MIDNIGHT')) return e.status != 0;
+    }
+
+    return false;
   }
 
   void _addServiceDraft() {
@@ -920,69 +945,11 @@ class _AddFirstVenueBodyState extends State<AddFirstVenueBody> {
             hint: 'اختياري',
             maxLines: 2,
           ),
-          HeightSpace(12.h),
-          Wrap(
-            spacing: 10.w,
-            runSpacing: 10.h,
-            children: [
-              _buildAvailabilityChip(
-                label: 'المسائي',
-                value: draft.supportsEvening,
-                onTap: () => setState(
-                  () => draft.supportsEvening = !draft.supportsEvening,
-                ),
-              ),
-              _buildAvailabilityChip(
-                label: 'بعد منتصف الليل',
-                value: draft.supportsAfterMidnight,
-                onTap: () => setState(
-                  () => draft.supportsAfterMidnight =
-                      !draft.supportsAfterMidnight,
-                ),
-              ),
-            ],
-          ),
+          // A pitch is a name and a price. WHEN it can be booked is decided
+          // once, on «فترات الحجز», against the venue's actual hours — asking
+          // it again here in the old band vocabulary meant the same fact had
+          // two owners that could disagree.
         ],
-      ),
-    );
-  }
-
-  Widget _buildAvailabilityChip({
-    required String label,
-    required bool value,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(30.r),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-        decoration: BoxDecoration(
-          color: value
-              ? AppColors.primary.withValues(alpha: 0.10)
-              : const Color(0xffF2F4F7),
-          borderRadius: BorderRadius.circular(30.r),
-          border: Border.all(
-            color: value ? AppColors.primary : const Color(0xffD8DEE5),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              value ? Icons.check_circle : Icons.radio_button_unchecked,
-              color: value ? AppColors.primary : Colors.grey,
-              size: 18.sp,
-            ),
-            WidthSpace(8.w),
-            Text(
-              label,
-              style: AppTextStyles.font14Bold.copyWith(
-                color: value ? AppColors.primary : AppColors.fontColor,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -1189,6 +1156,7 @@ class _ManagerServiceDraft {
     this.slotMinutes = 60,
     this.supportsEvening = true,
     this.supportsAfterMidnight = false,
+    this.isNew = true,
   })  : titleController = TextEditingController(text: title),
         priceController = TextEditingController(text: price),
         remarksController = TextEditingController(text: remarks);
@@ -1199,6 +1167,10 @@ class _ManagerServiceDraft {
   int slotMinutes;
   bool supportsEvening;
   bool supportsAfterMidnight;
+
+  /// True until the server has told us which bands this pitch belongs to.
+  /// A loaded pitch keeps its own bands; a brand-new one takes the default.
+  final bool isNew;
 
   void dispose() {
     titleController.dispose();

@@ -81,8 +81,6 @@ class _HtmlViewerScreenState extends State<HtmlViewerScreen> {
 }
 // جزرب دا لما زياد يعدب
 
-
-
 // import 'dart:io';
 // import 'package:flutter/material.dart';
 // import 'package:webview_flutter/webview_flutter.dart';
@@ -164,7 +162,7 @@ class _HtmlViewerScreenState extends State<HtmlViewerScreen> {
 //           html2canvas: { scale: 2, useCORS: true },
 //           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
 //         };
-        
+
 //         return new Promise((resolve, reject) => {
 //           html2pdf().set(opt).from(element).toPdf().get('pdf').then((pdf) => {
 //             resolve(true);
@@ -188,7 +186,7 @@ class _HtmlViewerScreenState extends State<HtmlViewerScreen> {
 
 //   Future<void> _generateAndDownloadPdf() async {
 //     setState(() => _isPdfGenerating = true);
-    
+
 //     try {
 //       final result = await _controller.runJavaScriptReturningResult('downloadPDF();');
 //       if (result != true) {
@@ -232,7 +230,7 @@ class _HtmlViewerScreenState extends State<HtmlViewerScreen> {
 //       body: Stack(
 //         children: [
 //           WebViewWidget(controller: _controller),
-//           if (_isLoading) 
+//           if (_isLoading)
 //             const Center(child: CircularProgressIndicator()),
 //         ],
 //       ),

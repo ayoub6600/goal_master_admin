@@ -1,5 +1,8 @@
+import 'package:goal_master_admin/features/venue_profile/presentation/view/venue_profile_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:goal_master_admin/features/booking/presentation/view/cancellation_exceptions_view.dart';
+import 'package:goal_master_admin/features/booking/presentation/view/manager_series_details.dart';
 import 'package:goal_master_admin/core/components/build_page_with_default_transition.dart';
 import 'package:goal_master_admin/core/components/keys_values.dart';
 import 'package:goal_master_admin/core/components/preference_utility.dart'
@@ -72,6 +75,7 @@ import 'package:goal_master_admin/features/profail/presentation/view/update_prof
 import 'package:goal_master_admin/features/profail/presentation/view/widgets/items_user_detains_view.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/allowed_amount_view.dart';
 import 'app_router.dart';
+import 'package:goal_master_admin/features/booking/presentation/manager/monthly_series_cubit/monthly_series_cubit.dart';
 
 List<RouteBase> appRoutes = [
   GoRoute(
@@ -436,33 +440,10 @@ List<RouteBase> appRoutes = [
       ),
     ),
   ),
-  //AddNewBooking
-  GoRoute(
-    parentNavigatorKey: parentKey,
-    path: RoutesKeys.kAddNewBooking,
-    pageBuilder: (context, state) {
-      final booking = state.extra as BookingSlot;
-
-      return buildPageWithDefaultTransition<void>(
-        context: context,
-        state: state,
-        child: MultiBlocProvider(
-          providers: [
-            BlocProvider(
-              create: (context) => EmployeeCubit(getIt<BookingRepoImp>()),
-            ),
-            BlocProvider(
-              create: (context) => AddBookingCubit(getIt<BookingRepoImp>()),
-            ),
-            BlocProvider(
-              create: (context) => PageViewNewBookingCubit(),
-            ),
-          ],
-          child: AddNewBooking(booking: booking), // ✅ pass the booking here
-        ),
-      );
-    },
-  ),
+  // The /kAddNewBooking route is gone. It pointed at a two-page screen —
+  // band selection then payment — whose confirm button was commented out, so
+  // it could not create a booking at all. The home card that opened it now
+  // opens the unified flow.
 
   GoRoute(
     parentNavigatorKey: parentKey,
@@ -512,6 +493,13 @@ List<RouteBase> appRoutes = [
           BlocProvider(
             create: (context) => PageViewCubit(),
           ),
+          // The recurring-booking plan. Scoped to this route so abandoning a
+          // booking cannot leave a stale plan behind for the next one.
+          BlocProvider(
+            create: (context) => MonthlySeriesCubit(
+              getIt<BookingRepoImp>(),
+            ),
+          ),
         ],
         child: const AddBookingView(),
       ),
@@ -530,6 +518,16 @@ List<RouteBase> appRoutes = [
         ),
         child: ShowAllResulatFiltter(),
       ),
+    ),
+  ),
+  //kVenueProfile
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kVenueProfile,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const VenueProfileView(),
     ),
   ),
   //kMonthlyBookingView
@@ -551,7 +549,7 @@ List<RouteBase> appRoutes = [
           BlocProvider(
             create: (context) => MonthlyBookingCubit(
               bookingRepo: getIt<MonthlyBookingRepoImp>(),
-            ),
+            )..load(),
           ),
         ],
         child: const MonthlyBookingView(),
@@ -592,4 +590,27 @@ List<RouteBase> appRoutes = [
   //     child: const HomeLayoutView(),
   //   ),
   // ),
+  // The venue's view of one recurring booking, and the decision covering
+  // all of its sessions.
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kManagerSeriesDetails,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: ManagerSeriesDetails(seriesId: state.extra as int),
+    ),
+  ),
+
+  // Appeals against a cancellation's refund, waiting on this venue.
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kCancellationExceptions,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const CancellationExceptionsView(),
+    ),
+  ),
+
 ];

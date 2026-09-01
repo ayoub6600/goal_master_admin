@@ -10,6 +10,7 @@ class RoutesKeys {
   static const kChangePassword = '/kChangePassword';
   static const kContact = '/kContact';
   static const kUpdateProfile = '/kUpdateProfile';
+  static const kVenueProfile = '/kVenueProfile';
   static const kAddFirstVenue = '/kAddFirstVenue';
   static const kManagerBookingPeriods = '/kManagerBookingPeriods';
   static const kManagerWallet = '/kManagerWallet';
@@ -29,4 +30,6 @@ class RoutesKeys {
   static const kBookingItemsDetails = '/kBookingItemsDetails';
   static const kItemsUserDetainsView = '/kItemsUserDetainsView';
   static const kHtmlViewerScreen = '/kHtmlViewerScreen';
+  static const kManagerSeriesDetails = '/kManagerSeriesDetails';
+  static const kCancellationExceptions = '/kCancellationExceptions';
 }

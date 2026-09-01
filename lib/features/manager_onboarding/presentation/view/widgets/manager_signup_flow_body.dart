@@ -26,6 +26,12 @@ class ManagerSignupFlowBody extends StatefulWidget {
 
 class _ManagerSignupFlowBodyState extends State<ManagerSignupFlowBody> {
   SubscriptionPlanOption? selectedPlan;
+
+  /// Which card is centred, which is not the same thing as which plan is
+  /// chosen. Swiping to compare must not quietly change what you are buying,
+  /// so the two are tracked separately and only a tap moves [selectedPlan].
+  int _viewedIndex = 0;
+  PageController? _plansController;
   String billingCycle = 'monthly';
 
   // Step 0 = choose a plan and confirm; step 1 = create the manager
@@ -65,10 +71,29 @@ class _ManagerSignupFlowBodyState extends State<ManagerSignupFlowBody> {
                 GoRouter.of(context).go(RoutesKeys.kHome);
               }
             },
-            child: LayoutBuilder(
+            child: BlocListener<SubscriptionPlansCubit,
+                SubscriptionPlansState>(
+              // The default is chosen when the plans land, not while building.
+              // Assigning it inside the builder left the pinned footer — a
+              // sibling constructed earlier in the same frame — with nothing
+              // to show on the first paint.
+              listener: (context, state) {
+                if (state is SubscriptionPlansLoaded &&
+                    selectedPlan == null &&
+                    state.plans.isNotEmpty) {
+                  setState(() => selectedPlan = state.plans.first);
+                }
+              },
+              child: LayoutBuilder(
               builder: (context, constraints) {
-                return SingleChildScrollView(
-                  padding: EdgeInsets.only(bottom: keyboardHeight),
+                // On the plan step the footer is pinned: the carousel scrolls
+                // beneath it, the decision does not move. The form step keeps
+                // the ordinary single scroll.
+                return Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: EdgeInsets.only(bottom: keyboardHeight),
                   child: ConstrainedBox(
                     constraints:
                         BoxConstraints(minHeight: constraints.maxHeight),
@@ -132,47 +157,7 @@ class _ManagerSignupFlowBodyState extends State<ManagerSignupFlowBody> {
                                 }
 
                                 if (state is SubscriptionPlansLoaded) {
-                                  if (selectedPlan == null &&
-                                      state.plans.isNotEmpty) {
-                                    selectedPlan = state.plans.first;
-                                  }
-
-                                  return Column(
-                                    children: [
-                                      ...state.plans.map(
-                                        (plan) => Padding(
-                                          padding:
-                                              EdgeInsets.only(bottom: 12.h),
-                                          child: SubscriptionPlanCard(
-                                            plan: plan,
-                                            billingCycle: billingCycle,
-                                            isSelected:
-                                                selectedPlan?.id == plan.id,
-                                            onTap: () {
-                                              setState(() {
-                                                selectedPlan = plan;
-                                              });
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                                      HeightSpace(10.h),
-                                      if (selectedPlan != null)
-                                        SelectedPlanSummary(
-                                          plan: selectedPlan!,
-                                          billingCycle: billingCycle,
-                                        ),
-                                      HeightSpace(18.h),
-                                      ButtonApp(
-                                        text: ' متابعة',
-                                        backGround: AppColors.primary,
-                                        onTap: selectedPlan == null
-                                            ? null
-                                            : () =>
-                                                setState(() => _step = 1),
-                                      ),
-                                    ],
-                                  );
+                                  return _buildPlanChooser(state.plans);
                                 }
 
                                 return const SizedBox.shrink();
@@ -206,12 +191,142 @@ class _ManagerSignupFlowBodyState extends State<ManagerSignupFlowBody> {
                       ),
                     ),
                   ),
+                      ),
+                    ),
+                    if (_step == 0) _buildSelectionFooter(),
+                  ],
                 );
               },
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  /// The plan chooser: a horizontal carousel, a viewed-position indicator, and
+  /// a footer that stays put.
+  ///
+  /// Five plans stacked vertically made the page long enough that comparing
+  /// the first with the last meant remembering it, and the Continue button sat
+  /// below all of them — so you had to scroll past everything to find out what
+  /// you had chosen. Side by side, the choice is a comparison rather than a
+  /// list, and the decision stays on screen while you browse.
+  @override
+  void dispose() {
+    _plansController?.dispose();
+    super.dispose();
+  }
+
+  Widget _buildPlanChooser(List<SubscriptionPlanOption> plans) {
+    if (plans.isEmpty) return const SizedBox.shrink();
+
+    _viewedIndex = _viewedIndex.clamp(0, plans.length - 1);
+
+    // Built once the plan count is known, starting on whatever is already
+    // selected so returning to this step does not jump back to the first card.
+    _plansController ??= PageController(
+      viewportFraction: 0.82,
+      initialPage: selectedPlan == null
+          ? 0
+          : plans.indexWhere((p) => p.id == selectedPlan!.id).clamp(0, plans.length - 1),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          // Tall enough for the longest card's features; the carousel scrolls
+          // sideways, never the page.
+          // Leaves room for the indicator, the summary and the button beneath
+          // it on a small phone; taller cards scroll inside their page.
+          height: 430.h,
+          child: PageView.builder(
+            controller: _plansController,
+            itemCount: plans.length,
+            padEnds: false,
+            // Browsing only moves the indicator. Selection is a deliberate tap.
+            onPageChanged: (index) => setState(() => _viewedIndex = index),
+            itemBuilder: (context, index) {
+              final plan = plans[index];
+
+              // Each card scrolls inside its own page. Plans differ in how
+              // many feature lines they carry, and the tallest must stay
+              // readable on the smallest phone without the carousel resizing
+              // itself card by card.
+              return Padding(
+                padding: EdgeInsets.only(left: 10.w),
+                child: SingleChildScrollView(
+                  child: SubscriptionPlanCard(
+                    plan: plan,
+                    billingCycle: billingCycle,
+                    isSelected: selectedPlan?.id == plan.id,
+                    onTap: () => setState(() => selectedPlan = plan),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        HeightSpace(12.h),
+        _buildPageIndicator(plans.length),
+      ],
+    );
+  }
+
+  /// The decision, kept on screen.
+  ///
+  /// This used to sit under all five plan cards, so the only way to find out
+  /// what you had chosen was to scroll past everything you were choosing
+  /// between. It now sits outside the scrollable region entirely: the carousel
+  /// moves, this does not.
+  Widget _buildSelectionFooter() {
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(18.w, 12.h, 18.w, 12.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (selectedPlan != null)
+              SelectedPlanSummary(
+                plan: selectedPlan!,
+                billingCycle: billingCycle,
+              ),
+            HeightSpace(12.h),
+            ButtonApp(
+              text: ' متابعة',
+              backGround: AppColors.primary,
+              onTap: selectedPlan == null
+                  ? null
+                  : () => setState(() => _step = 1),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Where you are in the carousel — the card being looked at, not the plan
+  /// chosen. Those are deliberately different things and the dots say so.
+  Widget _buildPageIndicator(int count) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(count, (index) {
+        final active = index == _viewedIndex;
+
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          margin: EdgeInsets.symmetric(horizontal: 3.w),
+          width: active ? 18.w : 7.w,
+          height: 7.w,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: active ? 0.95 : 0.32),
+            borderRadius: BorderRadius.circular(99.r),
+          ),
+        );
+      }),
     );
   }
 

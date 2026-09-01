@@ -56,16 +56,16 @@ class BookingItemsDetails extends StatelessWidget {
                     ),
                   ),
                   if (booking.paymentType == 1) ...[
-              HeightSpace(8.h),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12.w),
-                child: Text(
-                  'العميل يريد الدفع عند الوصول',
-                  style: AppTextStyles.font14Regular
-                      .copyWith(color: Colors.orange[800]),
-                ),
-              ),
-            ],
+                    HeightSpace(8.h),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12.w),
+                      child: Text(
+                        'العميل يريد الدفع عند الوصول',
+                        style: AppTextStyles.font14Regular
+                            .copyWith(color: Colors.orange[800]),
+                      ),
+                    ),
+                  ],
                   booking.status == 4 || booking.status == 3
                       ? const Divider()
                       : Padding(
