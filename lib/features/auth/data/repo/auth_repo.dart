@@ -3,7 +3,7 @@ import 'package:goal_master_admin/core/errors/failure.dart';
 import 'package:goal_master_admin/features/auth/data/model/login_model/login_model.dart';
 import 'package:goal_master_admin/features/auth/data/model/login_model/user.dart';
 import 'package:goal_master_admin/features/auth/data/model/new_password/new_password_model.dart';
-import 'package:goal_master_admin/features/auth/data/model/verify_otp_model/verify_otp_model..dart';
+import 'package:goal_master_admin/features/auth/data/model/verify_otp_model/verify_otp_model.dart';
 
 abstract class AuthRepo {
   // Future<Either<Failure, UserModel>> profile();

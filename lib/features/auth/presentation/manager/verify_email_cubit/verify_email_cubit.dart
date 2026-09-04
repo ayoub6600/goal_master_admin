@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:goal_master_admin/features/auth/data/model/new_password/new_password_model.dart';
-import 'package:goal_master_admin/features/auth/data/model/verify_otp_model/verify_otp_model..dart';
+import 'package:goal_master_admin/features/auth/data/model/verify_otp_model/verify_otp_model.dart';
 import 'package:goal_master_admin/features/auth/data/repo/auth_repo.dart';
 
 part 'verify_email_state.dart';

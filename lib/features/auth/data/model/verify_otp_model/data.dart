@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
+import 'package:goal_master_admin/features/auth/data/model/verify_otp_model/user.dart';
 
-import 'user..dart';
 
 class Data {
   User? user;
