@@ -3,20 +3,33 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:goal_master_admin/core/components/button_app.dart';
 import 'package:goal_master_admin/core/components/custom_success_toast.dart';
 import 'package:goal_master_admin/core/components/page_wrapper.dart';
 import 'package:goal_master_admin/core/routing/route_utils.dart';
 import 'package:goal_master_admin/core/routing/routes_keys.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
-import 'package:goal_master_admin/core/styles/app_text_styles.dart';
 import 'package:goal_master_admin/core/styles/spaces.dart';
 import 'package:goal_master_admin/features/manager_setup/data/model/manager_setup_bootstrap_response.dart';
 import 'package:goal_master_admin/features/manager_setup/presentation/manager/manager_setup_cubit/manager_setup_cubit.dart';
+import 'package:goal_master_admin/features/manager_setup/presentation/view/widgets/add_first_venue/booking_periods_card.dart';
+import 'package:goal_master_admin/features/manager_setup/presentation/view/widgets/add_first_venue/branch_form_card.dart';
+import 'package:goal_master_admin/features/manager_setup/presentation/view/widgets/add_first_venue/branch_summary_card.dart';
+import 'package:goal_master_admin/features/manager_setup/presentation/view/widgets/add_first_venue/catalog_setup_card.dart';
+import 'package:goal_master_admin/features/manager_setup/presentation/view/widgets/add_first_venue/manager_service_draft.dart';
+import 'package:goal_master_admin/features/manager_setup/presentation/view/widgets/add_first_venue/setup_fields.dart';
+import 'package:goal_master_admin/features/manager_setup/presentation/view/widgets/add_first_venue/setup_hero_card.dart';
+import 'package:goal_master_admin/features/manager_setup/presentation/view/widgets/add_first_venue/setup_ready_card.dart';
+import 'package:goal_master_admin/features/manager_setup/presentation/view/widgets/add_first_venue/setup_wallet_card.dart';
+import 'package:goal_master_admin/features/manager_setup/presentation/view/widgets/add_first_venue/venue_logo_picker.dart';
 import 'package:goal_master_admin/features/manager_setup/presentation/view/widgets/location_picker_view.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
 import 'package:image_picker/image_picker.dart';
 
+/// Venue-setup screen: owns the form state and the save calls, and lays the
+/// stage cards out in the order the manager works through them.
+///
+/// Every card is its own widget under `add_first_venue/` — this file stays
+/// about *what happens*, not about how any one card looks.
 class AddFirstVenueBody extends StatefulWidget {
   const AddFirstVenueBody({super.key});
 
@@ -38,13 +51,13 @@ class _AddFirstVenueBodyState extends State<AddFirstVenueBody> {
   bool _didPrefillBranch = false;
   bool _didPrefillCatalog = false;
   bool _isEditingBranch = false;
-  final List<_ManagerServiceDraft> _serviceDrafts = [];
+  final List<ManagerServiceDraft> _serviceDrafts = [];
 
   @override
   void initState() {
     super.initState();
     if (_serviceDrafts.isEmpty) {
-      _serviceDrafts.add(_ManagerServiceDraft());
+      _serviceDrafts.add(ManagerServiceDraft());
     }
   }
 
@@ -137,7 +150,7 @@ class _AddFirstVenueBodyState extends State<AddFirstVenueBody> {
         ..clear()
         ..addAll(
           catalog.services.map(
-            (item) => _ManagerServiceDraft(
+            (item) => ManagerServiceDraft(
               title: item.title,
               price: item.price == 0 ? '' : item.price.toStringAsFixed(0),
               remarks: item.remarks,
@@ -153,7 +166,7 @@ class _AddFirstVenueBodyState extends State<AddFirstVenueBody> {
     }
 
     if (_serviceDrafts.isEmpty) {
-      _serviceDrafts.add(_ManagerServiceDraft());
+      _serviceDrafts.add(ManagerServiceDraft());
     }
 
     _didPrefillCatalog = true;
@@ -193,35 +206,12 @@ class _AddFirstVenueBodyState extends State<AddFirstVenueBody> {
   }
 
   Future<void> _selectZone(List<ZoneOption> zones) async {
-    final zone = await showModalBottomSheet<ZoneOption>(
+    final zone = await showSetupOptionSheet<ZoneOption>(
       context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: ListView.separated(
-            shrinkWrap: true,
-            padding: EdgeInsets.all(16.w),
-            itemCount: zones.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final item = zones[index];
-              return ListTile(
-                title: Text(
-                  item.name,
-                  textAlign: TextAlign.right,
-                  style: AppTextStyles.font16Bold,
-                ),
-                trailing: _selectedZone?.id == item.id
-                    ? Icon(Icons.check_circle, color: AppColors.primary)
-                    : null,
-                onTap: () => Navigator.pop(context, item),
-              );
-            },
-          ),
-        );
-      },
+      title: 'اختر المنطقة',
+      options: zones,
+      labelOf: (option) => option.name,
+      isSelected: (option) => _selectedZone?.id == option.id,
     );
 
     if (zone == null || !mounted) return;
@@ -278,41 +268,20 @@ class _AddFirstVenueBodyState extends State<AddFirstVenueBody> {
         );
   }
 
-  Future<void> _selectCategoryType(List<CategoryTypeOption> categoryTypes) async {
+  Future<void> _selectCategoryType(
+    List<CategoryTypeOption> categoryTypes,
+  ) async {
     if (categoryTypes.isEmpty) {
       _showError('لا توجد فئات متاحة حاليًا. تواصل مع الإدارة لإضافة فئات.');
       return;
     }
 
-    final categoryType = await showModalBottomSheet<CategoryTypeOption>(
+    final categoryType = await showSetupOptionSheet<CategoryTypeOption>(
       context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: ListView.separated(
-            shrinkWrap: true,
-            padding: EdgeInsets.all(16.w),
-            itemCount: categoryTypes.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final item = categoryTypes[index];
-              return ListTile(
-                title: Text(
-                  item.name,
-                  textAlign: TextAlign.right,
-                  style: AppTextStyles.font16Bold,
-                ),
-                trailing: _selectedCategoryType?.id == item.id
-                    ? Icon(Icons.check_circle, color: AppColors.primary)
-                    : null,
-                onTap: () => Navigator.pop(context, item),
-              );
-            },
-          ),
-        );
-      },
+      title: 'اختر فئة الملعب',
+      options: categoryTypes,
+      labelOf: (option) => option.name,
+      isSelected: (option) => _selectedCategoryType?.id == option.id,
     );
 
     if (categoryType == null || !mounted) return;
@@ -378,9 +347,13 @@ class _AddFirstVenueBodyState extends State<AddFirstVenueBody> {
   /// Read from the same record «فترات الحجز» writes, so a new pitch inherits
   /// the hours the venue actually keeps rather than a hardcoded assumption.
   bool get _afterMidnightBandEnabled {
-    final employees =
-        context.read<ManagerSetupCubit>().bootstrapResponse?.data.catalog.employees ??
-            const [];
+    final employees = context
+            .read<ManagerSetupCubit>()
+            .bootstrapResponse
+            ?.data
+            .catalog
+            .employees ??
+        const [];
 
     for (final e in employees) {
       if (e.employeeId.contains('AFTER-MIDNIGHT')) return e.status != 0;
@@ -390,7 +363,7 @@ class _AddFirstVenueBodyState extends State<AddFirstVenueBody> {
   }
 
   void _addServiceDraft() {
-    setState(() => _serviceDrafts.add(_ManagerServiceDraft()));
+    setState(() => _serviceDrafts.add(ManagerServiceDraft()));
   }
 
   void _removeServiceDraft(int index) {
@@ -401,9 +374,19 @@ class _AddFirstVenueBodyState extends State<AddFirstVenueBody> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: AppColors.errorRed,
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(16.w),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14.r),
+          ),
+        ),
+      );
   }
 
   @override
@@ -452,46 +435,85 @@ class _AddFirstVenueBodyState extends State<AddFirstVenueBody> {
           child: isLoading && bootstrap == null
               ? const Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
-                  padding: EdgeInsets.all(16.w),
+                  padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 32.h),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildIntroCard(setup, bootstrap?.data.wallet),
-                      HeightSpace(18.h),
+                      SetupHeroCard(setup: setup),
+                      HeightSpace(16.h),
                       if (bootstrap != null) ...[
-                        _buildWalletCard(bootstrap.data.wallet),
-                        HeightSpace(18.h),
+                        SetupWalletCard(
+                          wallet: bootstrap.data.wallet,
+                          onOpen: () =>
+                              push(RoutesKeys.kManagerWallet, context),
+                        ),
+                        HeightSpace(16.h),
                       ],
                       if (branch != null) ...[
-                        _buildCurrentBranchCard(
-                          branch,
+                        BranchSummaryCard(
+                          branch: branch,
                           onEdit: _isEditingBranch ? null : _startEditBranch,
                         ),
-                        HeightSpace(18.h),
+                        HeightSpace(16.h),
                       ],
                       if (_isEditingBranch) ...[
-                        _buildImagePickerCard(branch?.imageUrl),
-                        HeightSpace(18.h),
-                        _buildBranchFormCard(
-                          zones: bootstrap?.data.zones ?? const [],
+                        VenueLogoPicker(
+                          selectedImage: _selectedImage,
+                          existingImageUrl: branch?.imageUrl,
+                          onPick: _pickImage,
+                        ),
+                        HeightSpace(16.h),
+                        BranchFormCard(
+                          branchNameController: _branchNameController,
+                          phoneController: _phoneController,
+                          emailController: _emailController,
+                          addressController: _addressController,
+                          selectedZoneName: _selectedZone?.name,
+                          latitude: _latController.text,
+                          longitude: _longController.text,
                           isSubmitting: isSubmitting,
+                          isDone: setup?.hasBranchProfile ?? false,
+                          onSelectZone: () =>
+                              _selectZone(bootstrap?.data.zones ?? const []),
+                          onPickLocation: _pickLocation,
+                          onSubmit: _submitBranch,
                           onCancel: branch == null
                               ? null
                               : () => _cancelEditBranch(branch),
                         ),
                       ],
                       if (canShowCatalog) ...[
-                        HeightSpace(18.h),
-                        _buildBookingPeriodsEntryCard(),
-                        HeightSpace(18.h),
-                        _buildCatalogSetupCard(
-                          bootstrap: bootstrap,
+                        HeightSpace(16.h),
+                        CatalogSetupCard(
+                          selectedCategoryName: _selectedCategoryType?.name,
+                          channelNames: bootstrap?.data.catalog.employees
+                                  .map((employee) => employee.fullName)
+                                  .toList() ??
+                              const [],
+                          drafts: _serviceDrafts,
                           isSubmitting: isSubmitting,
+                          isDone: (setup?.hasCategorySetup ?? false) &&
+                              (setup?.hasServiceSetup ?? false),
+                          onSelectCategory: () => _selectCategoryType(
+                            bootstrap?.data.categoryTypes ?? const [],
+                          ),
+                          onAddService: _addServiceDraft,
+                          onRemoveService: _removeServiceDraft,
+                          onSubmit: _submitCatalog,
+                        ),
+                        HeightSpace(16.h),
+                        BookingPeriodsCard(
+                          isDone: setup?.hasEmployeeSetup ?? false,
+                          onOpen: () =>
+                              push(RoutesKeys.kManagerBookingPeriods, context),
                         ),
                       ],
                       if (setup?.canStartBooking == true) ...[
-                        HeightSpace(18.h),
-                        _buildReadyCard(),
+                        HeightSpace(16.h),
+                        SetupReadyCard(
+                          onGoHome: () =>
+                              pushReplacement(RoutesKeys.kHome, context),
+                        ),
                       ],
                     ],
                   ),
@@ -499,682 +521,5 @@ class _AddFirstVenueBodyState extends State<AddFirstVenueBody> {
         );
       },
     );
-  }
-
-  Widget _buildIntroCard(SetupStatus? setup, WalletSummary? wallet) {
-    final nextStep = setup?.nextStepLabel ?? 'إعداد بيانات شركة الملاعب';
-    final stageTitle = switch (setup?.nextStepKey) {
-      'branch' => 'المرحلة الحالية: بيانات شركة الملاعب',
-      'category' ||
-      'service' ||
-      'employee' =>
-        'المرحلة الحالية: الفئة والخدمات',
-      'ready' => 'المرحلة الحالية: الحساب جاهز',
-      _ => 'المرحلة الحالية: التهيئة',
-    };
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(18.w),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22.r),
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xff0E2A1D), Color(0xff1E4B31)],
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(99.r),
-            ),
-            child: Text(
-              'لديك تجربة مجانية لمدة 30 يوم — لن يُخصم أي مبلغ حتى تنتهي',
-              style: AppTextStyles.font12Bold.copyWith(color: Colors.white),
-            ),
-          ),
-          HeightSpace(12.h),
-          Text(
-            stageTitle,
-            style: AppTextStyles.font20Bold.copyWith(color: Colors.white),
-          ),
-          HeightSpace(8.h),
-          Text(
-            'مرحبًا بك! حتى يبدأ ملعبك في استقبال الحجوزات، اتبع هذه الخطوات بالترتيب:\n'
-            '1) أدخل اسم الشركة المالكة للملاعب وبياناتها وصورة شعارها.\n'
-            '2) أضف فئة الملاعب (مثال: كرة قدم) والخدمات/الملاعب التابعة لها.\n'
-            '3) اربط كل خدمة بفترة الحجز المسائي أو بعد منتصف الليل.',
-            style: AppTextStyles.font14Regular.copyWith(
-              color: Colors.white.withValues(alpha: 0.88),
-              height: 1.6,
-            ),
-          ),
-          HeightSpace(12.h),
-          Text(
-            'الخطوة التالية: $nextStep',
-            style: AppTextStyles.font14Bold.copyWith(color: Colors.white),
-          ),
-          if (wallet != null) ...[
-            HeightSpace(8.h),
-            Text(
-              'الرصيد الحالي: ${wallet.currentBalance.toStringAsFixed(2)} د.ل',
-              style: AppTextStyles.font12Medium.copyWith(
-                color: Colors.white.withValues(alpha: 0.82),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWalletCard(WalletSummary wallet) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xffF7FBF6),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: const Color(0xffD7E8D3)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(10.r),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(14.r),
-            ),
-            child: Icon(
-              Icons.account_balance_wallet_outlined,
-              color: AppColors.primary,
-              size: 22.sp,
-            ),
-          ),
-          WidthSpace(12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('محفظة مدير الملعب', style: AppTextStyles.font16Bold),
-                HeightSpace(4.h),
-                Text(
-                  'الرصيد الحالي ${wallet.currentBalance.toStringAsFixed(2)} د.ل',
-                  style: AppTextStyles.font14Medium,
-                ),
-              ],
-            ),
-          ),
-          TextButton(
-            onPressed: () => push(RoutesKeys.kManagerWallet, context),
-            child: const Text('فتح المحفظة'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCurrentBranchCard(
-    ExistingBranch branch, {
-    required VoidCallback? onEdit,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: const Color(0xffE8ECEF)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'بيانات شركة الملاعب الحالية',
-                  style: AppTextStyles.font16Bold,
-                ),
-              ),
-              if (onEdit != null)
-                TextButton.icon(
-                  onPressed: onEdit,
-                  icon: Icon(Icons.edit_outlined,
-                      size: 16.sp, color: AppColors.primary),
-                  label: Text(
-                    'تعديل',
-                    style: AppTextStyles.font14Bold
-                        .copyWith(color: AppColors.primary),
-                  ),
-                ),
-            ],
-          ),
-          HeightSpace(4.h),
-          _buildReadOnlyRow('اسم الشركة', branch.name),
-          _buildReadOnlyRow('المنطقة', branch.zoneName),
-          _buildReadOnlyRow('الهاتف', branch.phone),
-          _buildReadOnlyRow('البريد', branch.email),
-          _buildReadOnlyRow('العنوان', branch.address),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildImagePickerCard(String? existingImageUrl) {
-    final hasLocalImage = _selectedImage != null;
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xffF6F9F3),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: const Color(0xffD9E8D2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('شعار شركة الملاعب', style: AppTextStyles.font16Bold),
-          HeightSpace(12.h),
-          GestureDetector(
-            onTap: _pickImage,
-            child: Container(
-              height: 180.h,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18.r),
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.25),
-                ),
-              ),
-              child: hasLocalImage
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(18.r),
-                      child: Image.file(
-                        File(_selectedImage!.path),
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                  : existingImageUrl != null && existingImageUrl.isNotEmpty
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(18.r),
-                          child: Image.network(
-                            existingImageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                _buildImagePlaceholder(),
-                          ),
-                        )
-                      : _buildImagePlaceholder(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildImagePlaceholder() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(
-          Icons.add_photo_alternate_outlined,
-          size: 38.sp,
-          color: AppColors.primary,
-        ),
-        HeightSpace(10.h),
-        Text(
-          'اضغط لاختيار شعار الشركة',
-          style: AppTextStyles.font14Bold.copyWith(color: AppColors.primary),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBranchFormCard({
-    required List<ZoneOption> zones,
-    required bool isSubmitting,
-    VoidCallback? onCancel,
-  }) {
-    return _buildSectionCard(
-      title: 'بيانات شركة الملاعب',
-      subtitle:
-          'هذه المرحلة تحفظ اسم الشركة المالكة للملاعب، المنطقة، الهاتف، العنوان، وموقع أول ملعب تابع لها.',
-      child: Column(
-        children: [
-          _buildTextField(
-            controller: _branchNameController,
-            label: 'اسم الشركة المالكة للملاعب',
-            hint: 'مثال: ملاعب الجزيرة',
-          ),
-          HeightSpace(12.h),
-          _buildSelectField(
-            label: 'المنطقة',
-            value: _selectedZone?.name,
-            onTap: () => _selectZone(zones),
-          ),
-          HeightSpace(12.h),
-          _buildTextField(
-            controller: _phoneController,
-            label: 'رقم الهاتف',
-            keyboardType: TextInputType.phone,
-          ),
-          HeightSpace(12.h),
-          _buildTextField(
-            controller: _emailController,
-            label: 'البريد الإلكتروني (اختياري)',
-            keyboardType: TextInputType.emailAddress,
-          ),
-          HeightSpace(4.h),
-          Text(
-            'بريد التواصل الخاص بالملعب/الشركة، ويمكن أن يختلف عن بريد الدخول لحسابك. اتركه فارغًا إذا لم يكن لديك بريد مختلف.',
-            style: AppTextStyles.font12Medium.copyWith(
-              color: const Color(0xff8A93A0),
-            ),
-          ),
-          HeightSpace(12.h),
-          _buildTextField(
-            controller: _addressController,
-            label: 'العنوان',
-            maxLines: 2,
-          ),
-          HeightSpace(12.h),
-          Text('موقع الملعب', style: AppTextStyles.font14Bold),
-          HeightSpace(8.h),
-          InkWell(
-            onTap: _pickLocation,
-            borderRadius: BorderRadius.circular(16.r),
-            child: Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
-              decoration: BoxDecoration(
-                color: const Color(0xffFAFBFC),
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(color: const Color(0xffD7DDE3)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.map_outlined, color: AppColors.primary, size: 20.sp),
-                  WidthSpace(10.w),
-                  Expanded(
-                    child: Text(
-                      _latController.text.isNotEmpty &&
-                              _longController.text.isNotEmpty
-                          ? '${_latController.text}, ${_longController.text}'
-                          : 'اضغط لتحديد موقع الملعب على الخريطة',
-                      style: AppTextStyles.font14Medium.copyWith(
-                        color: _latController.text.isNotEmpty
-                            ? AppColors.fontColor
-                            : const Color(0xff8A93A0),
-                      ),
-                    ),
-                  ),
-                  Icon(Icons.chevron_left, color: const Color(0xff8A93A0)),
-                ],
-              ),
-            ),
-          ),
-          HeightSpace(16.h),
-          ButtonApp(
-            text: isSubmitting ? 'جارٍ الحفظ...' : 'حفظ بيانات الشركة',
-            onTap: isSubmitting ? null : _submitBranch,
-          ),
-          if (onCancel != null) ...[
-            HeightSpace(8.h),
-            TextButton(
-              onPressed: isSubmitting ? null : onCancel,
-              child: Text(
-                'إلغاء',
-                style: AppTextStyles.font14Bold.copyWith(
-                  color: const Color(0xff8A93A0),
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCatalogSetupCard({
-    required ManagerSetupBootstrapResponse? bootstrap,
-    required bool isSubmitting,
-  }) {
-    final catalog = bootstrap?.data.catalog;
-    final categoryTypes = bootstrap?.data.categoryTypes ?? const [];
-
-    return _buildSectionCard(
-      title: 'الفئة والخدمات والجداول الزمنية',
-      subtitle:
-          'اختر فئة الملعب من القائمة (مثل كرة قدم)، ثم أضف الخدمات مثل سداسي أو سباعي أو ملعب 1، ثم اربط كل خدمة بالمسائي أو بعد منتصف الليل. الفئات تُدار من لوحة الإدارة فقط.',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (catalog != null && catalog.employees.isNotEmpty) ...[
-            _buildEmployeeChannelsPreview(catalog.employees),
-            HeightSpace(14.h),
-          ],
-          _buildSelectField(
-            label: 'فئة الملعب',
-            value: _selectedCategoryType?.name,
-            onTap: () => _selectCategoryType(categoryTypes),
-          ),
-          HeightSpace(16.h),
-          Text('الخدمات أو الملاعب', style: AppTextStyles.font16Bold),
-          HeightSpace(8.h),
-          ...List.generate(
-            _serviceDrafts.length,
-            (index) => Padding(
-              padding: EdgeInsets.only(bottom: 14.h),
-              child: _buildServiceDraftCard(index, _serviceDrafts[index]),
-            ),
-          ),
-          TextButton.icon(
-            onPressed: _addServiceDraft,
-            icon: const Icon(Icons.add_circle_outline),
-            label: const Text('إضافة خدمة أخرى'),
-          ),
-          HeightSpace(12.h),
-          ButtonApp(
-            text: isSubmitting ? 'جارٍ الحفظ...' : 'حفظ الفئة والخدمات',
-            onTap: isSubmitting ? null : _submitCatalog,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBookingPeriodsEntryCard() {
-    return _buildSectionCard(
-      title: 'فترات الحجز',
-      subtitle:
-          'هذه المرحلة مستقلة. منها تضيف أو تعدل الحجز المسائي والحجز بعد منتصف الليل مع ساعات كل فترة.',
-      child: ButtonApp(
-        text: 'فتح إدارة فترات الحجز',
-        onTap: () => push(RoutesKeys.kManagerBookingPeriods, context),
-      ),
-    );
-  }
-
-  Widget _buildServiceDraftCard(int index, _ManagerServiceDraft draft) {
-    return Container(
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
-        color: const Color(0xffFBFCFB),
-        borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(color: const Color(0xffE5ECE6)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text('الخدمة ${index + 1}', style: AppTextStyles.font16Bold),
-              const Spacer(),
-              if (_serviceDrafts.length > 1)
-                IconButton(
-                  onPressed: () => _removeServiceDraft(index),
-                  icon: const Icon(Icons.delete_outline, color: Colors.red),
-                ),
-            ],
-          ),
-          _buildTextField(
-            controller: draft.titleController,
-            label: 'اسم الخدمة أو الملعب',
-            hint: 'مثال: سداسي 1 أو ملعب سباعي',
-          ),
-          HeightSpace(12.h),
-          _buildTextField(
-            controller: draft.priceController,
-            label: 'السعر',
-            keyboardType: const TextInputType.numberWithOptions(
-              decimal: true,
-            ),
-          ),
-          HeightSpace(12.h),
-          _buildTextField(
-            controller: draft.remarksController,
-            label: 'وصف مختصر',
-            hint: 'اختياري',
-            maxLines: 2,
-          ),
-          // A pitch is a name and a price. WHEN it can be booked is decided
-          // once, on «فترات الحجز», against the venue's actual hours — asking
-          // it again here in the old band vocabulary meant the same fact had
-          // two owners that could disagree.
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmployeeChannelsPreview(List<SetupEmployeeItem> employees) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
-        color: const Color(0xffF7FBF6),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xffD7E8D3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('القنوات الزمنية الحالية', style: AppTextStyles.font16Bold),
-          HeightSpace(8.h),
-          ...employees.map(
-            (employee) => Padding(
-              padding: EdgeInsets.only(bottom: 6.h),
-              child: Text(
-                '• ${employee.fullName}',
-                style: AppTextStyles.font14Medium,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReadyCard() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xffEEF8F0),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: const Color(0xffCBE5D1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('الحساب أصبح جاهزًا للحجز', style: AppTextStyles.font16Bold),
-          HeightSpace(8.h),
-          Text(
-            'تم تجهيز الفرع والفئة والخدمات وربطها بقنوات الحجز. يمكنك الآن الرجوع للشاشة الرئيسية وبدء التجربة.',
-            style: AppTextStyles.font14Medium.copyWith(height: 1.5),
-          ),
-          HeightSpace(14.h),
-          ButtonApp(
-            text: 'الرجوع للرئيسية',
-            onTap: () => pushReplacement(RoutesKeys.kHome, context),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionCard({
-    required String title,
-    required String subtitle,
-    required Widget child,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: const Color(0xffE8ECEF)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: AppTextStyles.font18Bold),
-          HeightSpace(8.h),
-          Text(
-            subtitle,
-            style: AppTextStyles.font14Regular.copyWith(
-              color: const Color(0xff6D7580),
-              height: 1.5,
-            ),
-          ),
-          HeightSpace(16.h),
-          child,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReadOnlyRow(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 8.h),
-      child: RichText(
-        text: TextSpan(
-          style:
-              AppTextStyles.font14Medium.copyWith(color: AppColors.fontColor),
-          children: [
-            TextSpan(
-              text: '$label: ',
-              style: AppTextStyles.font14Bold.copyWith(
-                color: AppColors.black,
-              ),
-            ),
-            TextSpan(text: value),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    String? hint,
-    TextInputType? keyboardType,
-    int maxLines = 1,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppTextStyles.font14Bold),
-        HeightSpace(8.h),
-        TextField(
-          controller: controller,
-          keyboardType: keyboardType,
-          maxLines: maxLines,
-          decoration: InputDecoration(
-            hintText: hint,
-            filled: true,
-            fillColor: const Color(0xffFAFBFC),
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: 14.w,
-              vertical: 14.h,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16.r),
-              borderSide: const BorderSide(color: Color(0xffD7DDE3)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16.r),
-              borderSide: const BorderSide(color: Color(0xffD7DDE3)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16.r),
-              borderSide: BorderSide(color: AppColors.primary),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSelectField({
-    required String label,
-    required String? value,
-    required VoidCallback onTap,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppTextStyles.font14Bold),
-        HeightSpace(8.h),
-        InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16.r),
-          child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
-            decoration: BoxDecoration(
-              color: const Color(0xffFAFBFC),
-              borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(color: const Color(0xffD7DDE3)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    value ?? 'اختر الفئة ',
-                    style: AppTextStyles.font14Medium.copyWith(
-                      color: value == null
-                          ? const Color(0xff8A93A0)
-                          : AppColors.fontColor,
-                    ),
-                  ),
-                ),
-                const Icon(Icons.keyboard_arrow_down_rounded),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ManagerServiceDraft {
-  _ManagerServiceDraft({
-    String title = '',
-    String price = '',
-    String remarks = '',
-    this.slotMinutes = 60,
-    this.supportsEvening = true,
-    this.supportsAfterMidnight = false,
-    this.isNew = true,
-  })  : titleController = TextEditingController(text: title),
-        priceController = TextEditingController(text: price),
-        remarksController = TextEditingController(text: remarks);
-
-  final TextEditingController titleController;
-  final TextEditingController priceController;
-  final TextEditingController remarksController;
-  int slotMinutes;
-  bool supportsEvening;
-  bool supportsAfterMidnight;
-
-  /// True until the server has told us which bands this pitch belongs to.
-  /// A loaded pitch keeps its own bands; a brand-new one takes the default.
-  final bool isNew;
-
-  void dispose() {
-    titleController.dispose();
-    priceController.dispose();
-    remarksController.dispose();
   }
 }

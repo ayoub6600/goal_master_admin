@@ -643,6 +643,29 @@ class BookingRepoImp extends BookingRepo {
     );
   }
 
+  /// A manager's proposed settlement for an open no-show dispute.
+  ///
+  /// Talk, not a verdict — this never closes the dispute or touches money.
+  /// `result` is 'attended' | 'no_show' | 'disagreement'.
+  Future<Either<Failure, String>> proposeNoShowResolution({
+    required int bookingId,
+    required String result,
+    String? note,
+  }) {
+    return apiConsumer.handleRequest(
+      () => apiConsumer.post(
+        EndPoints.proposeNoShowResolution,
+        isFormData: false,
+        data: {
+          'booking_id': bookingId,
+          'result': result,
+          if (note != null && note.isNotEmpty) 'note': note,
+        },
+      ),
+      (data) => data['message']?.toString() ?? 'تم تسجيل الاقتراح.',
+    );
+  }
+
   /// Restricts pay-on-arrival for this customer at this venue only.
   Future<Either<Failure, String>> restrictPayOnArrival({
     required int bookingId,
@@ -663,6 +686,48 @@ class BookingRepoImp extends BookingRepo {
     );
   }
 
+  /// Stops this venue taking NEW bookings from this customer. Never a
+  /// platform ban, never touches an existing booking.
+  Future<Either<Failure, String>> blockCustomerFromVenue({
+    required int customerId,
+    required int branchId,
+    required String reasonCode,
+    String? note,
+  }) {
+    return apiConsumer.handleRequest(
+      () => apiConsumer.post(
+        EndPoints.blockCustomer,
+        isFormData: false,
+        data: {
+          'customer_id': customerId,
+          'branch_id': branchId,
+          'reason_code': reasonCode,
+          if (note != null && note.isNotEmpty) 'note': note,
+        },
+      ),
+      (data) => data['message']?.toString() ?? 'تم حظر الزبون.',
+    );
+  }
+
+  Future<Either<Failure, String>> unblockCustomerFromVenue({
+    required int customerId,
+    required int branchId,
+    String? note,
+  }) {
+    return apiConsumer.handleRequest(
+      () => apiConsumer.post(
+        EndPoints.unblockCustomer,
+        isFormData: false,
+        data: {
+          'customer_id': customerId,
+          'branch_id': branchId,
+          if (note != null && note.isNotEmpty) 'note': note,
+        },
+      ),
+      (data) => data['message']?.toString() ?? 'تم إلغاء الحظر.',
+    );
+  }
+
   /// Calls off a whole monthly booking in one action.
   ///
   /// Cancelling the sessions one at a time sent the customer a separate
@@ -679,4 +744,26 @@ class BookingRepoImp extends BookingRepo {
       (data) => data['message']?.toString() ?? 'تم إلغاء الحجز الشهري.',
     );
   }
+
+  /// Records cash taken for a whole monthly booking.
+  ///
+  /// The server decides which sessions the money covers — earliest first —
+  /// so the app never has to split the amount itself. It also caps an
+  /// overpayment at what is actually outstanding, which is why the confirming
+  /// message comes back from the response rather than being composed here
+  /// from the amount that was typed.
+  Future<Either<Failure, String>> depositManagerSeries({
+    required int seriesId,
+    required double amount,
+  }) {
+    return apiConsumer.handleRequest(
+      () => apiConsumer.post(
+        EndPoints.managerSeriesDeposit,
+        isFormData: false,
+        data: {'series_id': seriesId, 'amount': amount},
+      ),
+      (data) => data['message']?.toString() ?? 'تم تسجيل الدفعة.',
+    );
+  }
+
 }

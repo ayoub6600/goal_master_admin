@@ -1,12 +1,17 @@
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:goal_master_admin/features/notification/data/model/notification_response.dart';
-import 'package:goal_master_admin/main.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
+/// Receives and forwards real-time notification events. Deliberately does
+/// NOT display anything itself — [NotificationCubit] owns that, since it is
+/// the one place with the richer title/body/big-picture/navigation payload
+/// and the persisted dedup gate. A socket event that also got shown here,
+/// unconditionally, on top of the cubit's own display, was one real event
+/// producing two visible system notifications.
 class NotificationSocketService {
-  final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
-  late IO.Socket _socket;
+  // Nullable rather than `late`: only assigned once `initialize()` actually
+  // connects, and `dispose()` must be safe to call whether or not it did
+  // (e.g. a cubit closed before the socket was ever started).
+  IO.Socket? _socket;
   final int userId;
   final void Function(NotificationItem notification) onNotificationReceived;
   bool _isConnected = false;
@@ -17,66 +22,56 @@ class NotificationSocketService {
   });
 
   void initialize() {
-    _initializeLocalNotifications();
     _connectToSocket();
   }
 
-  void _initializeLocalNotifications() async {
-    const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-
-    const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
-
-    const initSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
-
-    await flutterLocalNotificationsPlugin.initialize(initSettings);
-  }
-
   void _connectToSocket() {
-    _socket = IO.io('https://socket.goalmasters.online', <String, dynamic>{
+    // Local, non-nullable reference: avoids repeated `!`/`?` noise below
+    // while still leaving `_socket` itself nullable for `dispose()`.
+    final socket = IO.io('https://socket.goalmasters.online', <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': true,
       'reconnection': true,
       'reconnectionAttempts': 5,
       'reconnectionDelay': 2000,
     });
+    _socket = socket;
 
-    _socket.on('connect', (_) {
+    socket.on('connect', (_) {
       print('✅ Connected to socket');
       if (!_isConnected) {
-        _socket.emit('register', userId);
+        socket.emit('register', userId);
         _isConnected = true;
       }
     });
 
-    _socket.on('notification', (data) {
+    socket.on('notification', (data) {
       try {
         final payload = _normalizeNotificationPayload(data);
         final notification = NotificationItem.fromJson(payload);
-        _showNotification(notification.data.message, '📢 إشعار جديد');
+
+        // Forwarded unconditionally — including a (re)connect replay of the
+        // latest notification, which happens on every app restart.
+        // `onNotificationReceived` (NotificationCubit) is the one place
+        // that decides whether this id has already been shown and, if not,
+        // shows and displays it. Deciding twice — once here, once there —
+        // is exactly how one event produced two visible alerts before.
         onNotificationReceived(notification);
       } catch (e) {
         print('❌ Error parsing notification: $e');
       }
     });
 
-    _socket.on('disconnect', (_) {
+    socket.on('disconnect', (_) {
       print('❌ Disconnected from socket');
       _isConnected = false;
     });
 
-    _socket.on('connect_error', (err) {
+    socket.on('connect_error', (err) {
       print('⚠️ Socket connection error: $err');
     });
 
-    _socket.on('connect_timeout', (_) {
+    socket.on('connect_timeout', (_) {
       print('⏰ Socket connection timeout');
     });
   }
@@ -122,28 +117,7 @@ class NotificationSocketService {
     return int.tryParse(value.toString());
   }
 
-  Future<void> _showNotification(String title, String body) async {
-    const androidDetails = AndroidNotificationDetails(
-      'admin_channel',
-      'إشعارات المشرف',
-      channelDescription: 'إشعارات لحظية للمشرفين',
-      importance: Importance.max,
-      priority: Priority.high,
-      playSound: true,
-      ticker: 'ticker',
-    );
-
-    const notificationDetails = NotificationDetails(android: androidDetails);
-
-    await flutterLocalNotificationsPlugin.show(
-      DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      title,
-      body,
-      notificationDetails,
-    );
-  }
-
   void dispose() {
-    _socket.dispose();
+    _socket?.dispose();
   }
 }

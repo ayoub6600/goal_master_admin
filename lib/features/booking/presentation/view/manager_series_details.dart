@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master_admin/core/components/custom_success_toast.dart';
 import 'package:goal_master_admin/core/components/page_wrapper.dart';
+import 'package:goal_master_admin/core/routing/route_utils.dart';
+import 'package:goal_master_admin/core/routing/routes_keys.dart';
 import 'package:goal_master_admin/core/services/service_locator.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/core/styles/app_text_styles.dart';
@@ -8,6 +11,9 @@ import 'package:goal_master_admin/core/styles/spaces.dart';
 import 'package:goal_master_admin/core/utils/arabic_dates.dart';
 import 'package:goal_master_admin/features/booking/data/model/manager_series.dart';
 import 'package:goal_master_admin/features/booking/data/repo/booking_repo_imp.dart';
+import 'package:goal_master_admin/features/booking/presentation/view/widgets/reschedule_booking_sheet.dart';
+import 'package:goal_master_admin/features/booking/presentation/view/widgets/series_deposit_sheet.dart';
+import 'package:goal_master_admin/features/monthly_booking/data/repo/monthly_booking_repo_imp.dart';
 
 /// Everything the venue needs to decide on a recurring booking.
 ///
@@ -126,6 +132,47 @@ class _ManagerSeriesDetailsState extends State<ManagerSeriesDetails> {
           ),
         ],
       ),
+    );
+  }
+
+  String _money(double value) => value == value.roundToDouble()
+      ? value.toStringAsFixed(0)
+      : value.toStringAsFixed(2);
+
+  /// Takes a payment for the series as a whole.
+  ///
+  /// The amount goes to the server against the series, not against a session:
+  /// which weeks it settles is decided there, earliest first, in one
+  /// transaction. Entering it session by session meant the manager had to do
+  /// that split by hand, and a payment covering two and a half weeks had no
+  /// honest way to be recorded at all.
+  Future<void> _recordDeposit(ManagerSeries series) async {
+    final amount = await SeriesDepositSheet.show(context, series);
+    if (amount == null || !mounted) return;
+
+    setState(() => _deciding = true);
+
+    final result = await _repo.depositManagerSeries(
+      seriesId: series.seriesId,
+      amount: amount,
+    );
+
+    if (!mounted) return;
+    setState(() => _deciding = false);
+
+    result.fold(
+      (failure) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(failure.errMessage)),
+      ),
+      (message) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+        // Reloaded rather than patched locally: the server caps an
+        // overpayment at what is outstanding, so what it recorded is not
+        // necessarily what was typed.
+        _load();
+      },
     );
   }
 
@@ -296,9 +343,65 @@ class _ManagerSeriesDetailsState extends State<ManagerSeriesDetails> {
                     ],
                   ),
                 ],
+                // The money actually collected against the series, and the way
+                // to add to it. A monthly booking is paid a bit at a time, and
+                // entering that per session meant deciding by hand which weeks
+                // each payment covered.
+                if (series.grossTotal > 0) ...[
+                  HeightSpace(10.h),
+                  Divider(height: 1, color: const Color(0xFFE1E6EB)),
+                  HeightSpace(10.h),
+                  Row(
+                    children: [
+                      Text(
+                        'المدفوع: ${_money(series.paidTotal)} دينار',
+                        style: AppTextStyles.font12Bold
+                            .copyWith(color: AppColors.primary),
+                      ),
+                      const Spacer(),
+                      if (series.remainingTotal > 0)
+                        Text(
+                          'المتبقي: ${_money(series.remainingTotal)} دينار',
+                          style: AppTextStyles.font12Bold
+                              .copyWith(color: const Color(0xFFB26A00)),
+                        )
+                      else
+                        Text(
+                          'مدفوع بالكامل ✓',
+                          style: AppTextStyles.font12Bold
+                              .copyWith(color: AppColors.primary),
+                        ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
+          // Only once the series is actually agreed: money taken against
+          // sessions the venue has not accepted would have to be given back.
+          if (series.remainingTotal > 0 && !series.awaitingDecision) ...[
+            HeightSpace(12.h),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                onPressed: _deciding ? null : () => _recordDeposit(series),
+                icon: Icon(Icons.payments_outlined,
+                    size: 18.sp, color: Colors.white),
+                label: Text(
+                  'تسجيل دفعة',
+                  style:
+                      AppTextStyles.font14Bold.copyWith(color: Colors.white),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -358,7 +461,108 @@ class _ManagerSeriesDetailsState extends State<ManagerSeriesDetails> {
     );
   }
 
-  /// One session. Numbered, so "the third of four" is readable at a glance.
+  /// Opens the full booking screen for one session of the series.
+  ///
+  /// Every session is a booking in its own right, with its own payment and its
+  /// own cancel/edit actions — this screen only ever summarised them. The
+  /// series is reloaded on the way back so a payment taken over there shows
+  /// here without the manager having to reopen the series.
+  Future<void> _openOccurrence(SeriesOccurrence occurrence) async {
+    await push(
+      RoutesKeys.kBookingItemsDetails,
+      context,
+      extra: occurrence.bookingId,
+    );
+
+    if (!mounted) return;
+    _load();
+  }
+
+  Future<void> _editOccurrence(SeriesOccurrence occurrence) async {
+    // The occurrence carries only what the series list needs. Branch,
+    // employee, service and payment-type ids only come back from the full
+    // booking record, so it is fetched fresh before the sheet can open.
+    final detailsResult = await _repo.getBookingInfo(occurrence.bookingId);
+
+    if (!mounted) return;
+
+    await detailsResult.fold(
+      (failure) async => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(failure.errMessage)),
+      ),
+      (booking) async {
+        final start = DateTime(
+          booking.date.year,
+          booking.date.month,
+          booking.date.day,
+          int.tryParse(booking.startTime.split(':')[0]) ?? 0,
+          int.tryParse(booking.startTime.split(':')[1]) ?? 0,
+        );
+        final endParts = booking.endTime.split(':');
+        final end = DateTime(
+          booking.date.year,
+          booking.date.month,
+          booking.date.day,
+          int.tryParse(endParts[0]) ?? 0,
+          int.tryParse(endParts.length > 1 ? endParts[1] : '0') ?? 0,
+        );
+
+        final monthlyRepo = getIt<MonthlyBookingRepoImp>();
+
+        await RescheduleBookingSheet.show(
+          context,
+          currentStart: start,
+          currentEnd: end,
+          scopeNote: 'أنت تعدّل هذا الموعد فقط. بقية مواعيد الحجز الشهري '
+              'لن تتغيّر.',
+          loadSlots: (operationalDate) async {
+            final result = await _repo.listNightSlots(
+              branchId: booking.branchId,
+              serviceId: booking.serviceId,
+              operationalDate: operationalDate,
+            );
+
+            return result.fold(
+              (failure) => throw Exception(failure.errMessage),
+              (night) => night.slots,
+            );
+          },
+          onConfirm: (newStart, newEnd) async {
+            String two(int v) => v.toString().padLeft(2, '0');
+
+            final result = await monthlyRepo.rescheduleOccurrence(
+              bookingId: booking.id,
+              branchId: booking.branchId,
+              customerId: booking.cmnCustomerId,
+              employeeId: booking.employeeId,
+              serviceId: booking.serviceId,
+              paymentTypeId: booking.paymentTypeId,
+              status: booking.status,
+              paidAmount: double.tryParse(booking.paidAmount) ?? 0,
+              serviceDate:
+                  '${newStart.year}-${two(newStart.month)}-${two(newStart.day)}',
+              serviceTime:
+                  '${two(newStart.hour)}:${two(newStart.minute)}-'
+                  '${two(newEnd.hour)}:${two(newEnd.minute)}',
+              remarks: booking.remarks,
+            );
+
+            return result.fold(
+              (failure) => failure.errMessage,
+              (_) {
+                showCustomSuccessToast('تم تعديل الموعد.');
+                _load();
+                return null;
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// One session. Numbered, so "the third of four" is readable at a glance,
+  /// and tappable, because each one is a booking with a screen of its own.
   Widget _occurrenceCard(SeriesOccurrence occurrence) {
     final (color, label, icon) = switch (occurrence) {
       SeriesOccurrence(isCancelled: true) => (
@@ -381,77 +585,179 @@ class _ManagerSeriesDetailsState extends State<ManagerSeriesDetails> {
 
     return Padding(
       padding: EdgeInsets.only(bottom: 8.h),
-      child: Container(
-        padding: EdgeInsets.all(12.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
+        child: InkWell(
+          onTap: () => _openOccurrence(occurrence),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: color.withOpacity(0.35)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 34.w,
-              height: 34.w,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
-                shape: BoxShape.circle,
-              ),
-              child: Text(
-                '${occurrence.sequence}',
-                style: AppTextStyles.font14Bold.copyWith(color: color),
-              ),
+          child: Container(
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: color.withOpacity(0.35)),
             ),
-            WidthSpace(12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    arabicDayAndDate(occurrence.date),
-                    style: AppTextStyles.font14Bold,
+            child: Row(
+              children: [
+                Container(
+                  width: 34.w,
+                  height: 34.w,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.12),
+                    shape: BoxShape.circle,
                   ),
-                  Text(
-                    '${arabicTime(occurrence.startTime)} - '
-                    '${arabicTime(occurrence.endTime)}',
-                    style: AppTextStyles.font12Regular
-                        .copyWith(color: AppColors.fontColor),
+                  child: Text(
+                    '${occurrence.sequence}',
+                    style: AppTextStyles.font14Bold.copyWith(color: color),
                   ),
-                  // The date above is the one actually booked. This only says
-                  // why this week sits off the pattern, so a venue does not
-                  // read it as a mistake.
-                  if (occurrence.isReplacement) ...[
-                    HeightSpace(3.h),
-                    Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(20.r),
+                ),
+                WidthSpace(12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              arabicDayAndDate(occurrence.date),
+                              style: AppTextStyles.font14Bold,
+                            ),
+                          ),
+                          WidthSpace(6.w),
+                          // The booking number, so a session can be matched
+                          // against a receipt or a phone call without opening
+                          // it first.
+                          Text(
+                            '#${occurrence.bookingId}',
+                            style: AppTextStyles.font12Bold
+                                .copyWith(color: AppColors.fontColor),
+                          ),
+                        ],
                       ),
-                      child: Text(
-                        occurrence.replacementNote.isNotEmpty
-                            ? occurrence.replacementNote
-                            : 'موعد بديل ضمن حجز شهري',
-                        style: AppTextStyles.font12Bold
-                            .copyWith(color: AppColors.primary),
+                      Text(
+                        '${arabicTime(occurrence.startTime)} - '
+                        '${arabicTime(occurrence.endTime)}',
+                        style: AppTextStyles.font12Regular
+                            .copyWith(color: AppColors.fontColor),
                       ),
+                      // Where this session stands on money, separately from
+                      // where it stands in its life. A part-paid series is the
+                      // earliest weeks settled and the next one partly so, and
+                      // only a per-session line can say that.
+                      if (!occurrence.isCancelled) ...[
+                        HeightSpace(4.h),
+                        _paymentChip(occurrence),
+                      ],
+                      // The date above is the one actually booked. This only
+                      // says why this week sits off the pattern, so a venue
+                      // does not read it as a mistake.
+                      if (occurrence.isReplacement) ...[
+                        HeightSpace(3.h),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 7.w,
+                            vertical: 2.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(20.r),
+                          ),
+                          child: Text(
+                            occurrence.replacementNote.isNotEmpty
+                                ? occurrence.replacementNote
+                                : 'موعد بديل ضمن حجز شهري',
+                            style: AppTextStyles.font12Bold
+                                .copyWith(color: AppColors.primary),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(icon, size: 16.sp, color: color),
+                        WidthSpace(4.w),
+                        Text(
+                          label,
+                          style:
+                              AppTextStyles.font12Bold.copyWith(color: color),
+                        ),
+                      ],
+                    ),
+                    HeightSpace(4.h),
+                    Row(
+                      children: [
+                        if (occurrence.isApproved &&
+                            !occurrence.hasElapsed) ...[
+                          InkWell(
+                            onTap: () => _editOccurrence(occurrence),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8.w,
+                                vertical: 4.h,
+                              ),
+                              child: Icon(
+                                Icons.edit_rounded,
+                                size: 15.sp,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                          WidthSpace(4.w),
+                        ],
+                        Text(
+                          'التفاصيل',
+                          style: AppTextStyles.font12Regular
+                              .copyWith(color: AppColors.fontColor),
+                        ),
+                        Icon(
+                          Icons.chevron_left,
+                          size: 15.sp,
+                          color: AppColors.fontColor,
+                        ),
+                      ],
                     ),
                   ],
-                ],
-              ),
-            ),
-            Row(
-              children: [
-                Icon(icon, size: 16.sp, color: color),
-                WidthSpace(4.w),
-                Text(label,
-                    style: AppTextStyles.font12Bold.copyWith(color: color)),
+                ),
               ],
             ),
-          ],
+          ),
         ),
+      ),
+    );
+  }
+
+  /// How much of this one session has been collected.
+  ///
+  /// Says the amounts on a partial payment rather than only the word: «مدفوع
+  /// جزئي» alone leaves the manager reopening the booking to find out how much
+  /// is still owed on the week they are looking at.
+  Widget _paymentChip(SeriesOccurrence occurrence) {
+    final (color, label) = switch (occurrence) {
+      SeriesOccurrence(isPaid: true) => (AppColors.primary, 'خالص'),
+      SeriesOccurrence(isPartiallyPaid: true) => (
+          const Color(0xFFB26A00),
+          'مدفوع جزئي — ${_money(occurrence.paidAmount)} من '
+              '${_money(occurrence.serviceAmount)} د',
+        ),
+      _ => (AppColors.fontColor, 'غير مدفوع'),
+    };
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: Text(
+        label,
+        style: AppTextStyles.font12Bold.copyWith(color: color),
       ),
     );
   }

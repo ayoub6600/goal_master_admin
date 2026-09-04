@@ -26,6 +26,14 @@ class ManagerSeries {
   final int skippedCount;
   final List<String> skippedDates;
 
+  /// The money side of the series, counted over sessions that are still on.
+  /// A cancelled week is not something the customer still owes for, so it is
+  /// outside both sides of the sum.
+  final double grossTotal;
+  final double paidTotal;
+  final double remainingTotal;
+  final bool isFullyPaid;
+
   final List<SeriesOccurrence> occurrences;
 
   const ManagerSeries({
@@ -47,6 +55,10 @@ class ManagerSeries {
     required this.pendingCount,
     this.skippedCount = 0,
     this.skippedDates = const [],
+    this.grossTotal = 0,
+    this.paidTotal = 0,
+    this.remainingTotal = 0,
+    this.isFullyPaid = false,
     required this.occurrences,
   });
 
@@ -72,6 +84,10 @@ class ManagerSeries {
       skippedDates: ((json['skipped_dates'] as List?) ?? const [])
           .map((e) => e.toString())
           .toList(),
+      grossTotal: _dbl(json['gross_total']),
+      paidTotal: _dbl(json['paid_total']),
+      remainingTotal: _dbl(json['remaining_total']),
+      isFullyPaid: json['is_fully_paid'] == true,
       occurrences: ((json['occurrences'] as List?) ?? const [])
           .map((e) => SeriesOccurrence.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -95,6 +111,13 @@ class SeriesOccurrence {
   final bool isReplacement;
   final String replacementNote;
 
+  /// What this one session has taken of the series payment, and what it still
+  /// owes. A part-paid series is not "half paid everywhere" — it is the
+  /// earliest weeks settled and the next one partly so.
+  final double paidAmount;
+  final int paymentStatus;
+  final double remainingDue;
+
   const SeriesOccurrence({
     required this.bookingId,
     required this.sequence,
@@ -106,13 +129,34 @@ class SeriesOccurrence {
     required this.serviceAmount,
     this.isReplacement = false,
     this.replacementNote = '',
+    this.paidAmount = 0,
+    this.paymentStatus = 0,
+    this.remainingDue = 0,
   });
+
+  /// ServicePaymentStatus: 1 = Paid, 2 = Unpaid, 3 = PartialPaid.
+  bool get isPaid => paymentStatus == 1;
+  bool get isPartiallyPaid => paymentStatus == 3;
+  bool get isUnpaid => !isPaid && !isPartiallyPaid;
 
   /// ServiceStatus: 1 = Processing, 2 = Approved, 3 = Cancel, 4 = Done.
   bool get isPending => status == 1;
   bool get isApproved => status == 2;
   bool get isCancelled => status == 3;
   bool get isDone => status == 4;
+
+  /// The session's end time has already passed.
+  ///
+  /// A played session does not flip to [isDone] on its own — that only
+  /// happens when a manager marks attendance — so a session can sit at
+  /// [isApproved] long after it was actually played. Editing (or moving) a
+  /// slot that already happened makes no sense regardless of what the status
+  /// field still says, so this is checked on its own rather than folded into
+  /// [isDone].
+  bool get hasElapsed {
+    final end = DateTime.tryParse('$date $endTime');
+    return end != null && end.isBefore(DateTime.now());
+  }
 
   factory SeriesOccurrence.fromJson(Map<String, dynamic> json) {
     return SeriesOccurrence(
@@ -126,6 +170,9 @@ class SeriesOccurrence {
       serviceAmount: _dbl(json['service_amount']),
       isReplacement: json['is_replacement'] == true,
       replacementNote: _str(json['replacement_note']),
+      paidAmount: _dbl(json['paid_amount']),
+      paymentStatus: _int(json['payment_status']),
+      remainingDue: _dbl(json['remaining_due']),
     );
   }
 }

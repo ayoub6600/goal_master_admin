@@ -26,4 +26,9 @@ class PrefKey {
       "subscriptionAllowMonthlyBookings";
   static const String subscriptionAllowReports = "subscriptionAllowReports";
   static const String subscriptionAllowWebAccess = "subscriptionAllowWebAccess";
+
+  /// The backend id of the last notification actually shown to the user
+  /// (system tray + sound). Persisted so a socket reconnect or app restart
+  /// cannot redisplay the same one as though it just arrived.
+  static const String lastShownNotificationId = "lastShownNotificationId";
 }

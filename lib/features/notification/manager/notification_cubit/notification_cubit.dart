@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master_admin/features/notification/data/model/notification_response.dart';
 import 'package:goal_master_admin/features/notification/data/repo/notifaction_repo.dart';
+import 'package:goal_master_admin/utils/notification_dedup_store.dart';
 import 'package:goal_master_admin/utils/notification_socket_service.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:equatable/equatable.dart';
@@ -19,7 +21,6 @@ class NotificationCubit extends Cubit<NotificationState> {
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   bool _isDisposed = false;
-  String? _lastNotificationId;
 
   PagingController<int, NotificationItem> get pagingController =>
       _pagingController;
@@ -35,7 +36,7 @@ class NotificationCubit extends Cubit<NotificationState> {
 
     _socketService = NotificationSocketService(
       userId: userId,
-      onNotificationReceived: _onNotificationReceived,
+      onNotificationReceived: handleNotificationReceived,
     );
 
     _fetchPage(1);
@@ -44,7 +45,9 @@ class NotificationCubit extends Cubit<NotificationState> {
     emit(NotificationUnreadUpdated(unreadCount));
   }
 
-  late Timer _pollingTimer;
+  // Nullable rather than `late`: only ever assigned once `startSocket()`
+  // runs, and `close()` must be safe to call whether or not it did.
+  Timer? _pollingTimer;
 
   void startSocket() {
     if (_isDisposed) return;
@@ -63,29 +66,36 @@ class NotificationCubit extends Cubit<NotificationState> {
     result.fold(
       (failure) => {},
       (response) {
+        // No pre-filter here on purpose: `handleNotificationReceived` is the
+        // one place — shared with the socket path — that decides both
+        // whether the in-app list needs this item and whether it has
+        // already been alerted on. Filtering here too was the second of
+        // the two places a single event could independently decide to
+        // alert, which is how it ended up alerting twice.
         final latest = response.data.data.firstOrNull;
-        if (latest != null && latest.id != _lastNotificationId) {
-          _lastNotificationId = latest.id;
-          _onNotificationReceived(latest);
+        if (latest != null) {
+          handleNotificationReceived(latest);
         }
       },
     );
   }
 
-  Future<void> _onNotificationReceived(NotificationItem notification) async {
+  /// Called for every notification the socket forwards or a poll turns up
+  /// — including a re-delivery of one already seen. Two separate concerns,
+  /// deliberately not gated by the same check:
+  ///
+  ///  - the in-app list/unread count always reflects reality, whether or
+  ///    not this particular call is a re-delivery (its own guard below is
+  ///    about not duplicating a LIST ENTRY, not about alerting);
+  ///  - the actual alert (sound + system notification) is shown at most
+  ///    once per backend id, via the one persisted, restart-safe gate.
+  ///
+  /// Public (not the usual leading underscore) only so a test can exercise
+  /// it directly without a live socket connection — not meant to be called
+  /// from outside this cubit's own wiring otherwise.
+  @visibleForTesting
+  Future<void> handleNotificationReceived(NotificationItem notification) async {
     if (_isDisposed) return;
-
-    print('[🔔 إشعار جديد]: ${notification.data.message}');
-
-    try {
-      await _audioPlayer.play(
-        AssetSource('sound/new-notification-09-352705.mp3'),
-      );
-    } catch (e) {
-      print('[NotificationCubit] فشل تشغيل صوت الإشعار: $e');
-    }
-
-    onVisualNotification?.call(notification);
 
     final current = _pagingController.itemList ?? [];
 
@@ -104,6 +114,23 @@ class NotificationCubit extends Cubit<NotificationState> {
 
       print('[✅] Updated unreadCount: $newUnreadCount');
     }
+
+    // The one authoritative alert gate. Both the socket path and the
+    // polling fallback above funnel through this same method, so there is
+    // exactly one place left that can decide to alert.
+    if (!NotificationDedupStore.markIfNew(notification.id)) return;
+
+    print('[🔔 إشعار جديد]: ${notification.data.message}');
+
+    try {
+      await _audioPlayer.play(
+        AssetSource('sound/new-notification-09-352705.mp3'),
+      );
+    } catch (e) {
+      print('[NotificationCubit] فشل تشغيل صوت الإشعار: $e');
+    }
+
+    onVisualNotification?.call(notification);
   }
 
   Future<void> _fetchPage(int pageKey) async {
@@ -120,9 +147,6 @@ class NotificationCubit extends Cubit<NotificationState> {
         },
         (response) {
           final notifications = response.data.data;
-          if (pageKey == 1 && notifications.isNotEmpty) {
-            _lastNotificationId ??= notifications.first.id;
-          }
 
           final isLastPage = pageKey >= response.data.lastPage;
           if (isLastPage) {
@@ -213,7 +237,7 @@ class NotificationCubit extends Cubit<NotificationState> {
     _isDisposed = true;
     _socketService.dispose();
     _pagingController.dispose();
-    _pollingTimer.cancel();
+    _pollingTimer?.cancel();
     _audioPlayer.dispose();
     return super.close();
   }

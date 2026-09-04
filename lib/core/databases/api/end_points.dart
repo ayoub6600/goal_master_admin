@@ -91,8 +91,13 @@ class EndPoints {
   static String decideException = 'manager/cases/decide-exception';
   static String awaitingAttendance = 'manager/cases/awaiting-attendance';
   static String markAttendance = 'manager/cases/mark-attendance';
+  static String proposeNoShowResolution =
+      'manager/cases/propose-no-show-resolution';
   static String restrictCustomer = 'manager/cases/restrict-customer';
   static String releaseRestriction = 'manager/cases/release-restriction';
+  static String blockCustomer = 'manager/cases/block-customer';
+  static String unblockCustomer = 'manager/cases/unblock-customer';
+  static String customerBlockStatus = 'manager/cases/customer-block-status';
   static String cancelManagerSeries = 'user/booking/manager-series-cancel';
 
   static String listZone = 'list/zone';
@@ -159,6 +164,7 @@ class EndPoints {
   /// action, through the same service the customer's own "cancel the rest"
   /// uses — so refunds and the ledger behave identically whoever pressed it.
   static String managerSeriesCancel = 'user/booking/manager-series-cancel';
+  static String managerSeriesDeposit = 'user/booking/manager-series-deposit';
 
   /// Editing one existing booking. Used here to move a single session of a
   /// recurring booking without touching the rest of it.
