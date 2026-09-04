@@ -1,3 +1,5 @@
+import 'package:goal_master_admin/core/databases/api/api_base_safety.dart';
+
 // ignore: avoid_classes_with_only_static_members
 class EndPoints {
   //********  base url
@@ -19,6 +21,16 @@ class EndPoints {
     'API_BASE',
     defaultValue: 'http://127.0.0.1:8000/api/',
   );
+
+  /// True when [baserUrl] points at a developer machine rather than a
+  /// server anybody else can reach.
+  static bool get isLocalApi => ApiBaseSafety.isLocalOrLan(baserUrl);
+
+  /// Null when this build's [baserUrl] is safe to ship in a release build;
+  /// otherwise the reason it isn't. Checked for real (not via `assert`,
+  /// which release builds strip) at app startup — see `main()`.
+  static String? get releaseSafetyViolation =>
+      ApiBaseSafety.releaseViolation(baserUrl);
 
   //******* routes
   static const String id = 'id'; //! example route, remove this

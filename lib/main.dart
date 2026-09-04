@@ -2,12 +2,14 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master_admin/core/app_update/app_update_gate.dart';
+import 'package:goal_master_admin/core/databases/api/end_points.dart';
 import 'package:goal_master_admin/core/components/keys_values.dart';
 import 'package:goal_master_admin/core/components/preference_utility.dart';
 import 'package:goal_master_admin/core/routing/app_router.dart';
@@ -37,6 +39,21 @@ import 'package:goal_master_admin/features/booking/presentation/manager/manager_
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 Future<void> main() async {
+  // A real, unconditional check — not `assert`, which release builds strip.
+  // Deliberately BEFORE `runZonedGuarded`: that zone's error handler below
+  // only logs and swallows errors, so a throw from inside it would silently
+  // stop short of `runApp()` without ever surfacing anywhere. Thrown here,
+  // it propagates as a genuine uncaught top-level exception instead — a
+  // release build made without a valid production --dart-define=API_BASE
+  // must fail loudly, not ship an app that talks to localhost or a LAN
+  // address.
+  if (kReleaseMode) {
+    final violation = EndPoints.releaseSafetyViolation;
+    if (violation != null) {
+      throw StateError('Release build refused: $violation');
+    }
+  }
+
   await runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
 
