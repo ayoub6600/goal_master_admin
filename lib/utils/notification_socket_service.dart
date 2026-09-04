@@ -1,4 +1,5 @@
 import 'package:goal_master_admin/features/notification/data/model/notification_response.dart';
+import 'package:goal_master_admin/utils/notification_identity.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 /// Receives and forwards real-time notification events. Deliberately does
@@ -28,7 +29,7 @@ class NotificationSocketService {
   void _connectToSocket() {
     // Local, non-nullable reference: avoids repeated `!`/`?` noise below
     // while still leaving `_socket` itself nullable for `dispose()`.
-    final socket = IO.io('https://socket.goalmasters.online', <String, dynamic>{
+    final socket = IO.io('https://socket.goalmaster.aljidartech.com', <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': true,
       'reconnection': true,
@@ -86,7 +87,11 @@ class NotificationSocketService {
         <String, dynamic>{};
 
     return {
-      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      // A stable id (shared with the FCM/database copy of the same event
+      // where the backend payload allows it) rather than a random one per
+      // delivery — otherwise a socket + FCM delivery of the same event can
+      // never be recognized as the same event by NotificationDedupStore.
+      'id': NotificationIdentity.resolve(messageData),
       'type': 'socket_notification',
       'notifiable_type': 'socket',
       'notifiable_id': userId,

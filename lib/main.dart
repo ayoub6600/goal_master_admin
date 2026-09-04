@@ -292,6 +292,9 @@ class MyApp extends StatelessWidget {
                     builder: (context) {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         context.read<NotificationCubit>().startSocket();
+                        context
+                            .read<NotificationCubit>()
+                            .listenForForegroundFcm();
                       });
                       return OKToast(
                         child: AppUpdateGate(

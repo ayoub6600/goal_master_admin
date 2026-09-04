@@ -1,11 +1,13 @@
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master_admin/features/notification/data/model/notification_response.dart';
 import 'package:goal_master_admin/features/notification/data/repo/notifaction_repo.dart';
 import 'package:goal_master_admin/utils/notification_dedup_store.dart';
+import 'package:goal_master_admin/utils/notification_identity.dart';
 import 'package:goal_master_admin/utils/notification_socket_service.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:equatable/equatable.dart';
@@ -15,10 +17,12 @@ part 'notification_state.dart';
 class NotificationCubit extends Cubit<NotificationState> {
   final NotificationRepo notificationRepo;
   final void Function(NotificationItem)? onVisualNotification;
+  final int userId;
 
   late final PagingController<int, NotificationItem> _pagingController;
   late final NotificationSocketService _socketService;
   final AudioPlayer _audioPlayer = AudioPlayer();
+  StreamSubscription<RemoteMessage>? _fcmForegroundSubscription;
 
   bool _isDisposed = false;
 
@@ -27,7 +31,7 @@ class NotificationCubit extends Cubit<NotificationState> {
 
   NotificationCubit({
     required this.notificationRepo,
-    required int userId,
+    required this.userId,
     this.onVisualNotification,
   }) : super(NotificationInitial()) {
     _pagingController =
@@ -43,6 +47,39 @@ class NotificationCubit extends Cubit<NotificationState> {
     emit(NotificationLoadSuccess(
         pagingController: _pagingController, unreadCount: unreadCount));
     emit(NotificationUnreadUpdated(unreadCount));
+  }
+
+  /// A foreground FCM message never auto-displays on Android/iOS the way a
+  /// background/terminated one does — the OS hands it to app code instead,
+  /// which is exactly why nothing was visibly happening for it before this.
+  /// Routed through the same [handleNotificationReceived] gate as the socket
+  /// and polling paths, using the same [NotificationIdentity] id derivation,
+  /// so a socket delivery and an FCM delivery of the same backend event
+  /// collapse into a single alert instead of two. Background/terminated
+  /// delivery is untouched — that path never reaches this listener at all.
+  void listenForForegroundFcm() {
+    if (_isDisposed) return;
+    _fcmForegroundSubscription =
+        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (_isDisposed) return;
+      final data = message.data;
+      final body = message.notification?.body ??
+          data['message']?.toString() ??
+          data['msg']?.toString() ??
+          '';
+      if (body.isEmpty) return;
+
+      handleNotificationReceived(NotificationItem(
+        id: NotificationIdentity.resolve(data),
+        type: data['type']?.toString() ?? 'fcm_notification',
+        notifiableType: 'fcm',
+        notifiableId: userId,
+        data: NotificationInnerData(message: body),
+        readAt: null,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ));
+    });
   }
 
   // Nullable rather than `late`: only ever assigned once `startSocket()`
@@ -236,6 +273,7 @@ class NotificationCubit extends Cubit<NotificationState> {
   Future<void> close() {
     _isDisposed = true;
     _socketService.dispose();
+    _fcmForegroundSubscription?.cancel();
     _pagingController.dispose();
     _pollingTimer?.cancel();
     _audioPlayer.dispose();
