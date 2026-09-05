@@ -67,5 +67,13 @@
 	<string>GoalMaster Admin needs access to your location to verify stadium management activities and ensure accurate operational tracking.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>GoalMaster Admin requires background location access to support continuous operational monitoring for authorized stadium managers.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>GoalMaster Admin needs camera access so stadium managers can capture photos for stadium and booking records.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>GoalMaster Admin needs access to your photo library so stadium managers can attach photos to stadium and booking records.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>
