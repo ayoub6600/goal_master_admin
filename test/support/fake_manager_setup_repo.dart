@@ -55,7 +55,14 @@ class FakeManagerSetupRepo implements ManagerSetupRepo {
             'employees': [
               {
                 'id': 9,
-                'employee_id': 'GM-BRANCH-12-EVENING',
+                // Matches ManagerCatalogSetupService::employeeCode() on the
+                // backend — the short form, not the old 'GM-BRANCH-{id}-
+                // EVENING' that overflowed sch_employees.employee_id
+                // (varchar 20) and was fixed by shortening it. This fixture
+                // drifting from the real format is exactly how that fix's
+                // three Flutter-side `.contains('EVENING')` call sites broke
+                // silently — see SetupEmployeeItem.isEveningChannel.
+                'employee_id': 'GM12-EVE',
                 'full_name': 'حجز مسائي',
                 'status': 1,
                 'start_time': '17:00:00',
@@ -63,7 +70,7 @@ class FakeManagerSetupRepo implements ManagerSetupRepo {
               },
               {
                 'id': 10,
-                'employee_id': 'GM-BRANCH-12-AFTER-MIDNIGHT',
+                'employee_id': 'GM12-AFT',
                 'full_name': 'حجز بعد منتصف الليل',
                 'status': 2,
                 'start_time': '00:00:00',

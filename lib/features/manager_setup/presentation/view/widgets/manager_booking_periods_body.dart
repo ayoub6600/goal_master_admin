@@ -82,11 +82,11 @@ class _ManagerBookingPeriodsBodyState extends State<ManagerBookingPeriodsBody> {
     var nightEnabled = false;
 
     for (final employee in bootstrap.data.catalog.employees) {
-      if (employee.employeeId.contains('EVENING')) {
+      if (employee.isEveningChannel) {
         eveningStart = employee.startTime;
         eveningEnd = employee.endTime;
       }
-      if (employee.employeeId.contains('AFTER-MIDNIGHT')) {
+      if (employee.isAfterMidnightChannel) {
         nightEnabled = employee.status != 0;
         nightEnd = employee.endTime;
       }

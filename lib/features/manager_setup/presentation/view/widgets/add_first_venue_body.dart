@@ -356,7 +356,7 @@ class _AddFirstVenueBodyState extends State<AddFirstVenueBody> {
         const [];
 
     for (final e in employees) {
-      if (e.employeeId.contains('AFTER-MIDNIGHT')) return e.status != 0;
+      if (e.isAfterMidnightChannel) return e.status != 0;
     }
 
     return false;

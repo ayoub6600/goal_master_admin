@@ -353,6 +353,15 @@ class SetupEmployeeItem {
       endTime: (json['end_time'] ?? '').toString(),
     );
   }
+
+  /// Matches ManagerCatalogSetupService::employeeCode() on the backend —
+  /// 'GM{branch_id}-EVE' / 'GM{branch_id}-AFT'. Kept here as the one place
+  /// that knows the format, after a backend identifier shortening (varchar
+  /// overflow fix) silently broke three separate `.contains('EVENING')` /
+  /// `.contains('AFTER-MIDNIGHT')` checks scattered across this app that
+  /// still expected the old, longer identifier.
+  bool get isEveningChannel => employeeId.contains('-EVE');
+  bool get isAfterMidnightChannel => employeeId.contains('-AFT');
 }
 
 class SaveManagerBookingPeriodsResponse {

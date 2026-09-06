@@ -125,11 +125,11 @@ class VenueProfileBody extends StatelessWidget {
     var nightEnabled = false;
 
     for (final e in bootstrap.data.catalog.employees) {
-      if (e.employeeId.contains('EVENING')) {
+      if (e.isEveningChannel) {
         eveningStart = e.startTime;
         eveningEnd = e.endTime;
       }
-      if (e.employeeId.contains('AFTER-MIDNIGHT')) {
+      if (e.isAfterMidnightChannel) {
         nightEnabled = e.status != 0;
         nightEnd = e.endTime;
       }
