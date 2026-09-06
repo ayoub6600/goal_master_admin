@@ -12,6 +12,14 @@ class User {
   dynamic emailVerifiedAt;
   int? zoneId;
   int? clubId;
+
+  /// Whether this account is authorized as a manager — role-authoritative
+  /// (an active Manager role, OR a plain SystemUser), never inferred from
+  /// [userType] alone. A dual-role account (a customer who has also been
+  /// made a manager, e.g. via ManagerSignupService) keeps userType == 2
+  /// (WebsiteUser) forever by design, so checking `userType == 1` here is
+  /// exactly the bug that locked such accounts out of the Manager App.
+  bool? isManager;
   CurrentSubscription? currentSubscription;
   SubscriptionFeatures? subscriptionFeatures;
   ManagerSetupProgress? setupProgress;
@@ -30,6 +38,7 @@ class User {
       this.emailVerifiedAt,
       this.zoneId,
       this.clubId,
+      this.isManager,
       this.currentSubscription,
       this.subscriptionFeatures,
       this.setupProgress});
@@ -53,6 +62,7 @@ class User {
         emailVerifiedAt: json['email_verified_at'] as dynamic,
         zoneId: json['zone_id'] as int?,
         clubId: json['club_id'] as int?,
+        isManager: json['is_manager'] as bool?,
         currentSubscription: json['current_subscription'] == null
             ? null
             : CurrentSubscription.fromJson(
@@ -84,6 +94,7 @@ class User {
         'email_verified_at': emailVerifiedAt,
         'zone_id': zoneId,
         'club_id': clubId,
+        'is_manager': isManager,
         'current_subscription': currentSubscription?.toJson(),
         'subscription_features': subscriptionFeatures?.toJson(),
         'setup_progress': setupProgress?.toJson(),

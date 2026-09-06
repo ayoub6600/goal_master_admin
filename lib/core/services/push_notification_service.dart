@@ -30,13 +30,25 @@ class PushNotificationService {
 
   /// Call after login (or on app start if already logged in) — the backend
   /// route this hits requires an authenticated user.
+  ///
+  /// Best-effort end to end, deliberately: on iOS, `getToken()` needs an
+  /// APNS token first, which may genuinely not exist yet (Simulator,
+  /// permission not granted, or a fresh install still registering with
+  /// APNs) and throws `FirebaseException(apns-token-not-set)` when it
+  /// doesn't. Login must never depend on push registration succeeding —
+  /// `onTokenRefresh` (see initialize()) retries this the moment a token
+  /// does become available.
   static Future<void> registerTokenIfLoggedIn() async {
     final loggedIn = SharedPreferenceUtil.getString(PrefKey.login) == 'true';
     if (!loggedIn) return;
 
-    final token = await FirebaseMessaging.instance.getToken();
-    if (token != null) {
-      await _registerToken(token);
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        await _registerToken(token);
+      }
+    } catch (_) {
+      // Best-effort — retried on next app open or token refresh.
     }
   }
 

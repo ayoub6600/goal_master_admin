@@ -22,20 +22,21 @@ class LoginCubit extends Cubit<LoginState> {
     if (!isValid) return;
 
     var result = await _repo.login(email: email, password: password);
-    result.fold(
-      (error) {
+    await result.fold(
+      (error) async {
         emit(LoginError(error.errMessage));
       },
-      (user) {
-        if (user.user?.userType == 1) {
+      (user) async {
+        // Role-authoritative — see User.isManager. A dual-role account (a
+        // customer also made a manager) keeps userType == 2 (WebsiteUser)
+        // forever by design, so checking userType == 1 here rejected every
+        // such login even though the backend authenticated it successfully.
+        if (user.user?.isManager == true) {
+          await _saveUserData(user);
           emit(LoginSuccess());
         } else {
           emit(LoginError(" لا يمكن تسجيل الدخول بتلك البيانات"));
         }
-
-        //save user
-
-        _saveUserData(user);
       },
     );
   }
