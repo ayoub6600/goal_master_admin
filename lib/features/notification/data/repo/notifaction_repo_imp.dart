@@ -16,7 +16,11 @@ class NotificationRepoImp extends NotificationRepo {
     return consumer.handleRequest(
       () => consumer.get(
         EndPoints.notification,
-        queryParameters: {'page': page},
+        // Excludes this person's Customer-side notifications (e.g. their
+        // own booking updates) from the Manager App's list — the backend
+        // otherwise returns every notification ever sent to this users.id,
+        // Customer and Manager alike, since both apps share one identity.
+        queryParameters: {'page': page, 'app_domain': 'manager'},
       ),
       (data) => NotificationResponse.fromJson(data),
     );
