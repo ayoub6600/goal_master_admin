@@ -38,6 +38,7 @@ class EndPoints {
   //# parent
   static String login = 'login';
   static String saveFcmToken = 'user/save-fcm-token';
+  static String logout = 'user/logout';
 
   static String banner = "list/slider";
 

@@ -7,6 +7,7 @@ import 'package:goal_master_admin/core/components/page_wrapper.dart';
 import 'package:goal_master_admin/core/components/preference_utility.dart';
 import 'package:goal_master_admin/core/routing/route_utils.dart';
 import 'package:goal_master_admin/core/routing/routes_keys.dart';
+import 'package:goal_master_admin/core/services/push_notification_service.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/core/styles/app_text_styles.dart';
 import 'package:goal_master_admin/core/styles/assets.dart';
@@ -140,6 +141,13 @@ class ProfileView extends StatelessWidget {
                                           onTap: () async {
                                             Navigator.pop(
                                                 context); // Close the sheet
+                                            // Must run before clearing local
+                                            // prefs — this call needs to still
+                                            // be authenticated to tell the
+                                            // backend which device's push
+                                            // registration to remove.
+                                            await PushNotificationService
+                                                .unregisterToken();
                                             await SharedPreferenceUtil.clear();
 
                                             SharedPreferenceUtil.putString(
