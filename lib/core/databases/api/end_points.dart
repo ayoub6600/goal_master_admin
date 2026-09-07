@@ -19,7 +19,7 @@ class EndPoints {
   /// customer app, which reached this shape first.
   static const String baserUrl = String.fromEnvironment(
     'API_BASE',
-    defaultValue: 'http://127.0.0.1:8000/api/',
+    defaultValue: 'https://goalmaster.aljidartech.com/api/',
   );
 
   /// True when [baserUrl] points at a developer machine rather than a
@@ -67,6 +67,7 @@ class EndPoints {
   static String managerWalletConfirmTopUp = 'manager/wallet/confirm-topup';
   static String managerWalletLocalPaymentSetting =
       'manager/wallet/local-payment-setting';
+  static String managerCancellationPolicy = 'manager/cancellation-policy';
   static String managerSubscriptionCurrent = 'manager/subscription/current';
   static String managerSubscriptionChange = 'manager/subscription/change';
   static String managerSubscriptionAutoRenew = 'manager/subscription/auto-renew';

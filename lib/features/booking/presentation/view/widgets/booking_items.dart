@@ -253,6 +253,15 @@ class _BookingItemsState extends State<BookingItems> {
                 ],
               ),
             ),
+            if (booking.status == 3 && booking.cancellation != null) ...[
+              HeightSpace(12.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.w),
+                child: _CancellationOutcomeBox(
+                  cancellation: booking.cancellation!,
+                ),
+              ),
+            ],
             if (booking.paymentType == 1) ...[
               HeightSpace(8.h),
               Padding(
@@ -398,6 +407,103 @@ class _BookingItemsState extends State<BookingItems> {
         return Colors.grey;
     }
   }
+}
+
+/// What a cancelled booking's money actually did, from the venue's side.
+///
+/// A full refund reads as one calm line — nothing was kept, nothing to
+/// explain. A booking that retained a fee is called out: what the venue
+/// keeps gets the visual weight, since that is the number a manager checks
+/// this card to confirm.
+class _CancellationOutcomeBox extends StatelessWidget {
+  const _CancellationOutcomeBox({required this.cancellation});
+
+  final BookingCancellation cancellation;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!cancellation.hasPenalty) {
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: const Color(0xffDFF5E1),
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.check_circle, size: 18.sp, color: AppColors.primary),
+            WidthSpace(8.w),
+            Expanded(
+              child: Text(
+                "إلغاء مجاني — تم استرجاع ${_money(cancellation.refundAmount)} دينار كاملة للزبون",
+                style: AppTextStyles.font14Bold.copyWith(
+                  color: const Color(0xff204523),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: Colors.red.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.info_outline, size: 18.sp, color: Colors.red),
+              WidthSpace(8.w),
+              Text(
+                "تفاصيل الإلغاء",
+                style: AppTextStyles.font14Bold.copyWith(color: Colors.red),
+              ),
+            ],
+          ),
+          HeightSpace(8.h),
+          _outcomeRow(
+            "استُرجع للزبون",
+            cancellation.refundAmount,
+            AppColors.primary,
+          ),
+          HeightSpace(4.h),
+          _outcomeRow(
+            "المحتفَظ به لديك",
+            cancellation.retainedAmount,
+            Colors.red,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _outcomeRow(String label, double amount, Color color) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: AppTextStyles.font14Regular.copyWith(
+            color: AppColors.fontColor,
+          ),
+        ),
+        Text(
+          "${_money(amount)} د.ل",
+          style: AppTextStyles.font14Bold.copyWith(color: color),
+        ),
+      ],
+    );
+  }
+
+  String _money(double amount) => amount.toStringAsFixed(2);
 }
 
 /// The final, non-editable result of a booking.

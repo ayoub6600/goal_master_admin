@@ -15,6 +15,7 @@ class RoutesKeys {
   static const kManagerBookingPeriods = '/kManagerBookingPeriods';
   static const kManagerWallet = '/kManagerWallet';
   static const kManagerPaymentSettings = '/kManagerPaymentSettings';
+  static const kManagerCancellationPolicy = '/kManagerCancellationPolicy';
   static const kManagerSubscription = '/kManagerSubscription';
   static const kManagerPaymentWebView = '/kManagerPaymentWebView';
   static const kBooking = '/kBooking';

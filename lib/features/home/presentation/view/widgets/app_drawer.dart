@@ -223,6 +223,19 @@ class AppDrawer extends StatelessWidget {
                     ),
                     HeightSpace(8.h),
                     ProfileItem(
+                      title: "سياسة الإلغاء",
+                      icon: Assets.imagesPngImageProfile,
+                      onTap: () {
+                        push(RoutesKeys.kManagerCancellationPolicy, context);
+                      },
+                    ),
+                    Container(
+                      width: double.infinity,
+                      color: Color(0xffDADEE3),
+                      height: 1.h,
+                    ),
+                    HeightSpace(8.h),
+                    ProfileItem(
                       title: "فترات الحجز",
                       icon: Assets.imagesPngImageProfile,
                       onTap: () {
@@ -301,6 +314,19 @@ class AppDrawer extends StatelessWidget {
                     icon: Assets.imagesPngImageProfile,
                     onTap: () {
                       push(RoutesKeys.kManagerPaymentSettings, context);
+                    },
+                  ),
+                  Container(
+                    width: double.infinity,
+                    color: Color(0xffDADEE3),
+                    height: 1.h,
+                  ),
+                  HeightSpace(8.h),
+                  ProfileItem(
+                    title: "سياسة الإلغاء",
+                    icon: Assets.imagesPngImageProfile,
+                    onTap: () {
+                      push(RoutesKeys.kManagerCancellationPolicy, context);
                     },
                   ),
                   Container(

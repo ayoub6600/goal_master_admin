@@ -76,6 +76,10 @@ class BookingItemResponce {
   /// server. Empty for every other outcome.
   final String venueFaultReasonLabel;
 
+  /// What actually happened to the money on a cancelled booking — null for
+  /// one still active, or one paid on arrival.
+  final BookingCancellation? cancellation;
+
   /// Whether a result has already been recorded. First report wins.
   bool get hasRecordedResult =>
       attendanceStatus.isNotEmpty && attendanceStatus != 'unknown';
@@ -118,6 +122,7 @@ class BookingItemResponce {
     this.attendanceLabel = '',
     this.customerConfirmation,
     this.venueFaultReasonLabel = '',
+    this.cancellation,
   });
 
   static BookingItemResponce fromJson(Map<String, dynamic> json) {
@@ -165,6 +170,10 @@ class BookingItemResponce {
           : _asString(json['customer_confirmation']),
       venueFaultReasonLabel: _asString(json['venue_fault_reason_label']),
       due: _asString(json['due']),
+      cancellation: json['cancellation'] is Map<String, dynamic>
+          ? BookingCancellation.fromJson(
+              json['cancellation'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -175,5 +184,36 @@ class BookingItemResponce {
 
   static String _asString(dynamic value) {
     return value?.toString() ?? '';
+  }
+}
+
+/// What actually happened to the money on a cancelled booking — how much
+/// came back to the customer, and how much the venue kept as a fee.
+class BookingCancellation {
+  final double paidAmount;
+  final double refundAmount;
+  final double retainedAmount;
+
+  const BookingCancellation({
+    required this.paidAmount,
+    required this.refundAmount,
+    required this.retainedAmount,
+  });
+
+  /// A real fee was retained — the case worth calling out visually.
+  bool get hasPenalty => retainedAmount > 0.001;
+
+  static BookingCancellation fromJson(Map<String, dynamic> json) {
+    return BookingCancellation(
+      paidAmount: _asDouble(json['paid_amount']),
+      refundAmount: _asDouble(json['refund_amount']),
+      retainedAmount: _asDouble(json['retained_amount']),
+    );
+  }
+
+  static double _asDouble(dynamic value) {
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '') ?? 0;
   }
 }

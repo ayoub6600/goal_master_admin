@@ -9,6 +9,7 @@ import 'package:goal_master_admin/features/monthly_booking/data/repo/monthly_boo
 import 'package:goal_master_admin/features/manager_onboarding/data/repo/manager_signup_repo_imp.dart';
 import 'package:goal_master_admin/features/manager_setup/data/repo/manager_setup_repo_imp.dart';
 import 'package:goal_master_admin/features/manager_wallet/data/repo/manager_wallet_repo_imp.dart';
+import 'package:goal_master_admin/features/manager_cancellation_policy/data/repo/manager_cancellation_policy_repo_imp.dart';
 import 'package:goal_master_admin/features/manager_subscription/data/repo/manager_subscription_repo_imp.dart';
 import 'package:goal_master_admin/features/notification/data/repo/notifaction_repo.dart';
 import 'package:goal_master_admin/features/notification/data/repo/notifaction_repo_imp.dart';
@@ -45,6 +46,9 @@ void setupServiceLocator() {
   );
   getIt.registerSingleton<ManagerWalletRepoImp>(
     ManagerWalletRepoImp(getIt.get<DioConsumer>()),
+  );
+  getIt.registerSingleton<ManagerCancellationPolicyRepoImp>(
+    ManagerCancellationPolicyRepoImp(getIt.get<DioConsumer>()),
   );
   getIt.registerSingleton<ManagerSubscriptionRepoImp>(
     ManagerSubscriptionRepoImp(getIt.get<DioConsumer>()),

@@ -56,6 +56,7 @@ import 'package:goal_master_admin/features/manager_subscription/presentation/vie
 import 'package:goal_master_admin/features/manager_wallet/data/repo/manager_wallet_repo_imp.dart';
 import 'package:goal_master_admin/features/manager_wallet/presentation/view/manager_wallet_view.dart';
 import 'package:goal_master_admin/features/manager_wallet/presentation/view/manager_payment_settings_view.dart';
+import 'package:goal_master_admin/features/manager_cancellation_policy/presentation/view/manager_cancellation_policy_view.dart';
 import 'package:goal_master_admin/features/manager_wallet/presentation/manager/manager_wallet_topup_cubit/manager_wallet_topup_cubit.dart';
 import 'package:goal_master_admin/features/manager_wallet/presentation/view/widgets/manager_payment_webview_page.dart';
 import 'package:goal_master_admin/features/notification/data/repo/notifaction_repo.dart';
@@ -194,6 +195,15 @@ List<RouteBase> appRoutes = [
       context: context,
       state: state,
       child: const ManagerPaymentSettingsView(),
+    ),
+  ),
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kManagerCancellationPolicy,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const ManagerCancellationPolicyView(),
     ),
   ),
   GoRoute(
