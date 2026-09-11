@@ -122,6 +122,12 @@ class _CustomerViewbodyState extends State<CustomerViewbody> {
               onTap: () {
                 final nameController = TextEditingController();
                 final phoneController = TextEditingController();
+                // Captured from THIS (outer) context, valid for as long as
+                // this screen is mounted — the bottom sheet's own context is
+                // a separate subtree that a bare context.read<CustomerCubit>()
+                // inside it cannot see, since only AddCustomerCubit is
+                // re-provided into that subtree below.
+                final customerCubit = context.read<CustomerCubit>();
 
                 baseBottomSheet(
                   context: context,
@@ -149,10 +155,14 @@ class _CustomerViewbodyState extends State<CustomerViewbody> {
                             listener: (context, state) {
                               if (state is AddCustomerSuccess) {
                                 Navigator.pop(context);
-                                print(
-                                    "✅ Customer ID Added: ${state.customerId}");
 
                                 showCustomSuccessToast("تم اضافة العميل بنجاح");
+                                // The sheet closes back onto the SAME
+                                // CustomerViewbody instance underneath — its
+                                // CustomerCubit has no idea a customer was
+                                // just added, so without this the list stays
+                                // exactly as it was before the sheet opened.
+                                customerCubit.refresh();
                               } else if (state is AddCustomerFailure) {
                                 CustomFailureToastWidget(
                                     toastText: state.message);
