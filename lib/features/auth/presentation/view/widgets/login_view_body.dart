@@ -107,14 +107,14 @@ class LoginViewBody extends StatelessWidget {
                               ],
                             ),
                           ),
-                          Text("الاسم",
+                          Text("اسم المستخدم أو رقم الهاتف",
                               style: AppTextStyles.font16Bold
                                   .copyWith(color: Colors.white)),
                           HeightSpace(8.h),
                           CustomTextField(
-                            hint: "اكتب اسمك",
+                            hint: "اكتب اسم المستخدم أو رقم هاتفك",
                             controller: cubit.emailController,
-                            inputType: TextInputType.emailAddress,
+                            inputType: TextInputType.text,
                           ),
                           HeightSpace(14.h),
                           Text("كلمة السر",

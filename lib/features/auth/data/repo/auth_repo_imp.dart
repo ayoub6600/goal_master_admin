@@ -56,9 +56,17 @@ class AuthRepoImpl implements AuthRepo {
     required String email,
     required String password,
   }) async {
+    // The single field on the login screen is labelled "الاسم", but a
+    // manager signing up by phone (the self-registration flow) has no
+    // reason to remember the username the backend generated for them —
+    // the backend itself already accepts either credential on the same
+    // endpoint. Detected here, not asked for separately, so the field
+    // stays one field.
+    final isPhoneNumber = RegExp(r'^0\d{9}$').hasMatch(email);
+
     return consumer.handleRequestCustom(
       () => consumer.post(EndPoints.login, data: {
-        'username': email,
+        if (isPhoneNumber) 'phone_number': email else 'username': email,
         'password': password,
       }),
       (res) async {
