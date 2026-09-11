@@ -8,6 +8,7 @@ import 'package:goal_master_admin/core/styles/app_text_styles.dart';
 import 'package:goal_master_admin/features/manager_setup/data/model/manager_setup_bootstrap_response.dart';
 import 'package:goal_master_admin/features/manager_setup/domain/opening_hours.dart';
 import 'package:goal_master_admin/features/manager_setup/presentation/manager/manager_setup_cubit/manager_setup_cubit.dart';
+import 'package:goal_master_admin/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
 
 /// «متى يفتح ملعبك؟» — one question, asked the way an owner thinks.
 ///
@@ -40,10 +41,13 @@ class ManagerBookingPeriodsBody extends StatefulWidget {
 }
 
 class _ManagerBookingPeriodsBodyState extends State<ManagerBookingPeriodsBody> {
+  // The default for a venue with no schedule yet — overwritten by _prefill()
+  // the moment a real one exists, so an existing manager's saved hours are
+  // never touched by this.
   late OpeningHours _hours = widget.initialHours ??
       const OpeningHours(
-    opensAt: TimeOfDay(hour: 17, minute: 0),
-    closesAt: TimeOfDay(hour: 0, minute: 0),
+    opensAt: TimeOfDay(hour: 16, minute: 0),
+    closesAt: TimeOfDay(hour: 3, minute: 0),
   );
 
   /// The pitches bookable during the night, as one question — the manager was
@@ -198,6 +202,10 @@ class _ManagerBookingPeriodsBodyState extends State<ManagerBookingPeriodsBody> {
         }
         if (state is ManagerBookingPeriodsSuccess) {
           showCustomSuccessToast(state.response.message);
+          // Home and Account read the shared ProfileCubit for the setup
+          // checklist, not this screen's own ManagerSetupCubit — without
+          // this they keep showing whatever they last fetched.
+          context.read<ProfileCubit>().getProfile();
         }
       },
       builder: (context, state) {

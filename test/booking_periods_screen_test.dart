@@ -167,9 +167,9 @@ void main() {
       await tester.pumpWidget(host(const ManagerBookingPeriodsBody()));
       await tester.pumpAndSettle();
 
-      expect(find.text('5:00 م'), findsOneWidget);
-      // 24:00 is midnight, and is named.
-      expect(find.text('منتصف الليل'), findsOneWidget);
+      // The default for a venue with no schedule yet: 16:00 -> 03:00.
+      expect(find.text('4:00 م'), findsOneWidget);
+      expect(find.text('3:00 ص'), findsOneWidget);
       expect(find.textContaining('ملعبك مفتوح'), findsOneWidget);
     });
 

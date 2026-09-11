@@ -7,6 +7,7 @@ import 'package:goal_master_admin/core/components/bottom_sheet/base_bottom_sheet
 import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/core/styles/app_text_styles.dart';
 import 'package:goal_master_admin/features/manager_setup/presentation/manager/manager_setup_cubit/manager_setup_cubit.dart';
+import 'package:goal_master_admin/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
 import 'package:image_picker/image_picker.dart';
 
 /// Which part of the venue the manager asked to change.
@@ -185,6 +186,9 @@ class _VenueEditFormState extends State<VenueEditForm> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('تم حفظ بيانات الملعب.')),
           );
+          // Home and Account read the shared ProfileCubit for the setup
+          // checklist, not this sheet's own ManagerSetupCubit.
+          context.read<ProfileCubit>().getProfile();
         }
       },
       child: Padding(

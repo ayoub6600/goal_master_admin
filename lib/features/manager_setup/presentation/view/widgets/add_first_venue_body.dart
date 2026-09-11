@@ -402,12 +402,20 @@ class _AddFirstVenueBodyState extends State<AddFirstVenueBody> {
             _selectedImage = null;
             _isEditingBranch = false;
           });
+          // This screen's own ManagerSetupCubit already knows the venue is
+          // ready — but Home and Account read a separate, shared
+          // ProfileCubit for the same "is setup done" question, and nothing
+          // told it a save just happened. Without this it stays on
+          // whatever it fetched at app boot until a full restart.
+          context.read<ProfileCubit>().getProfile();
         }
         if (state is ManagerCatalogSetupSuccess) {
           showCustomSuccessToast(state.response.message);
+          context.read<ProfileCubit>().getProfile();
         }
         if (state is ManagerBookingPeriodsSuccess) {
           showCustomSuccessToast(state.response.message);
+          context.read<ProfileCubit>().getProfile();
         }
       },
       builder: (context, state) {

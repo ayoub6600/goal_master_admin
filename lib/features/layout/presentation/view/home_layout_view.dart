@@ -22,7 +22,6 @@ import 'package:goal_master_admin/features/notification/data/repo/notifaction_re
 import 'package:goal_master_admin/features/notification/manager/notification_cubit/notification_cubit.dart';
 import 'package:goal_master_admin/features/profail/data/repo/profile_repo_imp.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/customer_cubit/customer_cubit.dart';
-import 'package:goal_master_admin/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/profile_view.dart';
 import 'package:oktoast/oktoast.dart';
 
@@ -52,15 +51,15 @@ class _HomeLayoutViewState extends State<HomeLayoutView> {
               if (state.activeScreen == NavBarElement.home)
                 //HomeView(),
                 //BannerCubitCubit/
-                //ProfileCubit
-
+                // ProfileCubit deliberately NOT provided here — HomeView
+                // reads the single root ProfileCubit from main.dart instead.
+                // A second, tab-local instance used to exist here, so a
+                // venue-setup save (which only ever refreshes the root
+                // instance) never reached Home: switching to this tab
+                // rebuilt a cubit that fetched once and never again, so the
+                // onboarding card stayed stale until a full app restart.
                 MultiBlocProvider(
                   providers: [
-                    BlocProvider(
-                      create: (context) => ProfileCubit(
-                        getIt<ProfileRepoImp>(),
-                      )..getProfile(),
-                    ),
                     // BlocProvider(
                     //   create: (_) => NotificationCubit(
                     //     notificationRepo: getIt<NotificationRepo>(),
