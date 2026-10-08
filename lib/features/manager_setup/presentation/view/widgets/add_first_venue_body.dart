@@ -151,9 +151,11 @@ class _AddFirstVenueBodyState extends State<AddFirstVenueBody> {
         ..addAll(
           catalog.services.map(
             (item) => ManagerServiceDraft(
+              serviceId: item.id,
               title: item.title,
               price: item.price == 0 ? '' : item.price.toStringAsFixed(0),
               remarks: item.remarks,
+              existingImages: item.images,
               // Slot duration is locked to 60 minutes for every service now,
               // regardless of what a service was previously saved with.
               slotMinutes: 60,
@@ -336,9 +338,22 @@ class _AddFirstVenueBodyState extends State<AddFirstVenueBody> {
       });
     }
 
+    final mediaChanges = _serviceDrafts.map((draft) {
+      return ManagerServiceMediaChange(
+        existingServiceId: draft.serviceId,
+        title: draft.titleController.text.trim(),
+        newImages: draft.newImages
+            .map((image) => File(image.path))
+            .toList(growable: false),
+        removedExistingImageIds:
+            Set<int>.from(draft.removedExistingImageIds),
+      );
+    }).toList(growable: false);
+
     context.read<ManagerSetupCubit>().saveCatalogSetup(
           categoryTypeId: _selectedCategoryType!.id,
           services: services,
+          mediaChanges: mediaChanges,
         );
   }
 

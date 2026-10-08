@@ -8,6 +8,7 @@ import 'package:goal_master_admin/core/styles/app_text_styles.dart';
 import 'package:goal_master_admin/features/manager_setup/data/model/manager_setup_bootstrap_response.dart';
 import 'package:goal_master_admin/features/manager_setup/domain/opening_hours.dart';
 import 'package:goal_master_admin/features/manager_setup/presentation/manager/manager_setup_cubit/manager_setup_cubit.dart';
+import 'package:goal_master_admin/features/manager_setup/presentation/view/manager_fields_view.dart';
 import 'package:goal_master_admin/features/venue_profile/presentation/view/widgets/venue_edit_sheet.dart';
 
 /// The venue as its manager knows it: a name, a way to be reached, a place.
@@ -65,7 +66,9 @@ class VenueProfileBody extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _Identity(branch: branch, onEdit: () => _edit(context, VenueEditSection.identity)),
+              _Identity(
+                  branch: branch,
+                  onEdit: () => _edit(context, VenueEditSection.identity)),
               SizedBox(height: 18.h),
               _Section(
                 title: 'المعلومات الأساسية',
@@ -101,7 +104,14 @@ class VenueProfileBody extends StatelessWidget {
               _LinkRow(
                 label: 'الملاعب والخدمات',
                 value: _servicesSummary(bootstrap),
-                onTap: () => context.push(RoutesKeys.kAddFirstVenue),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => BlocProvider.value(
+                      value: context.read<ManagerSetupCubit>(),
+                      child: const ManagerFieldsView(),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -204,8 +214,7 @@ class _Identity extends StatelessWidget {
           SizedBox(height: 3.h),
           Text(
             branch.zoneName.toString(),
-            style:
-                AppTextStyles.font14Regular.copyWith(color: AppColors.dark2),
+            style: AppTextStyles.font14Regular.copyWith(color: AppColors.dark2),
           ),
         ],
       ],
@@ -231,7 +240,8 @@ class _Section extends StatelessWidget {
       onEdit: onEdit,
       child: Column(
         children: [
-          for (final (label, value) in rows) _ReadRow(label: label, value: value),
+          for (final (label, value) in rows)
+            _ReadRow(label: label, value: value),
         ],
       ),
     );
@@ -317,7 +327,8 @@ class _Card extends StatelessWidget {
                 GestureDetector(
                   onTap: onEdit,
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                     child: Text('تعديل',
                         style: AppTextStyles.font14SemiBold
                             .copyWith(color: AppColors.primary)),

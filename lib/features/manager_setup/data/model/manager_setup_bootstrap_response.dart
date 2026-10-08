@@ -245,6 +245,20 @@ class ZoneOption {
 }
 
 class SetupCatalog {
+  /// One entry per actual field, even if several sports share it.
+  List<SetupPhysicalResource> get physicalResources {
+    final unique = <int, SetupPhysicalResource>{};
+
+    for (final service in services) {
+      final resource = service.physicalResource;
+      if (resource != null) {
+        unique.putIfAbsent(resource.id, () => resource);
+      }
+    }
+
+    return unique.values.toList();
+  }
+
   final SetupCategory? category;
   final List<SetupServiceItem> services;
   final List<SetupEmployeeItem> employees;
@@ -291,34 +305,117 @@ class SetupCategory {
   }
 }
 
-class SetupServiceItem {
+class SetupPhysicalResource {
   final int id;
+  final String name;
+  final String type;
+  final String? opensAt;
+  final String? closesAt;
+
+  const SetupPhysicalResource({
+    required this.id,
+    required this.name,
+    required this.type,
+    this.opensAt,
+    this.closesAt,
+  });
+
+  bool get isMulti => type == 'multi';
+
+  factory SetupPhysicalResource.fromJson(Map<String, dynamic> json) {
+    return SetupPhysicalResource(
+      id: _toInt(json['id']),
+      name: (json['name'] ?? '').toString(),
+      type: (json['type'] ?? 'normal').toString(),
+      opensAt: json['opens_at']?.toString(),
+      closesAt: json['closes_at']?.toString(),
+    );
+  }
+}
+
+class SetupServiceItem {
+  final SetupPhysicalResource? physicalResource;
+  final int id;
+  // Which sport this service IS — a multi field's services sit under
+  // different categories, so without its own id here the client could never
+  // tell them apart (null only for data predating this field).
+  final int? categoryTypeId;
+  final String? categoryName;
   final String title;
   final double price;
   final int slotMinutes;
   final String remarks;
+  final String image;
+  final List<SetupServiceImage> images;
   final bool supportsEvening;
   final bool supportsAfterMidnight;
 
   SetupServiceItem({
+    this.physicalResource,
     required this.id,
+    this.categoryTypeId,
+    this.categoryName,
     required this.title,
     required this.price,
     required this.slotMinutes,
     required this.remarks,
+    required this.image,
+    required this.images,
     required this.supportsEvening,
     required this.supportsAfterMidnight,
   });
 
   factory SetupServiceItem.fromJson(Map<String, dynamic> json) {
     return SetupServiceItem(
+      physicalResource: json['physical_resource'] is Map
+          ? SetupPhysicalResource.fromJson(
+              Map<String, dynamic>.from(
+                json['physical_resource'] as Map,
+              ),
+            )
+          : null,
       id: _toInt(json['id']),
+      categoryTypeId:
+          json['category_type_id'] == null ? null : _toInt(json['category_type_id']),
+      categoryName: json['category_name']?.toString(),
       title: (json['title'] ?? '').toString(),
       price: _toDouble(json['price']),
       slotMinutes: _toInt(json['slot_minutes']),
       remarks: (json['remarks'] ?? '').toString(),
+      image: (json['image'] ?? '').toString(),
+      images: (json['images'] as List<dynamic>? ?? const [])
+          .whereType<Map>()
+          .map(
+            (item) => SetupServiceImage.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          )
+          .toList(),
       supportsEvening: _toBool(json['supports_evening']),
       supportsAfterMidnight: _toBool(json['supports_after_midnight']),
+    );
+  }
+}
+
+class SetupServiceImage {
+  final int id;
+  final String url;
+  final String name;
+  final int order;
+
+  SetupServiceImage({
+    required this.id,
+    required this.url,
+    required this.name,
+    required this.order,
+  });
+
+  factory SetupServiceImage.fromJson(Map<String, dynamic> json) {
+    return SetupServiceImage(
+      id: _toInt(json['id']),
+      url: (json['url'] ?? '').toString(),
+      name: (json['name'] ?? '').toString(),
+      order: _toInt(json['order']),
     );
   }
 }
@@ -416,14 +513,52 @@ class CreateFirstVenueResponse {
 
 class SaveManagerCatalogResponse {
   final String message;
+  final List<SavedManagerService> services;
 
   SaveManagerCatalogResponse({
     required this.message,
+    required this.services,
   });
 
   factory SaveManagerCatalogResponse.fromJson(Map<String, dynamic> json) {
+    final data = json['data'] as Map<String, dynamic>? ?? const {};
+
     return SaveManagerCatalogResponse(
       message: (json['message'] ?? '').toString(),
+      services: (data['services'] as List<dynamic>? ?? const [])
+          .whereType<Map>()
+          .map(
+            (item) => SavedManagerService.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+class SavedManagerService {
+  final int id;
+  final String title;
+  final double price;
+  final bool supportsEvening;
+  final bool supportsAfterMidnight;
+
+  SavedManagerService({
+    required this.id,
+    required this.title,
+    required this.price,
+    required this.supportsEvening,
+    required this.supportsAfterMidnight,
+  });
+
+  factory SavedManagerService.fromJson(Map<String, dynamic> json) {
+    return SavedManagerService(
+      id: _toInt(json['id']),
+      title: (json['title'] ?? '').toString(),
+      price: _toDouble(json['price']),
+      supportsEvening: _toBool(json['supports_evening']),
+      supportsAfterMidnight: _toBool(json['supports_after_midnight']),
     );
   }
 }

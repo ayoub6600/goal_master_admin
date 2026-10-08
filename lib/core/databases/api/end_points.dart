@@ -62,6 +62,29 @@ class EndPoints {
   static String managerCreateFirstVenue = 'manager/setup/first-venue';
   static String managerSetupBookingPeriods = 'manager/setup/booking-periods';
   static String managerSetupCatalog = 'manager/setup/catalog';
+
+  static String managerServiceImages(int serviceId) =>
+      'manager/setup/services/$serviceId/images';
+
+  static String managerServiceImage(
+    int serviceId,
+    int mediaId,
+  ) =>
+      'manager/setup/services/$serviceId/images/$mediaId';
+
+  static String managerPhysicalResources = 'manager/setup/physical-resources';
+
+  static String managerPhysicalResource(int resourceId) =>
+      'manager/setup/physical-resources/$resourceId';
+
+  static String managerPhysicalResourceSports(int resourceId) =>
+      'manager/setup/physical-resources/$resourceId/sports';
+
+  static String managerPhysicalResourceSport(
+    int resourceId,
+    int serviceId,
+  ) =>
+      'manager/setup/physical-resources/$resourceId/sports/$serviceId';
   static String managerWalletSummary = 'manager/wallet/summary';
   static String managerWalletTransactions = 'manager/wallet/transactions';
   static String managerWalletConfirmTopUp = 'manager/wallet/confirm-topup';

@@ -128,4 +128,58 @@ class FakeManagerSetupRepo implements ManagerSetupRepo {
     required List<Map<String, dynamic>> services,
   }) async =>
       Left(Failure(errMessage: 'not used in this test'));
+
+  @override
+  Future<Either<Failure, bool>> createPhysicalField({
+    required String name,
+    required String resourceType,
+    required List<Map<String, dynamic>> sports,
+  }) async =>
+      Left(Failure(errMessage: 'not used in this test'));
+
+  @override
+  Future<Either<Failure, bool>> updatePhysicalResourceDetails({
+    required int resourceId,
+    required String name,
+    required String resourceType,
+  }) async =>
+      Left(Failure(errMessage: 'not used in this test'));
+
+  @override
+  Future<Either<Failure, bool>> savePhysicalResourceHours({
+    required int resourceId,
+    required String opensAt,
+    required String closesAt,
+  }) async =>
+      Left(Failure(errMessage: 'not used in this test'));
+
+  @override
+  Future<Either<Failure, bool>> addSportToField({
+    required int resourceId,
+    required int categoryTypeId,
+    required double price,
+  }) async =>
+      Left(Failure(errMessage: 'not used in this test'));
+
+  @override
+  Future<Either<Failure, bool>> updateSportPrice({
+    required int resourceId,
+    required int serviceId,
+    required double price,
+  }) async =>
+      Left(Failure(errMessage: 'not used in this test'));
+
+  @override
+  Future<Either<Failure, bool>> uploadServiceImages({
+    required int serviceId,
+    required List<File> images,
+  }) async =>
+      Left(Failure(errMessage: 'not used in this test'));
+
+  @override
+  Future<Either<Failure, bool>> deleteServiceImage({
+    required int serviceId,
+    required int mediaId,
+  }) async =>
+      Left(Failure(errMessage: 'not used in this test'));
 }

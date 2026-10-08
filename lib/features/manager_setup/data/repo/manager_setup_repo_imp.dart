@@ -10,6 +10,102 @@ import 'package:goal_master_admin/features/manager_setup/data/model/manager_setu
 import 'package:goal_master_admin/features/manager_setup/data/repo/manager_setup_repo.dart';
 
 class ManagerSetupRepoImp implements ManagerSetupRepo {
+  @override
+  Future<Either<Failure, bool>> createPhysicalField({
+    required String name,
+    required String resourceType,
+    required List<Map<String, dynamic>> sports,
+  }) {
+    return consumer.handleRequestCustom(
+      () => consumer.post(
+        EndPoints.managerPhysicalResources,
+        data: {
+          'name': name,
+          'resource_type': resourceType,
+          'sports': sports,
+        },
+        isFormData: false,
+      ),
+      (response) async => true,
+    );
+  }
+
+  @override
+  Future<Either<Failure, bool>> updatePhysicalResourceDetails({
+    required int resourceId,
+    required String name,
+    required String resourceType,
+  }) {
+    return consumer.handleRequestCustom(
+      () => consumer.patch(
+        EndPoints.managerPhysicalResource(resourceId),
+        data: {
+          'name': name,
+          'resource_type': resourceType,
+        },
+        isFormData: false,
+      ),
+      (response) async => true,
+    );
+  }
+
+  /// Saves hours for ONE physical field, never the whole branch.
+  @override
+  Future<Either<Failure, bool>> savePhysicalResourceHours({
+    required int resourceId,
+    required String opensAt,
+    required String closesAt,
+  }) {
+    return consumer.handleRequestCustom(
+      () => consumer.patch(
+        EndPoints.managerPhysicalResource(resourceId),
+        data: {
+          'opens_at': opensAt,
+          'closes_at': closesAt,
+        },
+        isFormData: false,
+      ),
+      (response) async => true,
+    );
+  }
+
+  @override
+  Future<Either<Failure, bool>> addSportToField({
+    required int resourceId,
+    required int categoryTypeId,
+    required double price,
+  }) {
+    return consumer.handleRequestCustom(
+      () => consumer.post(
+        EndPoints.managerPhysicalResourceSports(resourceId),
+        data: {
+          'category_type_id': categoryTypeId,
+          'price': price,
+        },
+        isFormData: false,
+      ),
+      (response) async => true,
+    );
+  }
+
+  @override
+  Future<Either<Failure, bool>> updateSportPrice({
+    required int resourceId,
+    required int serviceId,
+    required double price,
+  }) {
+    return consumer.handleRequestCustom(
+      () => consumer.patch(
+        EndPoints.managerPhysicalResourceSport(resourceId, serviceId),
+        data: {
+          'price': price,
+        },
+        isFormData: false,
+      ),
+      (response) async => true,
+    );
+  }
+
   final ApiConsumer consumer;
 
   ManagerSetupRepoImp(this.consumer);
@@ -83,6 +179,54 @@ class ManagerSetupRepoImp implements ManagerSetupRepo {
   }
 
   @override
+  Future<Either<Failure, bool>> uploadServiceImages({
+    required int serviceId,
+    required List<File> images,
+  }) async {
+    if (images.isEmpty) {
+      return const Right(true);
+    }
+
+    final multipartImages = <MultipartFile>[];
+
+    for (final image in images) {
+      multipartImages.add(
+        await MultipartFile.fromFile(
+          image.path,
+          filename: image.path.split('/').last,
+        ),
+      );
+    }
+
+    return consumer.handleRequestCustom(
+      () => consumer.post(
+        EndPoints.managerServiceImages(serviceId),
+        data: {
+          'images[]': multipartImages,
+        },
+        isFormData: true,
+      ),
+      (response) async => true,
+    );
+  }
+
+  @override
+  Future<Either<Failure, bool>> deleteServiceImage({
+    required int serviceId,
+    required int mediaId,
+  }) {
+    return consumer.handleRequestCustom(
+      () => consumer.delete(
+        EndPoints.managerServiceImage(
+          serviceId,
+          mediaId,
+        ),
+      ),
+      (response) async => true,
+    );
+  }
+
+  @override
   Future<Either<Failure, SaveManagerBookingPeriodsResponse>>
       saveBookingPeriods({
     required List<Map<String, dynamic>> periods,
@@ -109,4 +253,5 @@ class ManagerSetupRepoImp implements ManagerSetupRepo {
       ),
     );
   }
+
 }
