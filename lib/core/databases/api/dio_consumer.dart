@@ -1,10 +1,8 @@
-import 'package:chucker_flutter/chucker_flutter.dart';
 import 'package:dio/dio.dart';
 import 'package:goal_master_admin/core/components/keys_values.dart';
 import 'package:goal_master_admin/core/components/preference_utility.dart';
 import 'package:goal_master_admin/core/databases/api/token_interceptor.dart';
 
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'api_consumer.dart';
 import 'end_points.dart';
 
@@ -21,17 +19,7 @@ class DioConsumer extends ApiConsumer {
     dio.options.headers['accept-language'] = 'ar';
     dio.options.followRedirects = false;
 
-    dio.interceptors.addAll([
-      TokenInterceptor(dio),
-      ChuckerDioInterceptor(),
-      PrettyDioLogger(
-        requestBody: true,
-        responseBody: true,
-        enabled: true,
-        requestHeader: true,
-        request: true,
-      ),
-    ]);
+    dio.interceptors.add(TokenInterceptor(dio));
   }
 
   // إضافة دالة لتحديث التوكن في الهيدر

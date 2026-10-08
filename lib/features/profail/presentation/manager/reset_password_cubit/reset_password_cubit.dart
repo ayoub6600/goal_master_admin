@@ -72,7 +72,6 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> {
   }
 
   Future<void> _saveUserData(UserData userData) async {
-    print("---->UserData token ${userData.toString()}");
 
     // Save user data to SharedPreferences
     await SharedPreferenceUtil.putString(PrefKey.fcmToken, userData.token!);
@@ -82,12 +81,8 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> {
         PrefKey.email, userData.user?.username ?? "");
     await SharedPreferenceUtil.putString(
         PrefKey.phone, userData.user?.phoneNumber ?? "");
-    print(
-        "---->UserData token1111 ${SharedPreferenceUtil.getString(PrefKey.fcmToken)}");
 
     // Update Dio Authorization header immediately after saving token
-    String token = SharedPreferenceUtil.getString(PrefKey.fcmToken);
-    print("Updated Authorization token: $token");
 
     // Here you need to directly update Dio's Authorization header
 

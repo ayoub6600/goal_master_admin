@@ -10,6 +10,7 @@ BookingDetails _booking({
   required String paidAmount,
   required String serviceAmount,
   int status = 2,
+  DateTime? date,
   String startTime = '20:00:00',
   String endTime = '21:00:00',
   bool hasOpenNoShowDispute = false,
@@ -27,7 +28,7 @@ BookingDetails _booking({
       address: 'مصراتة',
       latitude: '0',
       longitude: '0',
-      date: DateTime(2026, 9, 13),
+      date: date ?? DateTime(2026, 9, 13),
       startTime: startTime,
       endTime: endTime,
       employeeId: 1,
@@ -190,14 +191,14 @@ void main() {
   group('normal "واتساب العميل" visibility', () {
     const whatsAppText = 'واتساب العميل';
 
-    testWidgets('future booking with a valid phone → visible',
-        (tester) async {
+    testWidgets('future booking with a valid phone → visible', (tester) async {
       final booking = _booking(
+        date: DateTime.now().add(const Duration(days: 30)),
         paymentTypeId: 1,
         paymentStatus: 2,
         paidAmount: '0',
         serviceAmount: '66',
-      ); // date is 2026-09-13, ahead of "now" in this test run
+      );
       await _pump(tester, BookingCustomerCard(booking: booking));
       expect(find.text(whatsAppText), findsOneWidget);
     });
@@ -333,7 +334,8 @@ void main() {
       expect(find.text('ما زال هناك خلاف'), findsOneWidget);
     });
 
-    testWidgets('shows the manager\'s current live proposal, not as a closed case',
+    testWidgets(
+        'shows the manager\'s current live proposal, not as a closed case',
         (tester) async {
       final booking = _booking(
         paymentTypeId: 1,
@@ -385,7 +387,8 @@ void main() {
       expect(find.text('الزبون محظور من الحجز'), findsNothing);
     });
 
-    testWidgets('blocked → shows the blocked state and unblock action, '
+    testWidgets(
+        'blocked → shows the blocked state and unblock action, '
         'with the reason but never the private note', (tester) async {
       final booking = _booking(
         paymentTypeId: 1,

@@ -101,7 +101,6 @@ class ProfileRepoImp extends ProfileRepo {
         isFormData: false,
       ),
       (data) {
-        print("token: ${data["data"]["token"]}");
         return UserData.fromJson(data["data"]);
       },
     );
@@ -120,7 +119,6 @@ class ProfileRepoImp extends ProfileRepo {
         data: {'name': name, 'username': username, 'phone_number': phone},
       ),
       (data) {
-        print("token: ${data["data"]["token"]}");
         return UserData.fromJson(data["data"]);
       },
     );

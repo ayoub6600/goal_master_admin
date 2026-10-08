@@ -42,7 +42,6 @@ class LoginCubit extends Cubit<LoginState> {
   }
 
   Future<void> _saveUserData(UserData userData) async {
-    print("---->UserData token ${userData.token}");
 
     try {
       // تأكد من أن SharedPreferences جاهز

@@ -46,9 +46,9 @@ class _ManagerBookingPeriodsBodyState extends State<ManagerBookingPeriodsBody> {
   // never touched by this.
   late OpeningHours _hours = widget.initialHours ??
       const OpeningHours(
-    opensAt: TimeOfDay(hour: 16, minute: 0),
-    closesAt: TimeOfDay(hour: 3, minute: 0),
-  );
+        opensAt: TimeOfDay(hour: 16, minute: 0),
+        closesAt: TimeOfDay(hour: 3, minute: 0),
+      );
 
   /// The pitches bookable during the night, as one question — the manager was
   /// previously asked the same thing twice, once per band.
@@ -165,7 +165,8 @@ class _ManagerBookingPeriodsBodyState extends State<ManagerBookingPeriodsBody> {
 
     final services = <String, List<int>>{
       'evening': _forBand(_wasEvening),
-      'after_midnight': night == null ? const <int>[] : _forBand(_wasAfterMidnight),
+      'after_midnight':
+          night == null ? const <int>[] : _forBand(_wasAfterMidnight),
     };
 
     if (widget.onSave != null) {
@@ -320,8 +321,8 @@ class _ManagerBookingPeriodsBodyState extends State<ManagerBookingPeriodsBody> {
               children: [
                 Text(
                   'ملعبك مفتوح ${arabicDuration(_hours.durationMinutes)} كل ليلة',
-                  style: AppTextStyles.font14Bold
-                      .copyWith(color: AppColors.dark),
+                  style:
+                      AppTextStyles.font14Bold.copyWith(color: AppColors.dark),
                 ),
                 SizedBox(height: 3.h),
                 Text(
@@ -351,29 +352,32 @@ class _ManagerBookingPeriodsBodyState extends State<ManagerBookingPeriodsBody> {
               style:
                   AppTextStyles.font14Regular.copyWith(color: AppColors.dark2),
             )
-          : Column(
-              children: [
-                for (final service in services)
-                  CheckboxListTile(
-                    contentPadding: EdgeInsets.zero,
-                    dense: true,
-                    controlAffinity: ListTileControlAffinity.leading,
-                    activeColor: AppColors.primary,
-                    value: _serviceIds.contains(service.id),
-                    title: Text(
-                      service.title.toString(),
-                      style: AppTextStyles.font14Regular
-                          .copyWith(color: AppColors.dark),
+          : Material(
+              type: MaterialType.transparency,
+              child: Column(
+                children: [
+                  for (final service in services)
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      activeColor: AppColors.primary,
+                      value: _serviceIds.contains(service.id),
+                      title: Text(
+                        service.title.toString(),
+                        style: AppTextStyles.font14Regular
+                            .copyWith(color: AppColors.dark),
+                      ),
+                      onChanged: (checked) => setState(() {
+                        if (checked == true) {
+                          _serviceIds.add(service.id as int);
+                        } else {
+                          _serviceIds.remove(service.id as int);
+                        }
+                      }),
                     ),
-                    onChanged: (checked) => setState(() {
-                      if (checked == true) {
-                        _serviceIds.add(service.id as int);
-                      } else {
-                        _serviceIds.remove(service.id as int);
-                      }
-                    }),
-                  ),
-              ],
+                ],
+              ),
             ),
     );
   }
