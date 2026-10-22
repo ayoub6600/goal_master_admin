@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:goal_master_admin/core/components/keys_values.dart';
+import 'package:goal_master_admin/core/components/preference_utility.dart';
+import 'package:goal_master_admin/features/saved_cards/presentation/saved_cards_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master_admin/core/components/bottom_sheet/base_bottom_sheet.dart';
@@ -140,6 +144,42 @@ class _ManagerWalletBody extends StatelessWidget {
                   onTopUpTap: () => _openTopUp(context),
                 ),
                 HeightSpace(16.h),
+                if (kDebugMode)
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(
+                        Icons.credit_card_outlined,
+                        color: Colors.green,
+                      ),
+                      title: const Text('بطاقاتي المحفوظة'),
+                      subtitle: const Text(
+                        'تجريبي - بطاقات اختبار فقط',
+                      ),
+                      trailing: const Icon(Icons.chevron_left),
+                      onTap: () async {
+                        final managerId =
+                            SharedPreferenceUtil.getInt(PrefKey.userId);
+
+                        if (managerId <= 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('تعذر تحديد حساب المدير'),
+                            ),
+                          );
+                          return;
+                        }
+
+                        await Navigator.of(context).push<void>(
+                          MaterialPageRoute<void>(
+                            builder: (_) => SavedCardsPage(
+                              ownerId: 'manager:$managerId',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                if (kDebugMode) HeightSpace(16.h),
                 _ManagerLocalPaymentCard(
                   data: data,
                   onChanged: (value) => _toggleLocalPayment(context, value),

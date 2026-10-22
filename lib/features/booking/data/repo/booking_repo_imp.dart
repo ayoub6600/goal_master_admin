@@ -228,8 +228,7 @@ class BookingRepoImp extends BookingRepo {
           'operational_date': operationalDate,
         },
       ),
-      (data) =>
-          OperationalNight.fromJson(data['data'] as Map<String, dynamic>),
+      (data) => OperationalNight.fromJson(data['data'] as Map<String, dynamic>),
     );
   }
 
@@ -362,6 +361,7 @@ class BookingRepoImp extends BookingRepo {
         EndPoints.addBooking,
         data: {
           'branch_id': branchId,
+          'booking_context': 'manager',
           'employee_id': employeeId,
           'service_id': serviceId,
           'payment_type': paymentType,
@@ -765,5 +765,4 @@ class BookingRepoImp extends BookingRepo {
       (data) => data['message']?.toString() ?? 'تم تسجيل الدفعة.',
     );
   }
-
 }

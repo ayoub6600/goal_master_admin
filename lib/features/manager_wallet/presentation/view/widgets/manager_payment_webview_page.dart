@@ -1,11 +1,23 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master_admin/core/components/bottom_sheet/base_bottom_sheet.dart';
+import 'package:goal_master_admin/core/components/keys_values.dart';
+import 'package:goal_master_admin/core/components/preference_utility.dart';
 import 'package:goal_master_admin/features/manager_wallet/presentation/manager/manager_wallet_topup_cubit/manager_wallet_topup_cubit.dart';
 import 'package:goal_master_admin/features/manager_wallet/presentation/manager/manager_wallet_topup_cubit/manager_wallet_topup_state.dart';
+import 'package:goal_master_admin/features/saved_cards/presentation/saved_cards_page.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
+
+import 'package:goal_master_admin/features/manager_wallet/presentation/view/widgets/card_fill_bridge.dart';
+import 'package:goal_master_admin/features/manager_wallet/presentation/view/widgets/card_fill_script.dart'
+    show moamalatCardOrigins;
+import 'package:goal_master_admin/features/manager_wallet/presentation/view/widgets/payment_saved_card_panel.dart';
 
 class ManagerPaymentScreen extends StatefulWidget {
   final String amount;
@@ -25,6 +37,14 @@ class _ManagerPaymentScreenState extends State<ManagerPaymentScreen> {
   bool isPageLoading = true;
   bool _resultHandled = false;
   bool _isLeaving = false;
+  String? _webError;
+  StreamSubscription<CardFillEvent>? _cardFillEvents;
+  int? _cardFillWebViewId;
+  bool _cardFillFormReady = false;
+  bool _cardFillBridgeSupported = false;
+  String _cardFillDiagnosticCode = 'BRIDGE_INITIALIZING';
+  String? _cardFillDiagnosticDetail;
+  Timer? _cardFillDiagnosticTimer;
 
   @override
   void initState() {
@@ -64,15 +84,116 @@ class _ManagerPaymentScreenState extends State<ManagerPaymentScreen> {
       )
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageStarted: (_) => setState(() => isPageLoading = true),
+          onPageStarted: (_) => setState(() {
+            isPageLoading = true;
+            _webError = null;
+          }),
           onPageFinished: (_) => setState(() => isPageLoading = false),
           onWebResourceError: (_) {
-            setState(() => isPageLoading = false);
-            _showError('Failed to load page');
+            if (mounted) {
+              setState(() {
+                isPageLoading = false;
+                _webError =
+                    'تعذر تحميل صفحة الدفع. تحقق من الاتصال وحاول مرة ثانية.';
+              });
+            }
           },
         ),
-      )
-      ..loadHtmlString(_buildPaymentHtml());
+      );
+    unawaited(_startPaymentPage());
+  }
+
+  Future<void> _startPaymentPage() async {
+    if (kDebugMode) {
+      // Ensure the platform view has been created and registered before asking
+      // the native plugin registry to resolve its WKWebView identifier.
+      await WidgetsBinding.instance.endOfFrame;
+      final platform = webViewController.platform;
+      final id = platform is WebKitWebViewController
+          ? platform.webViewIdentifier
+          : platform is AndroidWebViewController
+              ? platform.webViewIdentifier
+              : null;
+      if (id != null) {
+        _cardFillWebViewId = id;
+        _cardFillEvents = CardFillBridge.instance.events
+            .where((event) => event.webViewId == id)
+            .listen((event) {
+          if (mounted) {
+            setState(() {
+              _cardFillFormReady = event.state == 'ready';
+              _cardFillDiagnosticCode = event.state == 'ready'
+                  ? 'FORM_DETECTED'
+                  : 'FORM_NOT_DETECTED';
+            });
+          }
+        });
+        final install = await CardFillBridge.instance.install(id);
+        if (mounted) {
+          setState(() {
+            _cardFillBridgeSupported = install.supported;
+            _cardFillDiagnosticCode = install.diagnosticCode;
+            _cardFillDiagnosticDetail = install.diagnosticDetail;
+          });
+        }
+      } else if (mounted) {
+        setState(() => _cardFillDiagnosticCode = 'WEBVIEW_ID_MISSING');
+      }
+    }
+    if (mounted) {
+      await webViewController.loadHtmlString(_buildPaymentHtml());
+      if (kDebugMode) {
+        _cardFillDiagnosticTimer?.cancel();
+        _cardFillDiagnosticTimer = Timer(const Duration(seconds: 12), () {
+          if (mounted && !_cardFillFormReady && _cardFillBridgeSupported) {
+            unawaited(_diagnoseFrameOrigin());
+          }
+        });
+      }
+    }
+  }
+
+  Future<void> _diagnoseFrameOrigin() async {
+    try {
+      final raw = await webViewController.runJavaScriptReturningResult('''
+        JSON.stringify((() => {
+          const expected = ${jsonEncode(moamalatCardOrigins)};
+          const frames = Array.from(document.querySelectorAll('iframe'));
+          const matched = frames.some(frame => {
+            try { return expected.includes(new URL(frame.src, location.href).origin); }
+            catch (_) { return false; }
+          });
+          return { count: frames.length, matched };
+        })())
+      ''');
+      final decoded = jsonDecode(raw is String ? raw : '$raw');
+      final mismatch = decoded is Map &&
+          decoded['count'] is int &&
+          decoded['count'] > 0 &&
+          decoded['matched'] != true;
+      if (mounted && !_cardFillFormReady) {
+        setState(() => _cardFillDiagnosticCode =
+            mismatch ? 'ORIGIN_MISMATCH' : 'FORM_NOT_DETECTED');
+      }
+    } catch (_) {
+      if (mounted && !_cardFillFormReady) {
+        setState(() => _cardFillDiagnosticCode = 'FORM_NOT_DETECTED');
+      }
+    }
+  }
+
+  String _currentCardOwner() {
+    final managerId = SharedPreferenceUtil.getInt(PrefKey.userId);
+    return managerId > 0 ? 'manager:$managerId' : '';
+  }
+
+  @override
+  void dispose() {
+    _cardFillDiagnosticTimer?.cancel();
+    _cardFillEvents?.cancel();
+    final id = _cardFillWebViewId;
+    if (id != null) unawaited(CardFillBridge.instance.dispose(id));
+    super.dispose();
   }
 
   Future<void> _onSuccess() async {
@@ -155,6 +276,16 @@ class _ManagerPaymentScreenState extends State<ManagerPaymentScreen> {
       _isLeaving = true;
       Navigator.pop(context, 'cancelled');
     }
+  }
+
+  Future<void> _manageSavedCards() async {
+    final managerId = SharedPreferenceUtil.getInt(PrefKey.userId);
+    if (managerId <= 0 || !mounted) return;
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => SavedCardsPage(ownerId: 'manager:$managerId'),
+      ),
+    );
   }
 
   String _buildPaymentHtml() {
@@ -247,6 +378,7 @@ class _ManagerPaymentScreenState extends State<ManagerPaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final managerId = SharedPreferenceUtil.getInt(PrefKey.userId);
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
@@ -254,6 +386,7 @@ class _ManagerPaymentScreenState extends State<ManagerPaymentScreen> {
         await _confirmExit();
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: true,
         appBar: AppBar(
           leading: IconButton(
             onPressed: _confirmExit,
@@ -263,11 +396,56 @@ class _ManagerPaymentScreenState extends State<ManagerPaymentScreen> {
           centerTitle: true,
         ),
         body: SafeArea(
-          child: Stack(
+          top: false,
+          child: Column(
             children: [
-              WebViewWidget(controller: webViewController),
-              if (isPageLoading)
-                const Center(child: CircularProgressIndicator()),
+              if (kDebugMode && managerId > 0)
+                PaymentSavedCardPanel(
+                  ownerId: 'manager:$managerId',
+                  currentOwnerId: _currentCardOwner,
+                  webViewId: _cardFillWebViewId,
+                  formReady: _cardFillFormReady,
+                  bridgeSupported: _cardFillBridgeSupported,
+                  diagnosticCode: _cardFillDiagnosticCode,
+                  diagnosticDetail: _cardFillDiagnosticDetail,
+                  onManageCards: _manageSavedCards,
+                ),
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // The Lightbox is a provider-controlled document/iframe.
+                    WebViewWidget(controller: webViewController),
+                    if (isPageLoading)
+                      const ColoredBox(
+                        color: Color(0x33FFFFFF),
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                    if (_webError != null)
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(_webError!, textAlign: TextAlign.center),
+                                  const SizedBox(height: 12),
+                                  FilledButton(
+                                    onPressed: () => webViewController.reload(),
+                                    child: const Text('إعادة المحاولة'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

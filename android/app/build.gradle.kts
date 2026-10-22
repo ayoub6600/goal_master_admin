@@ -9,6 +9,9 @@ plugins {
 
 android {
     namespace = "com.rahbdev.goaladmin"
+    buildFeatures {
+        buildConfig = true
+    }
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
@@ -50,6 +53,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.webkit:webkit:1.16.0")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
 

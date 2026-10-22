@@ -115,7 +115,7 @@ class ProfileView extends StatelessWidget {
                           borderRadius:
                               BorderRadius.vertical(top: Radius.circular(16)),
                         ),
-                        builder: (context) {
+                        builder: (sheetContext) {
                           return Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Column(
@@ -140,7 +140,7 @@ class ProfileView extends StatelessWidget {
                                           text: "تسجيل الخروج",
                                           onTap: () async {
                                             Navigator.pop(
-                                                context); // Close the sheet
+                                                sheetContext); // Close the sheet
                                             // Must run before clearing local
                                             // prefs — this call needs to still
                                             // be authenticated to tell the
@@ -155,8 +155,7 @@ class ProfileView extends StatelessWidget {
                                             SharedPreferenceUtil.putBool(
                                                 PrefKey.onboardingSeen, true);
                                             if (context.mounted) {
-                                              pushReplacement(
-                                                  RoutesKeys.kLogin, context);
+                                              go(RoutesKeys.kLogin, context);
                                             }
                                           }),
                                     ),
@@ -168,7 +167,7 @@ class ProfileView extends StatelessWidget {
                                           text: "الغاء",
                                           onTap: () {
                                             Navigator.pop(
-                                                context); // Close the sheet
+                                                sheetContext); // Close the sheet
                                           }),
                                     )
                                   ],
