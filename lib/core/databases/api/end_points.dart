@@ -91,9 +91,15 @@ class EndPoints {
   static String managerWalletLocalPaymentSetting =
       'manager/wallet/local-payment-setting';
   static String managerCancellationPolicy = 'manager/cancellation-policy';
+  static String managerMarketingCampaigns = 'manager/marketing-campaigns';
+  static String managerMarketingCampaignToggle(int id) =>
+      'manager/marketing-campaigns/$id/toggle';
   static String managerSubscriptionCurrent = 'manager/subscription/current';
   static String managerSubscriptionChange = 'manager/subscription/change';
-  static String managerSubscriptionAutoRenew = 'manager/subscription/auto-renew';
+  static String managerSubscriptionAutoRenew =
+      'manager/subscription/auto-renew';
+  static String managerSubscriptionExpiredMarketplaceVisibility =
+      'manager/subscription/expired-marketplace-visibility';
 
   /// Every plan with what it means for THIS manager right now — the action to
   /// show on each card, and for an upgrade the figures behind it. The lifecycle

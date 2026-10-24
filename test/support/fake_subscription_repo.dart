@@ -86,6 +86,11 @@ class FakeSubscriptionRepo implements ManagerSubscriptionRepo {
   }) async =>
       Right(current!);
 
+  @override
+  Future<Either<Failure, ManagerCurrentSubscription>>
+      updateExpiredMarketplaceVisibility({required bool keepVisible}) async =>
+          Right(current!);
+
   // ---------------- fixtures ----------------
 
   static SubscriptionPlanOption planOption({

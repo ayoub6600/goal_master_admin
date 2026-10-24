@@ -237,12 +237,16 @@ class HomeViewBody extends StatelessWidget {
                         ? (user.needsSubscriptionPaymentNow
                             ? RoutesKeys.kManagerWallet
                             : RoutesKeys.kAddFirstVenue)
-                        : RoutesKeys.kAddBooking;
+                        : (user.needsSubscriptionPaymentNow
+                            ? RoutesKeys.kManagerSubscription
+                            : RoutesKeys.kAddBooking);
                     final primaryActionLabel = needsVenueSetup
                         ? (user.needsSubscriptionPaymentNow
                             ? 'تفعيل الاشتراك والدفع'
                             : user.nextSetupStepLabel)
-                        : 'اضافة حجز جديد';
+                        : (user.needsSubscriptionPaymentNow
+                            ? 'جدد الاشتراك لإضافة حجز'
+                            : 'اضافة حجز جديد');
 
                     return Column(
                       children: [
@@ -290,22 +294,31 @@ class HomeViewBody extends StatelessWidget {
                               ),
                               HeightSpace(8.h),
                               Text(
-                                user.canUseReports
+                                !user.needsSubscriptionPaymentNow &&
+                                        user.canUseReports
                                     ? 'الإحصائيات والتقارير مفعّلة.'
-                                    : 'الإحصائيات والتقارير مقفلة حسب الباقة الحالية.',
+                                    : user.needsSubscriptionPaymentNow
+                                        ? 'الإحصائيات والتقارير متوقفة حتى تجديد الاشتراك.'
+                                        : 'الإحصائيات والتقارير مقفلة حسب الباقة الحالية.',
                                 style: AppTextStyles.font14Medium.copyWith(
-                                  color: user.canUseReports
+                                  color: !user.needsSubscriptionPaymentNow &&
+                                          user.canUseReports
                                       ? const Color(0xff2E7D32)
                                       : Colors.redAccent,
                                 ),
                               ),
                               HeightSpace(4.h),
                               Text(
-                                user.canUseMonthlyBookings
-                                    ? 'الحجز الشهري متاح.'
-                                    : 'الحجز الشهري غير متاح.',
+                                user.needsSubscriptionPaymentNow
+                                    ? user.canUseMonthlyBookings
+                                        ? 'الحجز الشهري يبقى متاحًا للزبائن من المحفظة؛ إضافة حجز المدير متوقفة.'
+                                        : 'الحجز الشهري غير مشمول في الباقة الحالية.'
+                                    : user.canUseMonthlyBookings
+                                        ? 'الحجز الشهري متاح.'
+                                        : 'الحجز الشهري غير متاح.',
                                 style: AppTextStyles.font14Medium.copyWith(
-                                  color: user.canUseMonthlyBookings
+                                  color: !user.needsSubscriptionPaymentNow &&
+                                          user.canUseMonthlyBookings
                                       ? const Color(0xff2E7D32)
                                       : Colors.redAccent,
                                 ),

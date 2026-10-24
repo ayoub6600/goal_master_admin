@@ -11,6 +11,7 @@ import 'package:goal_master_admin/features/manager_setup/data/repo/manager_setup
 import 'package:goal_master_admin/features/manager_wallet/data/repo/manager_wallet_repo_imp.dart';
 import 'package:goal_master_admin/features/manager_cancellation_policy/data/repo/manager_cancellation_policy_repo_imp.dart';
 import 'package:goal_master_admin/features/manager_subscription/data/repo/manager_subscription_repo_imp.dart';
+import 'package:goal_master_admin/features/manager_marketing/data/repo/manager_marketing_campaign_repo.dart';
 import 'package:goal_master_admin/features/notification/data/repo/notifaction_repo.dart';
 import 'package:goal_master_admin/features/notification/data/repo/notifaction_repo_imp.dart';
 import 'package:goal_master_admin/features/profail/data/repo/profile_repo_imp.dart';
@@ -52,6 +53,9 @@ void setupServiceLocator() {
   );
   getIt.registerSingleton<ManagerSubscriptionRepoImp>(
     ManagerSubscriptionRepoImp(getIt.get<DioConsumer>()),
+  );
+  getIt.registerSingleton<ManagerMarketingCampaignRepo>(
+    ManagerMarketingCampaignRepo(getIt.get<DioConsumer>()),
   );
   //NotificationRepo
   getIt.registerSingleton<NotificationRepo>(
