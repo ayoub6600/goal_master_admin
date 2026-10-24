@@ -229,6 +229,12 @@ class AppDrawer extends StatelessWidget {
                         push(RoutesKeys.kManagerCancellationPolicy, context);
                       },
                     ),
+                    ProfileItem(
+                      title: "العروض والخصومات",
+                      icon: Assets.imagesPngImageProfile,
+                      onTap: () =>
+                          push(RoutesKeys.kManagerMarketingCampaigns, context),
+                    ),
                     Container(
                       width: double.infinity,
                       color: Color(0xffDADEE3),
@@ -328,6 +334,12 @@ class AppDrawer extends StatelessWidget {
                     onTap: () {
                       push(RoutesKeys.kManagerCancellationPolicy, context);
                     },
+                  ),
+                  ProfileItem(
+                    title: "العروض والخصومات",
+                    icon: Assets.imagesPngImageProfile,
+                    onTap: () =>
+                        push(RoutesKeys.kManagerMarketingCampaigns, context),
                   ),
                   Container(
                     width: double.infinity,

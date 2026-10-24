@@ -109,6 +109,8 @@ void main() {
       )));
       await tester.pumpAndSettle();
 
+      await tester.ensureVisible(find.text('حفظ ساعات العمل'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('حفظ ساعات العمل'));
       await tester.pumpAndSettle();
 
@@ -135,11 +137,36 @@ void main() {
       )));
       await tester.pumpAndSettle();
 
+      await tester.ensureVisible(find.text('حفظ ساعات العمل'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('حفظ ساعات العمل'));
       await tester.pumpAndSettle();
 
       expect(sent!['after_midnight'], isEmpty);
       expect(sent!['evening'], isNotEmpty);
+    });
+
+    testWidgets('a disabled pitch is visible and can be restored',
+        (tester) async {
+      Map<String, List<int>>? sent;
+
+      await tester.pumpWidget(hostLoaded(ManagerBookingPeriodsBody(
+        onSave: (_, services) => sent = services,
+      )));
+      await tester.pumpAndSettle();
+
+      expect(find.text('ملعب رقم 2 (متوقف)'), findsOneWidget);
+      await tester.ensureVisible(find.text('ملعب رقم 2 (متوقف)'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('ملعب رقم 2 (متوقف)'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('حفظ ساعات العمل'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('حفظ ساعات العمل'));
+      await tester.pumpAndSettle();
+
+      expect(sent!['evening'], contains(3));
+      expect(sent!['after_midnight'], contains(3));
     });
   });
 

@@ -37,8 +37,7 @@ class _ManagerSubscriptionBodyState extends State<ManagerSubscriptionBody> {
     if (_didInitSelection || plans.isEmpty) return;
 
     if (current != null) {
-      _billingCycle =
-          current.billingCycle == 'yearly' ? 'yearly' : 'monthly';
+      _billingCycle = current.billingCycle == 'yearly' ? 'yearly' : 'monthly';
       _selectedPlan = plans.cast<SubscriptionPlanOption?>().firstWhere(
             (plan) => plan?.id == current.planId,
             orElse: () => plans.first,
@@ -116,7 +115,8 @@ class _ManagerSubscriptionBodyState extends State<ManagerSubscriptionBody> {
                       HeightSpace(18.h),
                       Builder(
                         builder: (context) {
-                          final cubit = context.read<ManagerSubscriptionCubit>();
+                          final cubit =
+                              context.read<ManagerSubscriptionCubit>();
                           final action = _selectedPlan == null
                               ? null
                               : cubit.actionFor(_selectedPlan!.id);
@@ -231,8 +231,8 @@ class _ManagerSubscriptionBodyState extends State<ManagerSubscriptionBody> {
                   if (current.isTrial) ...[
                     WidthSpace(8.w),
                     Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 8.w, vertical: 3.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                       decoration: BoxDecoration(
                         color: const Color(0xff1E88E5),
                         borderRadius: BorderRadius.circular(99.r),
@@ -266,7 +266,7 @@ class _ManagerSubscriptionBodyState extends State<ManagerSubscriptionBody> {
               else ...[
                 if (current.endsAt != null)
                   Text(
-                    'تنتهي في: ${current.endsAt}',
+                    'تنتهي في: ${current.endsAt!.split(' ').first}',
                     style: AppTextStyles.font14Medium,
                   ),
                 Text(
@@ -292,14 +292,53 @@ class _ManagerSubscriptionBodyState extends State<ManagerSubscriptionBody> {
                       value: current.autoRenew,
                       activeColor: AppColors.primary,
                       onChanged: (value) {
-                        context.read<ManagerSubscriptionCubit>().toggleAutoRenew(
-                              value,
+                        context
+                            .read<ManagerSubscriptionCubit>()
+                            .toggleAutoRenew(
+                              enabled: value,
                             );
                       },
                     ),
                   ),
                 ],
               ),
+              if (current.isExpired) ...[
+                HeightSpace(8.h),
+                const Divider(height: 1),
+                HeightSpace(8.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'إبقاء الملعب ظاهرًا للزبائن',
+                            style: AppTextStyles.font14Bold,
+                          ),
+                          Text(
+                            current.keepMarketplaceVisibleAfterExpiry
+                                ? 'يظل متاحًا، والحجز بالدفع من المحفظة فقط.'
+                                : 'الملعب مخفي حاليًا عن تطبيق الزبون.',
+                            style: AppTextStyles.font12Medium.copyWith(
+                              color: const Color(0xff6B7280),
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Switch(
+                      value: current.keepMarketplaceVisibleAfterExpiry,
+                      activeColor: AppColors.primary,
+                      onChanged: (value) => _confirmMarketplaceVisibility(
+                        context,
+                        keepVisible: value,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
           ),
         ),
@@ -336,6 +375,37 @@ class _ManagerSubscriptionBodyState extends State<ManagerSubscriptionBody> {
         ],
       ],
     );
+  }
+
+  Future<void> _confirmMarketplaceVisibility(BuildContext context,
+      {required bool keepVisible}) async {
+    if (!keepVisible) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('إيقاف ظهور الملعب؟'),
+          content: const Text(
+            'سيختفي الملعب من تطبيق الزبون ولن يتمكن الزبائن من إنشاء حجوزات جديدة. سنبلغ الإدارة بهذا القرار. هل تريد المتابعة؟',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('إلغاء'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('إيقاف الظهور'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+    }
+
+    if (!context.mounted) return;
+    await context
+        .read<ManagerSubscriptionCubit>()
+        .toggleExpiredMarketplaceVisibility(keepVisible: keepVisible);
   }
 
   Widget _buildCycleToggle() {
@@ -465,8 +535,8 @@ class _ManagerSubscriptionBodyState extends State<ManagerSubscriptionBody> {
                 ? 'سيتم التحويل إلى باقة ${scheduled.planName} عند انتهاء اشتراكك الحالي.'
                 : 'سيتم التحويل إلى باقة ${scheduled.planName} عند انتهاء '
                     'اشتراكك الحالي في ${arabicDayAndDateOf(when)}.',
-            style: AppTextStyles.font14Regular
-                .copyWith(color: AppColors.uiBlack),
+            style:
+                AppTextStyles.font14Regular.copyWith(color: AppColors.uiBlack),
           ),
           SizedBox(height: 10.h),
           SizedBox(
@@ -599,7 +669,8 @@ class _ManagerSubscriptionBodyState extends State<ManagerSubscriptionBody> {
             money(preview.unusedCurrentValue)),
         _confirmRow('قيمة الباقة الجديدة للفترة المتبقية',
             money(preview.targetPeriodValue)),
-        _confirmRow('المبلغ المطلوب الآن', money(preview.amountDue), bold: true),
+        _confirmRow('المبلغ المطلوب الآن', money(preview.amountDue),
+            bold: true),
         SizedBox(height: 8.h),
         Text('لن تبدأ دورة جديدة. سيبقى تاريخ انتهاء اشتراكك كما هو.',
             style: AppTextStyles.font12Regular
@@ -616,8 +687,8 @@ class _ManagerSubscriptionBodyState extends State<ManagerSubscriptionBody> {
           action == PlanAction.scheduleSwitch
               ? 'لن يتم تغيير مزايا باقتك الحالية الآن. لن يتم خصم أي مبلغ الآن.'
               : 'لن يتم خصم أي مبلغ الآن.',
-          style: AppTextStyles.font12Regular
-              .copyWith(color: AppColors.fontColor),
+          style:
+              AppTextStyles.font12Regular.copyWith(color: AppColors.fontColor),
         ),
       ];
     }
@@ -660,9 +731,8 @@ class _ManagerSubscriptionBodyState extends State<ManagerSubscriptionBody> {
             child: Text(
               value,
               textAlign: TextAlign.end,
-              style: bold
-                  ? AppTextStyles.font14Bold
-                  : AppTextStyles.font14Regular,
+              style:
+                  bold ? AppTextStyles.font14Bold : AppTextStyles.font14Regular,
             ),
           ),
         ],

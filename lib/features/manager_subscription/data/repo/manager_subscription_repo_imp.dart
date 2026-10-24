@@ -33,7 +33,8 @@ class ManagerSubscriptionRepoImp implements ManagerSubscriptionRepo {
   }
 
   @override
-  Future<Either<Failure, ManagerCurrentSubscription?>> getCurrentSubscription() {
+  Future<Either<Failure, ManagerCurrentSubscription?>>
+      getCurrentSubscription() {
     return consumer.handleRequestCustom(
       () => consumer.get(EndPoints.managerSubscriptionCurrent),
       (response) async {
@@ -73,7 +74,8 @@ class ManagerSubscriptionRepoImp implements ManagerSubscriptionRepo {
         final data = e.response!.data as Map;
         return left(
           InsufficientBalanceFailure(
-            errMessage: data['data']?.toString() ?? 'الرصيد في المحفظة غير كافٍ',
+            errMessage:
+                data['data']?.toString() ?? 'الرصيد في المحفظة غير كافٍ',
             currentBalance: _toDouble(data['current_balance']),
             requiredAmount: _toDouble(data['required_amount']),
           ),
@@ -94,6 +96,21 @@ class ManagerSubscriptionRepoImp implements ManagerSubscriptionRepo {
       () => consumer.post(
         EndPoints.managerSubscriptionAutoRenew,
         data: {'enabled': enabled},
+        isFormData: false,
+      ),
+      (response) async => ManagerCurrentSubscription.fromJson(
+        Map<String, dynamic>.from(response['data'] as Map),
+      ),
+    );
+  }
+
+  @override
+  Future<Either<Failure, ManagerCurrentSubscription>>
+      updateExpiredMarketplaceVisibility({required bool keepVisible}) {
+    return consumer.handleRequestCustom(
+      () => consumer.post(
+        EndPoints.managerSubscriptionExpiredMarketplaceVisibility,
+        data: {'keep_visible': keepVisible},
         isFormData: false,
       ),
       (response) async => ManagerCurrentSubscription.fromJson(

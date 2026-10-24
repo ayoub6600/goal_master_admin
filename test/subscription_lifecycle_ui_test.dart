@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:goal_master_admin/features/auth/data/model/login_model/user.dart';
 import 'package:goal_master_admin/features/manager_subscription/data/model/manager_subscription_response.dart';
 import 'package:goal_master_admin/features/manager_subscription/data/model/subscription_lifecycle.dart';
 
@@ -10,6 +11,34 @@ import 'package:goal_master_admin/features/manager_subscription/data/model/subsc
 /// tests pin that the app only renders it: no classification by plan name or
 /// price, and no arithmetic behind an upgrade's figures.
 void main() {
+  group('manager booking entitlement', () {
+    test('an expired timestamp locks new booking even before status refresh',
+        () {
+      final user = User.fromJson({
+        'current_subscription': {
+          'status': 'active',
+          'ends_at': DateTime.now()
+              .subtract(const Duration(minutes: 1))
+              .toIso8601String(),
+        },
+      });
+
+      expect(user.needsSubscriptionPaymentNow, isTrue);
+    });
+
+    test('a current paid cycle allows manager booking', () {
+      final user = User.fromJson({
+        'current_subscription': {
+          'status': 'active',
+          'ends_at':
+              DateTime.now().add(const Duration(days: 1)).toIso8601String(),
+        },
+      });
+
+      expect(user.needsSubscriptionPaymentNow, isFalse);
+    });
+  });
+
   Map<String, dynamic> plan({
     required int id,
     required String name,
@@ -40,16 +69,37 @@ void main() {
         'renewal_window_days': 5,
         'plans': plans ??
             [
-              plan(id: 4, name: 'انطلاقة', action: 'current', isCurrent: true, effective: 59),
-              plan(id: 5, name: 'نمو', action: 'upgrade', list: 179, effective: 179, preview: {
-                'amount_due': 80.0,
-                'unused_current_value': 39.30,
-                'target_period_value': 119.30,
-                'current_plan_name': 'انطلاقة',
-                'cycle_ends_at': '2026-09-29 00:24:51',
-              }),
-              plan(id: 3, name: 'إدارة', action: 'schedule_switch', list: 149, effective: 149),
-              plan(id: 1, name: 'Launch', action: 'schedule_downgrade', list: 59, effective: 59),
+              plan(
+                  id: 4,
+                  name: 'انطلاقة',
+                  action: 'current',
+                  isCurrent: true,
+                  effective: 59),
+              plan(
+                  id: 5,
+                  name: 'نمو',
+                  action: 'upgrade',
+                  list: 179,
+                  effective: 179,
+                  preview: {
+                    'amount_due': 80.0,
+                    'unused_current_value': 39.30,
+                    'target_period_value': 119.30,
+                    'current_plan_name': 'انطلاقة',
+                    'cycle_ends_at': '2026-09-29 00:24:51',
+                  }),
+              plan(
+                  id: 3,
+                  name: 'إدارة',
+                  action: 'schedule_switch',
+                  list: 149,
+                  effective: 149),
+              plan(
+                  id: 1,
+                  name: 'Launch',
+                  action: 'schedule_downgrade',
+                  list: 59,
+                  effective: 59),
             ],
       });
 
@@ -88,7 +138,12 @@ void main() {
       expect(midCycle.forPlan(4)!.action, PlanAction.current);
 
       final nearExpiry = lifecycle(renewalDue: true, plans: [
-        plan(id: 4, name: 'انطلاقة', action: 'renew', isCurrent: true, effective: 59),
+        plan(
+            id: 4,
+            name: 'انطلاقة',
+            action: 'renew',
+            isCurrent: true,
+            effective: 59),
       ]);
       expect(nearExpiry.forPlan(4)!.action, PlanAction.renew);
       expect(nearExpiry.forPlan(4)!.action.label, 'تجديد الاشتراك');

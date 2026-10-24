@@ -125,14 +125,20 @@ class User {
   String get subscriptionStatus =>
       currentSubscription?.status?.toLowerCase().trim() ?? '';
 
-  bool get isTrialingSubscription => subscriptionStatus == 'trialing';
+  bool get isTrialingSubscription =>
+      subscriptionStatus == 'trialing' && hasActiveSubscriptionNow;
 
-  bool get isActivePaidSubscription => subscriptionStatus == 'active';
+  bool get isActivePaidSubscription =>
+      subscriptionStatus == 'active' && hasActiveSubscriptionNow;
 
-  bool get needsSubscriptionPaymentNow =>
-      subscriptionStatus == 'paused' ||
-      subscriptionStatus == 'cancelled' ||
-      subscriptionStatus == 'expired';
+  bool get hasActiveSubscriptionNow =>
+      (subscriptionStatus == 'active' || subscriptionStatus == 'trialing') &&
+      currentSubscription?.endsAt != null &&
+      (DateTime.tryParse(currentSubscription!.endsAt!)
+              ?.isAfter(DateTime.now()) ??
+          false);
+
+  bool get needsSubscriptionPaymentNow => !hasActiveSubscriptionNow;
 }
 
 class CurrentSubscription {

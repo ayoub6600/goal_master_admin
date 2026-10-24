@@ -18,6 +18,9 @@ abstract class ManagerSubscriptionRepo {
     required bool enabled,
   });
 
+  Future<Either<Failure, ManagerCurrentSubscription>>
+      updateExpiredMarketplaceVisibility({required bool keepVisible});
+
   /// What each plan would mean for this manager now. Read-only: previewing a
   /// price never spends a promotional cycle.
   Future<Either<Failure, SubscriptionLifecycle>> loadLifecycle();

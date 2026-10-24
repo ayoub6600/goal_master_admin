@@ -8,6 +8,7 @@ class ManagerCurrentSubscription {
   final String status;
   final String billingCycle;
   final bool autoRenew;
+  final bool keepMarketplaceVisibleAfterExpiry;
   final String? startsAt;
   final String? endsAt;
   final String? trialEndsAt;
@@ -25,6 +26,7 @@ class ManagerCurrentSubscription {
     required this.status,
     required this.billingCycle,
     required this.autoRenew,
+    required this.keepMarketplaceVisibleAfterExpiry,
     required this.startsAt,
     required this.endsAt,
     required this.trialEndsAt,
@@ -36,9 +38,7 @@ class ManagerCurrentSubscription {
     if (endsAt == null || endsAt!.isEmpty) return null;
     final end = DateTime.tryParse(endsAt!);
     if (end == null) return null;
-    final today = DateTime.now();
-    final startOfToday = DateTime(today.year, today.month, today.day);
-    return end.difference(startOfToday).inDays;
+    return end.difference(DateTime.now()).inDays;
   }
 
   bool get isExpiringSoon {
@@ -47,8 +47,9 @@ class ManagerCurrentSubscription {
   }
 
   bool get isExpired {
-    final remaining = daysRemaining;
-    return remaining != null && remaining < 0;
+    if (endsAt == null || endsAt!.isEmpty) return false;
+    final end = DateTime.tryParse(endsAt!);
+    return end != null && end.isBefore(DateTime.now());
   }
 
   bool get isTrial => status.toLowerCase().trim() == 'trialing';
@@ -63,7 +64,11 @@ class ManagerCurrentSubscription {
       billingCycle: json['billing_cycle']?.toString() ?? 'monthly',
       autoRenew: json['auto_renew'] == null
           ? true
-          : (json['auto_renew'] == true || json['auto_renew'].toString() == '1'),
+          : (json['auto_renew'] == true ||
+              json['auto_renew'].toString() == '1'),
+      keepMarketplaceVisibleAfterExpiry:
+          json['keep_marketplace_visible_after_expiry'] != false &&
+              json['keep_marketplace_visible_after_expiry'].toString() != '0',
       startsAt: json['starts_at']?.toString(),
       endsAt: json['ends_at']?.toString(),
       trialEndsAt: json['trial_ends_at']?.toString(),

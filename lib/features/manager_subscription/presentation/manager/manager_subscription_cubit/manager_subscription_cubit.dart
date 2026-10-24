@@ -177,7 +177,7 @@ class ManagerSubscriptionCubit extends Cubit<ManagerSubscriptionState> {
     );
   }
 
-  Future<void> toggleAutoRenew(bool enabled) async {
+  Future<void> toggleAutoRenew({required bool enabled}) async {
     final plans = _plansOf(state);
     final current = _currentOf(state);
 
@@ -194,6 +194,29 @@ class ManagerSubscriptionCubit extends Cubit<ManagerSubscriptionState> {
       (updated) => emit(
         ManagerSubscriptionLoaded(current: updated, plans: plans),
       ),
+    );
+  }
+
+  Future<void> toggleExpiredMarketplaceVisibility({
+    required bool keepVisible,
+  }) async {
+    final plans = _plansOf(state);
+    final current = _currentOf(state);
+    if (current == null || !current.isExpired) return;
+
+    final result = await _repo.updateExpiredMarketplaceVisibility(
+      keepVisible: keepVisible,
+    );
+    result.fold(
+      (failure) => emit(ManagerSubscriptionFailure(
+        failure.errMessage,
+        current: current,
+        plans: plans,
+      )),
+      (updated) => emit(ManagerSubscriptionLoaded(
+        current: updated,
+        plans: plans,
+      )),
     );
   }
 

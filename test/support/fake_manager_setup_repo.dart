@@ -51,6 +51,13 @@ class FakeManagerSetupRepo implements ManagerSetupRepo {
                 'supports_evening': true,
                 'supports_after_midnight': false,
               },
+              {
+                'id': 3,
+                'title': 'ملعب رقم 2 (متوقف)',
+                'price': 110,
+                'supports_evening': false,
+                'supports_after_midnight': false,
+              },
             ],
             'employees': [
               {
@@ -111,7 +118,8 @@ class FakeManagerSetupRepo implements ManagerSetupRepo {
       Left(Failure(errMessage: 'not used in this test'));
 
   @override
-  Future<Either<Failure, SaveManagerBookingPeriodsResponse>> saveBookingPeriods({
+  Future<Either<Failure, SaveManagerBookingPeriodsResponse>>
+      saveBookingPeriods({
     required List<Map<String, dynamic>> periods,
     required Map<String, List<int>> serviceIdsByPeriod,
   }) async {

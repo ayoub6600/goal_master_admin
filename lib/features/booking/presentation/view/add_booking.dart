@@ -20,6 +20,7 @@ import 'package:goal_master_admin/features/booking/presentation/view/widgets/cus
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/night_schedule_section.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/service_selection.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/skip_and_extend_sheet.dart';
+import 'package:goal_master_admin/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
 
 /// «إضافة الحجز».
 ///
@@ -179,50 +180,96 @@ class _AddBookingViewState extends State<AddBookingView> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        PageWrapper(
-          title: 'إضافة الحجز',
-          allowBack: true,
-          child: BlocBuilder<PageViewCubit, PageViewState>(
-            builder: (context, state) {
-              return Column(
-                children: [
-                  _StepIndicator(current: state.currentPage),
-                  Expanded(
-                    child: PageView(
-                      controller: _controller,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        CategorySelection(controller: _controller),
-                        ServiceSelection(controller: _controller),
-                        // «اختر الحجز» used to sit here. It is gone, not
-                        // hidden: the server merges the bands and returns one
-                        // night, and each slot still carries the band that
-                        // prices it.
-                        NightScheduleSection(controller: _controller),
-                        CustomerPickerSection(controller: _controller),
-                        BookingConfirmationSection(controller: _controller),
-                      ],
+    return BlocBuilder<ProfileCubit, ProfileState>(
+      builder: (context, profileState) {
+        if (profileState is ProfileLoaded &&
+            profileState.user.needsSubscriptionPaymentNow &&
+            !profileState.user.needsVenueSetup) {
+          return PageWrapper(
+            title: 'تجديد الاشتراك',
+            allowBack: true,
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(24.w),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.lock_clock_outlined,
+                        size: 52.sp, color: AppColors.primary),
+                    SizedBox(height: 16.h),
+                    Text(
+                      'انتهى الاشتراك',
+                      style: TextStyle(
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  if (state.currentPage > 0) _footer(context, state),
-                ],
-              );
-            },
-          ),
-        ),
-        BlocBuilder<AddBookingCubit, AddBookingState>(
-          builder: (context, state) {
-            if (state is! AddBookingLoading) return const SizedBox.shrink();
+                    SizedBox(height: 8.h),
+                    Text(
+                      'جدد اشتراك الملعب لتتمكن من إضافة حجوزات جديدة. تظل حجوزاتك الحالية متاحة للمتابعة.',
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 20.h),
+                    FilledButton(
+                      onPressed: () => push(
+                        RoutesKeys.kManagerSubscription,
+                        context,
+                      ),
+                      child: const Text('فتح صفحة تجديد الاشتراك'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
 
-            return ColoredBox(
-              color: Colors.black.withValues(alpha: 0.45),
-              child: const Center(child: CircularProgressIndicator()),
-            );
-          },
-        ),
-      ],
+        return Stack(
+          children: [
+            PageWrapper(
+              title: 'إضافة الحجز',
+              allowBack: true,
+              child: BlocBuilder<PageViewCubit, PageViewState>(
+                builder: (context, state) {
+                  return Column(
+                    children: [
+                      _StepIndicator(current: state.currentPage),
+                      Expanded(
+                        child: PageView(
+                          controller: _controller,
+                          physics: const NeverScrollableScrollPhysics(),
+                          children: [
+                            CategorySelection(controller: _controller),
+                            ServiceSelection(controller: _controller),
+                            // «اختر الحجز» used to sit here. It is gone, not
+                            // hidden: the server merges the bands and returns one
+                            // night, and each slot still carries the band that
+                            // prices it.
+                            NightScheduleSection(controller: _controller),
+                            CustomerPickerSection(controller: _controller),
+                            BookingConfirmationSection(controller: _controller),
+                          ],
+                        ),
+                      ),
+                      if (state.currentPage > 0) _footer(context, state),
+                    ],
+                  );
+                },
+              ),
+            ),
+            BlocBuilder<AddBookingCubit, AddBookingState>(
+              builder: (context, state) {
+                if (state is! AddBookingLoading) return const SizedBox.shrink();
+
+                return ColoredBox(
+                  color: Colors.black.withValues(alpha: 0.45),
+                  child: const Center(child: CircularProgressIndicator()),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -270,8 +317,7 @@ class _AddBookingViewState extends State<AddBookingView> {
                         // is still taken. Blocking here is the point: the old
                         // flow let the manager press confirm and learn from a
                         // refusal, with no way to fix it in place.
-                        final blocked =
-                            monthly.enabled && !monthly.canConfirm;
+                        final blocked = monthly.enabled && !monthly.canConfirm;
 
                         return Column(
                           mainAxisSize: MainAxisSize.min,
@@ -334,7 +380,8 @@ class _StepIndicator extends StatelessWidget {
 
           return Expanded(
             child: Padding(
-              padding: EdgeInsets.only(left: index == _labels.length - 1 ? 0 : 4.w),
+              padding:
+                  EdgeInsets.only(left: index == _labels.length - 1 ? 0 : 4.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [

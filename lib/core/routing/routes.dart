@@ -53,6 +53,7 @@ import 'package:goal_master_admin/features/manager_onboarding/presentation/view/
 import 'package:goal_master_admin/features/manager_setup/presentation/view/add_first_venue_view.dart';
 import 'package:goal_master_admin/features/manager_setup/presentation/view/manager_booking_periods_view.dart';
 import 'package:goal_master_admin/features/manager_subscription/presentation/view/manager_subscription_view.dart';
+import 'package:goal_master_admin/features/manager_marketing/presentation/view/manager_marketing_campaigns_view.dart';
 import 'package:goal_master_admin/features/manager_wallet/data/repo/manager_wallet_repo_imp.dart';
 import 'package:goal_master_admin/features/manager_wallet/presentation/view/manager_wallet_view.dart';
 import 'package:goal_master_admin/features/manager_wallet/presentation/view/manager_payment_settings_view.dart';
@@ -204,6 +205,15 @@ List<RouteBase> appRoutes = [
       context: context,
       state: state,
       child: const ManagerCancellationPolicyView(),
+    ),
+  ),
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kManagerMarketingCampaigns,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const ManagerMarketingCampaignsView(),
     ),
   ),
   GoRoute(
@@ -622,5 +632,4 @@ List<RouteBase> appRoutes = [
       child: const CancellationExceptionsView(),
     ),
   ),
-
 ];

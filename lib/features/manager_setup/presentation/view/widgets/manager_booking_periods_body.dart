@@ -68,6 +68,10 @@ class _ManagerBookingPeriodsBodyState extends State<ManagerBookingPeriodsBody> {
   final Set<int> _wasEvening = <int>{};
   final Set<int> _wasAfterMidnight = <int>{};
 
+  /// Services that were disabled when the screen opened but the manager
+  /// explicitly enabled here. These should join each open band on save.
+  final Set<int> _newlySelectedServiceIds = <int>{};
+
   bool _didPrefill = false;
 
   void _prefill(ManagerSetupBootstrapResponse? bootstrap) {
@@ -77,6 +81,8 @@ class _ManagerBookingPeriodsBodyState extends State<ManagerBookingPeriodsBody> {
     for (final service in bootstrap.data.catalog.services) {
       if (service.supportsEvening) _wasEvening.add(service.id);
       if (service.supportsAfterMidnight) _wasAfterMidnight.add(service.id);
+      // Keep inactive services visible as unchecked choices. Previously they
+      // disappeared entirely, making a disabled pitch impossible to restore.
       if (service.supportsEvening || service.supportsAfterMidnight) {
         _serviceIds.add(service.id);
       }
@@ -189,7 +195,10 @@ class _ManagerBookingPeriodsBodyState extends State<ManagerBookingPeriodsBody> {
     final known = {..._wasEvening, ..._wasAfterMidnight};
 
     return _serviceIds
-        .where((id) => had.contains(id) || !known.contains(id))
+        .where((id) =>
+            had.contains(id) ||
+            !known.contains(id) ||
+            _newlySelectedServiceIds.contains(id))
         .toList();
   }
 
@@ -368,11 +377,22 @@ class _ManagerBookingPeriodsBodyState extends State<ManagerBookingPeriodsBody> {
                         style: AppTextStyles.font14Regular
                             .copyWith(color: AppColors.dark),
                       ),
+                      subtitle: !service.supportsEvening &&
+                              !service.supportsAfterMidnight
+                          ? const Text('غير مفعّل للحجز حاليًا')
+                          : null,
                       onChanged: (checked) => setState(() {
                         if (checked == true) {
-                          _serviceIds.add(service.id as int);
+                          final id = service.id as int;
+                          _serviceIds.add(id);
+                          if (!service.supportsEvening &&
+                              !service.supportsAfterMidnight) {
+                            _newlySelectedServiceIds.add(id);
+                          }
                         } else {
-                          _serviceIds.remove(service.id as int);
+                          final id = service.id as int;
+                          _serviceIds.remove(id);
+                          _newlySelectedServiceIds.remove(id);
                         }
                       }),
                     ),
