@@ -216,4 +216,5 @@ unrelated to restart replay and out of this fix's scope.
 
 Verification: backend/customer tests pass; focused Flutter analysis has no
 errors. iOS simulator build remains blocked by Flutter framework provenance
-metadata. **Status:** pending production push.
+metadata. **Status:** pushed to `release/production-v1`; simulator launch remains
+pending a successful build.
