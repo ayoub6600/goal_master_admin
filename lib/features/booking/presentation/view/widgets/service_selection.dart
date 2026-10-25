@@ -33,116 +33,127 @@ class ServiceSelection extends StatelessWidget {
               height: 12.h,
             ),
             if (state is ServiceSuccess)
-              ...state.services.map((service) => ListTile(
-                    title: Card(
-                      margin: const EdgeInsets.all(8.0),
-                      color: Colors.white,
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12.r),
-                            child: CachedNetworkImage(
-                              imageUrl: service.image,
-                              height: 100.h,
-                              width: 100.w,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(
+              Expanded(
+                child: ListView.builder(
+                  padding: EdgeInsets.only(bottom: 16.h),
+                  itemCount: state.services.length,
+                  itemBuilder: (context, index) {
+                    final service = state.services[index];
+                    return ListTile(
+                      title: Card(
+                        margin: const EdgeInsets.all(8.0),
+                        color: Colors.white,
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12.r),
+                              child: CachedNetworkImage(
+                                imageUrl: service.image,
                                 height: 100.h,
                                 width: 100.w,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(12.r),
-                                ),
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppColors.primary.withOpacity(0.6),
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  height: 100.h,
+                                  width: 100.w,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[200],
+                                    borderRadius: BorderRadius.circular(12.r),
+                                  ),
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        AppColors.primary.withOpacity(0.6),
+                                      ),
                                     ),
                                   ),
                                 ),
+                                errorWidget: (context, url, error) => Container(
+                                  height: 100.h,
+                                  width: 100.w,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[200],
+                                    borderRadius: BorderRadius.circular(12.r),
+                                  ),
+                                  child: Icon(
+                                    Icons.error_outline,
+                                    color: Colors.grey[400],
+                                    size: 30.r,
+                                  ),
+                                ),
+                                fadeInDuration:
+                                    const Duration(milliseconds: 300),
+                                fadeInCurve: Curves.easeInOut,
+                                memCacheHeight: (100.h *
+                                        MediaQuery.of(context).devicePixelRatio)
+                                    .round(),
+                                memCacheWidth: (100.w *
+                                        MediaQuery.of(context).devicePixelRatio)
+                                    .round(),
                               ),
-                              errorWidget: (context, url, error) => Container(
-                                height: 100.h,
-                                width: 100.w,
+                            ),
+                            Expanded(
+                              child: Container(
+                                padding: EdgeInsets.all(16.w),
                                 decoration: BoxDecoration(
-                                  color: Colors.grey[200],
+                                  color: Colors.white,
                                   borderRadius: BorderRadius.circular(12.r),
                                 ),
-                                child: Icon(
-                                  Icons.error_outline,
-                                  color: Colors.grey[400],
-                                  size: 30.r,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      service.title,
+                                      style: AppTextStyles.font16Bold,
+                                      textDirection: TextDirection.ltr,
+                                    ),
+                                    HeightSpace(8.h),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "سعر الحجز : ",
+                                          style: AppTextStyles.font14Medium,
+                                        ),
+                                        WidthSpace(8.w),
+                                        Text(
+                                          "${service.price} دينار",
+                                          style:
+                                              AppTextStyles.font16Bold.copyWith(
+                                            color: AppColors.primary,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  ],
                                 ),
                               ),
-                              fadeInDuration: const Duration(milliseconds: 300),
-                              fadeInCurve: Curves.easeInOut,
-                              memCacheHeight: (100.h *
-                                      MediaQuery.of(context).devicePixelRatio)
-                                  .round(),
-                              memCacheWidth: (100.w *
-                                      MediaQuery.of(context).devicePixelRatio)
-                                  .round(),
                             ),
-                          ),
-                          Expanded(
-                            child: Container(
-                              padding: EdgeInsets.all(16.w),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12.r),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    service.title,
-                                    style: AppTextStyles.font16Bold,
-                                    textDirection: TextDirection.ltr,
-                                  ),
-                                  HeightSpace(8.h),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "سعر الحجز : ",
-                                        style: AppTextStyles.font14Medium,
-                                      ),
-                                      WidthSpace(8.w),
-                                      Text(
-                                        "${service.price} دينار",
-                                        style:
-                                            AppTextStyles.font16Bold.copyWith(
-                                          color: AppColors.primary,
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    onTap: () {
-                      final clubId =
-                          SharedPreferenceUtil.getInt(PrefKey.clubId);
-                      context
-                          .read<PageViewCubit>()
-                          .setServiceId(service.id, service.title);
-                      context.read<PageViewCubit>().nextPage();
-                      context.read<EmployeeCubit>().listEmployee(clubId ?? 0);
+                      onTap: () {
+                        final clubId =
+                            SharedPreferenceUtil.getInt(PrefKey.clubId);
+                        context
+                            .read<PageViewCubit>()
+                            .setServiceId(service.id, service.title);
+                        context.read<PageViewCubit>().nextPage();
+                        context.read<EmployeeCubit>().listEmployee(clubId ?? 0);
 
-                      controller.nextPage(
-                          duration: Duration(milliseconds: 300),
-                          curve: Curves.ease);
-                    },
-                  )),
+                        controller.nextPage(
+                            duration: Duration(milliseconds: 300),
+                            curve: Curves.ease);
+                      },
+                    );
+                  },
+                ),
+              ),
             if (state is ServiceLoading)
               Center(child: CircularProgressIndicator()),
             if (state is ServiceError) Text('خطأ: ${state.message}'),

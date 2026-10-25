@@ -207,3 +207,13 @@ Deferred, not part of this bug: `NotificationSocketService`'s own generic
 `onVisualNotification` in `main.dart`) both fire for the same genuinely-new
 event — a separate, pre-existing double-notification-per-event issue,
 unrelated to restart replay and out of this fix's scope.
+
+## 2026-10-25 - Campaign and manager booking UI
+
+- Added selectable hourly campaign windows and robust activation feedback.
+- Made court selection scrollable, exposed booked-slot customer details with
+  call action, and removed redundant subscription summary from Home.
+
+Verification: backend/customer tests pass; focused Flutter analysis has no
+errors. iOS simulator build remains blocked by Flutter framework provenance
+metadata. **Status:** pending production push.

@@ -29,12 +29,12 @@ class _ManagerMarketingCampaignsViewState
   String _discountType = 'percent';
   DateTime _startsAt = DateTime.now();
   DateTime _endsAt = DateTime.now().add(const Duration(days: 7));
-  TimeOfDay? _dailyStart;
-  TimeOfDay? _dailyEnd;
+  final Set<int> _selectedHours = {};
   final Set<int> _weekdays = {};
   bool _newCustomersOnly = false;
   bool _loading = true;
   bool _saving = false;
+  final Set<int> _togglingCampaignIds = {};
 
   static const _weekdayNames = [
     'الأحد',
@@ -90,9 +90,6 @@ class _ManagerMarketingCampaignsViewState
   String _dateTime(DateTime value) =>
       '${value.year.toString().padLeft(4, '0')}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')} ${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
 
-  String _time(TimeOfDay value) =>
-      '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
-
   Future<DateTime?> _pickDateTime(DateTime initial) async {
     final date = await showDatePicker(
       context: context,
@@ -109,23 +106,24 @@ class _ManagerMarketingCampaignsViewState
     return DateTime(date.year, date.month, date.day, time.hour, time.minute);
   }
 
-  Future<void> _pickDailyTime({required bool start}) async {
-    final initial = start ? _dailyStart : _dailyEnd;
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: initial ??
-          (start
-              ? const TimeOfDay(hour: 18, minute: 0)
-              : const TimeOfDay(hour: 23, minute: 0)),
-    );
-    if (picked == null) return;
-    setState(() {
-      if (start) {
-        _dailyStart = picked;
+  List<Map<String, String>> _selectedTimeRanges() {
+    final hours = _selectedHours.toList()..sort();
+    final ranges = <Map<String, String>>[];
+    for (final hour in hours) {
+      if (ranges.isNotEmpty &&
+          int.parse(ranges.last['end']!.substring(0, 2)) == hour) {
+        ranges.last['end'] = '${(hour + 1).toString().padLeft(2, '0')}:00';
       } else {
-        _dailyEnd = picked;
+        ranges.add({
+          'start': '${hour.toString().padLeft(2, '0')}:00',
+          'end': '${(hour + 1).toString().padLeft(2, '0')}:00',
+        });
       }
-    });
+    }
+    if (ranges.isNotEmpty && ranges.last['end'] == '24:00') {
+      ranges.last['end'] = '24:00';
+    }
+    return ranges;
   }
 
   Future<void> _create() async {
@@ -134,19 +132,8 @@ class _ManagerMarketingCampaignsViewState
       _message('نهاية العرض يجب أن تكون بعد بدايته.');
       return;
     }
-    if ((_dailyStart == null) != (_dailyEnd == null)) {
-      _message('حدد وقت البداية والنهاية اليومية معًا، أو اتركهما فارغين.');
-      return;
-    }
-    if (_dailyStart != null &&
-        _dailyEnd != null &&
-        (_dailyEnd!.hour * 60 + _dailyEnd!.minute) <=
-            (_dailyStart!.hour * 60 + _dailyStart!.minute)) {
-      _message('وقت نهاية الفترة اليومية يجب أن يكون بعد بدايتها.');
-      return;
-    }
-
     setState(() => _saving = true);
+    final timeRanges = _selectedTimeRanges();
     final data = <String, dynamic>{
       'cmn_branch_id': _branchId,
       'sch_service_id': _serviceId,
@@ -156,8 +143,7 @@ class _ManagerMarketingCampaignsViewState
       'starts_at': _dateTime(_startsAt),
       'ends_at': _dateTime(_endsAt),
       'weekdays': _weekdays.isEmpty ? null : (_weekdays.toList()..sort()),
-      'daily_start_time': _dailyStart == null ? null : _time(_dailyStart!),
-      'daily_end_time': _dailyEnd == null ? null : _time(_dailyEnd!),
+      'daily_time_ranges': timeRanges.isEmpty ? null : timeRanges,
       'new_customers_only': _newCustomersOnly,
       'max_uses_per_customer': int.tryParse(_perCustomer.text),
       'max_redemptions': int.tryParse(_totalLimit.text),
@@ -175,6 +161,7 @@ class _ManagerMarketingCampaignsViewState
       _totalLimit.clear();
       setState(() {
         _weekdays.clear();
+        _selectedHours.clear();
         _newCustomersOnly = false;
         _serviceId = null;
       });
@@ -183,11 +170,21 @@ class _ManagerMarketingCampaignsViewState
   }
 
   Future<void> _toggle(int id) async {
+    if (id <= 0) {
+      _message('تعذر تحديد رقم الحملة. حدّث القائمة ثم أعد المحاولة.');
+      await _load();
+      return;
+    }
+    setState(() => _togglingCampaignIds.add(id));
     final result = await _repo.toggle(id);
     if (!mounted) return;
-    result.fold((failure) => _message(failure.errMessage), (message) {
+    setState(() => _togglingCampaignIds.remove(id));
+    await result.fold<Future<void>>((failure) async {
+      await _load();
+      if (mounted) _message(failure.errMessage);
+    }, (message) async {
       _message(message);
-      _load();
+      await _load();
     });
   }
 
@@ -330,21 +327,42 @@ class _ManagerMarketingCampaignsViewState
                             onSelected: (selected) => setState(() => selected
                                 ? _weekdays.add(day)
                                 : _weekdays.remove(day))))),
-                Row(children: [
-                  Expanded(
-                      child: OutlinedButton(
-                          onPressed: () => _pickDailyTime(start: true),
-                          child: Text(_dailyStart == null
-                              ? 'من الساعة (اختياري)'
-                              : 'من ${_dailyStart!.format(context)}'))),
-                  const SizedBox(width: 8),
-                  Expanded(
-                      child: OutlinedButton(
-                          onPressed: () => _pickDailyTime(start: false),
-                          child: Text(_dailyEnd == null
-                              ? 'إلى الساعة'
-                              : 'إلى ${_dailyEnd!.format(context)}')))
-                ]),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Text('ساعات العرض',
+                      style: Theme.of(context).textTheme.titleSmall),
+                ),
+                Text(
+                  _selectedHours.isEmpty
+                      ? 'يشمل العرض كل ساعات اليوم. اضغط لتحديد ساعات بعينها.'
+                      : 'حدد الساعات التي يسري عليها الخصم. يمكنك اختيار أكثر من فترة.',
+                  textAlign: TextAlign.right,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: () => setState(() => _selectedHours.clear()),
+                    icon: const Icon(Icons.select_all),
+                    label: const Text('كل اليوم'),
+                  ),
+                ),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  children: List.generate(24, (hour) {
+                    final next = (hour + 1) % 24;
+                    final label = '${hour.toString().padLeft(2, '0')}:00 - '
+                        '${next.toString().padLeft(2, '0')}:00${hour == 23 ? ' (منتصف الليل)' : ''}';
+                    return FilterChip(
+                      label: Text(label),
+                      selected: _selectedHours.contains(hour),
+                      onSelected: (selected) => setState(() => selected
+                          ? _selectedHours.add(hour)
+                          : _selectedHours.remove(hour)),
+                    );
+                  }),
+                ),
                 TextFormField(
                     controller: _perCustomer,
                     keyboardType: TextInputType.number,
@@ -407,10 +425,16 @@ class _ManagerMarketingCampaignsViewState
             ?.map((day) => _weekdayNames[int.tryParse('$day') ?? 0])
             .join('، ') ??
         'كل الأيام';
-    final fromValue = campaign['daily_start_time']?.toString();
-    final toValue = campaign['daily_end_time']?.toString();
-    final from = fromValue?.substring(0, 5);
-    final to = toValue?.substring(0, 5);
+    final ranges = (campaign['daily_time_ranges'] as List? ?? const [])
+        .whereType<Map>()
+        .map((range) => Map<String, dynamic>.from(range))
+        .toList();
+    final times = ranges.isNotEmpty
+        ? ranges.map((range) => '${range['start']}–${range['end']}').join('، ')
+        : (campaign['daily_start_time'] != null &&
+                campaign['daily_end_time'] != null
+            ? '${campaign['daily_start_time'].toString().substring(0, 5)}–${campaign['daily_end_time'].toString().substring(0, 5)}'
+            : 'كل الساعات');
     final venueFunded = campaign['can_manage'] != false;
     final startsAt = campaign['starts_at']?.toString() ?? '';
     final endsAt = campaign['ends_at']?.toString() ?? '';
@@ -457,7 +481,7 @@ class _ManagerMarketingCampaignsViewState
               ]),
               SizedBox(height: 6.h),
               Text(
-                '${campaign['new_customers_only'] == true ? 'للزبائن الجدد فقط' : 'لكل الزبائن'} · $days${from != null && to != null ? ' · $from إلى $to' : ''}',
+                '${campaign['new_customers_only'] == true ? 'للزبائن الجدد فقط' : 'لكل الزبائن'} · $days · $times',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               if (startsAt.isNotEmpty || endsAt.isNotEmpty)
@@ -470,7 +494,12 @@ class _ManagerMarketingCampaignsViewState
               Align(
                 alignment: Alignment.centerLeft,
                 child: venueFunded
-                    ? Switch(value: active, onChanged: (_) => _toggle(id))
+                    ? Switch(
+                        value: active,
+                        onChanged: _togglingCampaignIds.contains(id)
+                            ? null
+                            : (_) => _toggle(id),
+                      )
                     : const Tooltip(
                         message: 'حملات المنصة لا يديرها الملعب',
                         child: Icon(Icons.lock_outline),

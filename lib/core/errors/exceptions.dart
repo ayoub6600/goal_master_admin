@@ -74,8 +74,13 @@ class ServerFailure extends Failure {
       return ServerFailure(
           errMessage: 'Validation failed. Please check your input.');
     } else if (statusCode == 404) {
+      if (response is Map<String, dynamic> &&
+          response['message'] is String &&
+          (response['message'] as String).trim().isNotEmpty) {
+        return ServerFailure(errMessage: response['message'] as String);
+      }
       return ServerFailure(
-          errMessage: 'Request not found. Please try again later.');
+          errMessage: 'لم يتم العثور على الحملة. حدّث القائمة وحاول مجددًا.');
     } else if (statusCode == 500) {
       return ServerFailure(
           errMessage: 'Internal server error. Please try again later.');

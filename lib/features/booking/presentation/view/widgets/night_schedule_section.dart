@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master_admin/core/services/service_locator.dart';
 import 'package:goal_master_admin/core/components/keys_values.dart';
 import 'package:goal_master_admin/core/components/preference_utility.dart';
 import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/core/styles/app_text_styles.dart';
 import 'package:goal_master_admin/core/utils/arabic_dates.dart';
 import 'package:goal_master_admin/features/booking/data/model/operational_slot.dart';
+import 'package:goal_master_admin/features/booking/data/model/booking_all_list_response.dart';
+import 'package:goal_master_admin/features/booking/data/repo/booking_repo_imp.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/calendar_cubit/calendar_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/calendar_cubit/calendar_state.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Date and time on one screen.
 ///
@@ -81,10 +85,10 @@ class _NightScheduleSectionState extends State<NightScheduleSection> {
     // The earliest night the manager may browse. When the server is offering
     // the night in progress, that night is reachable here too — otherwise the
     // strip would offer a date the calendar refused.
-    final earliest = _previousNight.active &&
-            _previousNight.operationalDate != null
-        ? DateTime.parse(_previousNight.operationalDate!)
-        : DateUtils.dateOnly(DateTime.now());
+    final earliest =
+        _previousNight.active && _previousNight.operationalDate != null
+            ? DateTime.parse(_previousNight.operationalDate!)
+            : DateUtils.dateOnly(DateTime.now());
 
     final picked = await showDatePicker(
       context: context,
@@ -268,14 +272,13 @@ class _NightScheduleSectionState extends State<NightScheduleSection> {
               SizedBox(height: 3.h),
               Text(bottom,
                   maxLines: 1,
-                  style:
-                      AppTextStyles.font14Bold.copyWith(color: foreground)),
+                  style: AppTextStyles.font14Bold.copyWith(color: foreground)),
               if (footnote != null) ...[
                 SizedBox(height: 2.h),
                 Text(footnote,
                     maxLines: 1,
-                    style: AppTextStyles.font12Regular.copyWith(
-                        color: foreground.withValues(alpha: 0.75))),
+                    style: AppTextStyles.font12Regular
+                        .copyWith(color: foreground.withValues(alpha: 0.75))),
               ],
             ],
           ),
@@ -348,6 +351,7 @@ class _NightScheduleSectionState extends State<NightScheduleSection> {
                 selected: selected != null &&
                     selected.startAt.isAtSameMomentAs(slot.startAt),
                 onTap: () => _select(slot),
+                onBookedTap: () => _showBookedDetails(slot),
               ))
           .toList(),
     );
@@ -366,6 +370,159 @@ class _NightScheduleSectionState extends State<NightScheduleSection> {
       curve: Curves.ease,
     );
   }
+
+  Future<BookingItemResponce?> _findBooking(OperationalSlot slot) async {
+    final repo = getIt<BookingRepoImp>();
+    var page = 1;
+    var lastPage = 1;
+
+    do {
+      final result = await repo.getBooking(
+        page,
+        slot.date,
+        slot.date,
+        _branchId.toString(),
+        null,
+        null,
+        null,
+        null,
+      );
+
+      final response = result.fold(
+        (failure) => throw Exception(failure.errMessage),
+        (value) => value,
+      );
+      lastPage = response.lastPage ?? 1;
+      for (final booking in response.data ?? const <BookingItemResponce>[]) {
+        if (booking.startTime.isAtSameMomentAs(slot.startAt) &&
+            booking.endTime.isAtSameMomentAs(slot.endAt)) {
+          return booking;
+        }
+      }
+      page++;
+    } while (page <= lastPage);
+
+    return null;
+  }
+
+  void _showBookedDetails(OperationalSlot slot) {
+    final bookingFuture = _findBooking(slot);
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 24.h),
+          child: FutureBuilder<BookingItemResponce?>(
+            future: bookingFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const SizedBox(
+                  height: 160,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              if (snapshot.hasError) {
+                return Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24.h),
+                  child: Text(
+                    'تعذّر تحميل بيانات الحجز: ${snapshot.error}',
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              }
+
+              final booking = snapshot.data;
+              if (booking == null) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: Text(
+                    'الخانة محجوزة، لكن لم تُرجع بيانات الحجز لهذا الموعد.',
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              }
+
+              final phone = booking.customerPhoneNo.trim();
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text('تفاصيل الحجز', style: AppTextStyles.font18Bold),
+                  SizedBox(height: 14.h),
+                  _BookingDetailLine(label: 'العميل', value: booking.customer),
+                  _BookingDetailLine(
+                    label: 'رقم الهاتف',
+                    value: phone.isEmpty ? 'غير متوفر' : phone,
+                    ltr: true,
+                  ),
+                  _BookingDetailLine(label: 'الملعب', value: booking.service),
+                  _BookingDetailLine(label: 'التاريخ', value: slot.date),
+                  _BookingDetailLine(
+                    label: 'الوقت',
+                    value: '${slot.startTime} - ${slot.endTime}',
+                  ),
+                  _BookingDetailLine(
+                    label: 'السعر',
+                    value: '${booking.serviceAmount} د.ل',
+                  ),
+                  _BookingDetailLine(
+                    label: 'الحالة',
+                    value: booking.statusName,
+                  ),
+                  if (phone.isNotEmpty) ...[
+                    SizedBox(height: 12.h),
+                    FilledButton.icon(
+                      onPressed: () => launchUrl(
+                        Uri(scheme: 'tel', path: phone),
+                        mode: LaunchMode.externalApplication,
+                      ),
+                      icon: const Icon(Icons.call),
+                      label: const Text('اتصال بالعميل'),
+                    ),
+                  ],
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BookingDetailLine extends StatelessWidget {
+  const _BookingDetailLine({
+    required this.label,
+    required this.value,
+    this.ltr = false,
+  });
+
+  final String label;
+  final String value;
+  final bool ltr;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: EdgeInsets.symmetric(vertical: 5.h),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 88.w,
+              child: Text(label, style: AppTextStyles.font14Medium),
+            ),
+            Expanded(
+              child: Text(
+                value.isEmpty ? 'غير متوفر' : value,
+                textAlign: TextAlign.end,
+                textDirection: ltr ? TextDirection.ltr : null,
+                style: AppTextStyles.font14SemiBold,
+              ),
+            ),
+          ],
+        ),
+      );
 }
 
 // ---------------- pieces ----------------
@@ -388,8 +545,8 @@ class _BandHeading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(text,
-        style: AppTextStyles.font14SemiBold
-            .copyWith(color: AppColors.fontColor));
+        style:
+            AppTextStyles.font14SemiBold.copyWith(color: AppColors.fontColor));
   }
 }
 
@@ -403,8 +560,8 @@ class _MidnightDivider extends StatelessWidget {
         Icon(Icons.bedtime_outlined, size: 16.w, color: AppColors.primary),
         SizedBox(width: 6.w),
         Text('بعد منتصف الليل',
-            style:
-                AppTextStyles.font14SemiBold.copyWith(color: AppColors.primary)),
+            style: AppTextStyles.font14SemiBold
+                .copyWith(color: AppColors.primary)),
         SizedBox(width: 10.w),
         Expanded(child: Divider(color: AppColors.inactive4, height: 1)),
       ],
@@ -417,11 +574,13 @@ class _SlotChip extends StatelessWidget {
     required this.slot,
     required this.selected,
     required this.onTap,
+    required this.onBookedTap,
   });
 
   final OperationalSlot slot;
   final bool selected;
   final VoidCallback onTap;
+  final VoidCallback onBookedTap;
 
   @override
   Widget build(BuildContext context) {
@@ -445,11 +604,11 @@ class _SlotChip extends StatelessWidget {
 
     return Semantics(
       button: true,
-      enabled: !taken,
+      enabled: true,
       selected: selected,
       child: InkWell(
         borderRadius: BorderRadius.circular(12.r),
-        onTap: taken ? null : onTap,
+        onTap: taken ? onBookedTap : onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 140),
           constraints: BoxConstraints(minWidth: 92.w, minHeight: 48.h),

@@ -228,11 +228,14 @@ class HomeViewBody extends StatelessWidget {
 
                     final user = state.user;
                     final needsVenueSetup = user.needsVenueSetup;
-                    final planName =
-                        user.currentSubscription?.planName?.trim().isNotEmpty ==
-                                true
-                            ? user.currentSubscription!.planName!
-                            : 'بدون باقة محددة';
+                    final subscriptionEndsAt = DateTime.tryParse(
+                      user.currentSubscription?.endsAt ?? '',
+                    );
+                    final subscriptionExpired =
+                        user.currentSubscription?.status?.toLowerCase() ==
+                                'expired' ||
+                            (subscriptionEndsAt != null &&
+                                !subscriptionEndsAt.isAfter(DateTime.now()));
                     final primaryActionRoute = needsVenueSetup
                         ? (user.needsSubscriptionPaymentNow
                             ? RoutesKeys.kManagerWallet
@@ -245,7 +248,9 @@ class HomeViewBody extends StatelessWidget {
                             ? 'تفعيل الاشتراك والدفع'
                             : user.nextSetupStepLabel)
                         : (user.needsSubscriptionPaymentNow
-                            ? 'جدد الاشتراك لإضافة حجز'
+                            ? subscriptionExpired
+                                ? 'جدد الاشتراك لإضافة حجز'
+                                : 'فعّل الاشتراك لإضافة حجز'
                             : 'اضافة حجز جديد');
 
                     return Column(
@@ -268,104 +273,6 @@ class HomeViewBody extends StatelessWidget {
                           ),
                           const HeightSpace(16),
                         ],
-                        Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.all(14.w),
-                          decoration: BoxDecoration(
-                            color: const Color(0xffF6F9F3),
-                            borderRadius: BorderRadius.circular(18.r),
-                            border: Border.all(color: const Color(0xffD9E8D2)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                needsVenueSetup
-                                    ? 'اشتراك المدير الجديد'
-                                    : 'إدارة الاشتراك',
-                                style: AppTextStyles.font16Bold,
-                              ),
-                              HeightSpace(8.h),
-                              Text(
-                                'الباقة الحالية: $planName',
-                                style: AppTextStyles.font14Medium.copyWith(
-                                  color: AppColors.fontColor,
-                                ),
-                              ),
-                              HeightSpace(8.h),
-                              Text(
-                                !user.needsSubscriptionPaymentNow &&
-                                        user.canUseReports
-                                    ? 'الإحصائيات والتقارير مفعّلة.'
-                                    : user.needsSubscriptionPaymentNow
-                                        ? 'الإحصائيات والتقارير متوقفة حتى تجديد الاشتراك.'
-                                        : 'الإحصائيات والتقارير مقفلة حسب الباقة الحالية.',
-                                style: AppTextStyles.font14Medium.copyWith(
-                                  color: !user.needsSubscriptionPaymentNow &&
-                                          user.canUseReports
-                                      ? const Color(0xff2E7D32)
-                                      : Colors.redAccent,
-                                ),
-                              ),
-                              HeightSpace(4.h),
-                              Text(
-                                user.needsSubscriptionPaymentNow
-                                    ? user.canUseMonthlyBookings
-                                        ? 'الحجز الشهري يبقى متاحًا للزبائن من المحفظة؛ إضافة حجز المدير متوقفة.'
-                                        : 'الحجز الشهري غير مشمول في الباقة الحالية.'
-                                    : user.canUseMonthlyBookings
-                                        ? 'الحجز الشهري متاح.'
-                                        : 'الحجز الشهري غير متاح.',
-                                style: AppTextStyles.font14Medium.copyWith(
-                                  color: !user.needsSubscriptionPaymentNow &&
-                                          user.canUseMonthlyBookings
-                                      ? const Color(0xff2E7D32)
-                                      : Colors.redAccent,
-                                ),
-                              ),
-                              HeightSpace(4.h),
-                              Text(
-                                user.isTrialingSubscription
-                                    ? 'الاشتراك في وضع تجريبي الآن.'
-                                    : user.needsSubscriptionPaymentNow
-                                        ? 'الاشتراك يحتاج دفع أو تفعيل من المحفظة.'
-                                        : 'الاشتراك مفعل ومدفوع.',
-                                style: AppTextStyles.font14Medium.copyWith(
-                                  color: user.isTrialingSubscription
-                                      ? const Color(0xff9C640C)
-                                      : user.needsSubscriptionPaymentNow
-                                          ? Colors.redAccent
-                                          : const Color(0xff2E7D32),
-                                ),
-                              ),
-                              if (needsVenueSetup) ...[
-                                HeightSpace(4.h),
-                                Text(
-                                  'المرحلة التالية: ${user.nextSetupStepLabel}',
-                                  style: AppTextStyles.font14Medium.copyWith(
-                                    color: const Color(0xff8A5A00),
-                                  ),
-                                ),
-                              ],
-                              HeightSpace(10.h),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: TextButton(
-                                  onPressed: () => push(
-                                    RoutesKeys.kManagerSubscription,
-                                    context,
-                                  ),
-                                  child: Text(
-                                    'تجديد الاشتراك',
-                                    style: AppTextStyles.font14Bold.copyWith(
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       ],
                     );
                   },
