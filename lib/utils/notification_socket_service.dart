@@ -1,3 +1,7 @@
+import 'package:flutter/foundation.dart';
+import 'package:goal_master_admin/core/databases/api/dio_consumer.dart';
+import 'package:goal_master_admin/core/databases/api/end_points.dart';
+import 'package:goal_master_admin/core/services/service_locator.dart';
 import 'package:goal_master_admin/features/notification/data/model/notification_response.dart';
 import 'package:goal_master_admin/utils/notification_identity.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -17,10 +21,40 @@ class NotificationSocketService {
   final void Function(NotificationItem notification) onNotificationReceived;
   bool _isConnected = false;
 
+  /// Whether the live channel is up and registered for this user.
+  bool get isConnected => _isConnected;
+
+  /// Fetches the signed socket pass. Injectable for tests; defaults to the
+  /// API.
+  final Future<Map<String, dynamic>?> Function() _passProvider;
+  bool _disposed = false;
+
   NotificationSocketService({
     required this.userId,
     required this.onNotificationReceived,
-  });
+    Future<Map<String, dynamic>?> Function()? passProvider,
+  }) : _passProvider = passProvider ?? _fetchPass;
+
+  static Future<Map<String, dynamic>?> _fetchPass() async {
+    try {
+      final res = await getIt<DioConsumer>().get(EndPoints.socketToken);
+      final data = res is Map ? res['data'] : null;
+      return data is Map ? Map<String, dynamic>.from(data) : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// The socket joins a user's room only with a pass the server signed for
+  /// that user — it used to take any id it was given, so anyone could listen
+  /// to anyone's notifications. Asked for on every (re)connect, so an expired
+  /// pass is never reused. Until the server confirms, [isConnected] stays
+  /// false and the cubit keeps polling.
+  Future<void> _register(IO.Socket socket) async {
+    final pass = await _passProvider();
+    if (_disposed || pass == null) return;
+    socket.emit('register', pass);
+  }
 
   void initialize() {
     _connectToSocket();
@@ -38,13 +72,9 @@ class NotificationSocketService {
     });
     _socket = socket;
 
-    socket.on('connect', (_) {
-      print('✅ Connected to socket');
-      if (!_isConnected) {
-        socket.emit('register', userId);
-        _isConnected = true;
-      }
-    });
+    socket.on('connect', (_) => _register(socket));
+    socket.on('registered', (_) => _isConnected = true);
+    socket.on('register_error', (_) => _isConnected = false);
 
     socket.on('notification', (data) {
       try {
@@ -59,21 +89,21 @@ class NotificationSocketService {
         // is exactly how one event produced two visible alerts before.
         onNotificationReceived(notification);
       } catch (e) {
-        print('❌ Error parsing notification: $e');
+        debugPrint('❌ Error parsing notification: $e');
       }
     });
 
     socket.on('disconnect', (_) {
-      print('❌ Disconnected from socket');
+      debugPrint('❌ Disconnected from socket');
       _isConnected = false;
     });
 
     socket.on('connect_error', (err) {
-      print('⚠️ Socket connection error: $err');
+      debugPrint('⚠️ Socket connection error: $err');
     });
 
     socket.on('connect_timeout', (_) {
-      print('⏰ Socket connection timeout');
+      debugPrint('⏰ Socket connection timeout');
     });
   }
 
@@ -123,6 +153,7 @@ class NotificationSocketService {
   }
 
   void dispose() {
+    _disposed = true;
     _socket?.dispose();
   }
 }

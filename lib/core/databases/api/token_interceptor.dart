@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:goal_master_admin/core/components/keys_values.dart';
 import 'package:goal_master_admin/core/components/preference_utility.dart';
+import 'package:goal_master_admin/core/routing/app_router.dart';
+import 'package:goal_master_admin/core/routing/routes_keys.dart';
 
 import 'package:goal_master_admin/features/auth/data/repo/auth_repo_imp.dart';
 
@@ -11,12 +13,23 @@ class TokenInterceptor extends Interceptor {
 
   TokenInterceptor(this.dio);
 
-  void _redirectToLogin() async {
-    await SharedPreferenceUtil.clear();
-    // نحتفظ بـ onboardingSeen = true حتى لا يعود للـ onboarding
-    await SharedPreferenceUtil.putBool(PrefKey.onboardingSeen, true);
-    SharedPreferenceUtil.putString(PrefKey.login, "false");
-    // AppRouter.router.go(RoutesKeys.kLogin);
+  static bool _redirecting = false;
+
+  /// The session is over (expired, or ended by a password change or account
+  /// deletion elsewhere): clear it and go to the login screen once. It used
+  /// to clear the session and stay put, so every screen just kept failing.
+  Future<void> _redirectToLogin() async {
+    if (_redirecting) return;
+    _redirecting = true;
+    try {
+      await SharedPreferenceUtil.clear();
+      // نحتفظ بـ onboardingSeen = true حتى لا يعود للـ onboarding
+      await SharedPreferenceUtil.putBool(PrefKey.onboardingSeen, true);
+      await SharedPreferenceUtil.putString(PrefKey.login, "false");
+      if (AppRouter.hasRouter) AppRouter.router.go(RoutesKeys.kLogin);
+    } finally {
+      _redirecting = false;
+    }
   }
 
   @override
@@ -24,6 +37,15 @@ class TokenInterceptor extends Interceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
+    final body = err.response?.data;
+    if (err.response?.statusCode == 401 &&
+        body is Map &&
+        body['reason'] == 'session_revoked') {
+      await _redirectToLogin();
+      handler.next(err);
+      return;
+    }
+
     if (err.response?.statusCode == 401 &&
         !err.requestOptions.path.contains("profile") &&
         !_isRefreshing) {
@@ -34,7 +56,7 @@ class TokenInterceptor extends Interceptor {
       await result.fold(
         (failure) async {
           _isRefreshing = false;
-          _redirectToLogin(); // ✅ التحويل إلى login
+          await _redirectToLogin(); // ✅ التحويل إلى login
           handler.reject(err);
         },
         (newToken) async {
@@ -49,7 +71,7 @@ class TokenInterceptor extends Interceptor {
             handler.resolve(cloneReq);
           } catch (e) {
             _isRefreshing = false;
-            _redirectToLogin(); // لو فشل بعد التحديث برضو نحوله
+            await _redirectToLogin(); // لو فشل بعد التحديث برضو نحوله
             handler.reject(err);
           }
         },

@@ -158,7 +158,15 @@ class VenueProfileBody extends StatelessWidget {
   }
 
   static String _servicesSummary(ManagerSetupBootstrapResponse bootstrap) {
-    final count = bootstrap.data.catalog.services.length;
+    final services = bootstrap.data.catalog.services;
+    // Pitches customers can book. A stopped one (open in neither band) is
+    // still listed on the pitches screen, but "3 ملاعب" for a venue taking
+    // bookings on two misstated what the venue offers.
+    final count = services
+        .where((s) => s.supportsEvening || s.supportsAfterMidnight)
+        .length;
+
+    if (count == 0 && services.isNotEmpty) return 'كل الملاعب متوقفة';
 
     return switch (count) {
       0 => 'لم تُضف ملاعب بعد',

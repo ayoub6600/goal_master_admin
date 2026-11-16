@@ -111,6 +111,10 @@ class EndPoints {
   static String managerSubscriptionCancelScheduled =
       'manager/subscription/cancel-scheduled-change';
   static String notification = 'user/notifications/get-notification';
+
+  /// Short-lived pass for the live notification socket. The socket only
+  /// joins the room the pass was signed for.
+  static String socketToken = 'socket-token';
   static String deleteAccount = 'user/delete';
 
   static String getBookingInfo(int id) => 'user/booking/get-info/?id=$id';

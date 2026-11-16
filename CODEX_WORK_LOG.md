@@ -225,3 +225,10 @@ pending a successful build.
 - Subscriptions: new `trial_switch` action (free, immediate plan change during the trial) with its own confirmation sheet; post-change verification covers it.
 - Signup screen: removed the developer note about OTP/payment "in the next phase"; explains that an existing customer links with their current password.
 - `exceptions.dart`: Arabic messages for network/429/5xx; validation errors without raw field keys; server's own sentence shown for 5xx when present.
+
+## 2026-11-16 — Manager app: socket pass, session end, cleartext
+
+- Live socket registers with a signed pass (`socket-token`); `isConnected` only after the server confirms.
+- A `session_revoked` 401 (password changed / account deleted elsewhere) — and a failed refresh — now opens the login screen; it used to clear the session and stay on a failing screen.
+- `usesCleartextTraffic` moved to the debug manifest only.
+- Venue profile counts bookable pitches only (a stopped pitch made it «3 ملاعب»); fixes the long-failing `venue_profile_test`.
