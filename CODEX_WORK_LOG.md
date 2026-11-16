@@ -218,3 +218,10 @@ Verification: backend/customer tests pass; focused Flutter analysis has no
 errors. iOS simulator build remains blocked by Flutter framework provenance
 metadata. **Status:** pushed to `release/production-v1`; simulator launch remains
 pending a successful build.
+
+## 2026-11-16 — Server-signed card top-ups; trial plan switch; Arabic errors
+
+- Wallet top-up no longer holds the Moamalat merchant key or builds the hash: it asks `manager/wallet/topup/start` for a signed checkout, and after the Lightbox the server confirms with the bank (`confirm-topup {reference}`) — credited, or "being confirmed" (pending, credited automatically). Fixes fractional amounts too ("10.5000").
+- Subscriptions: new `trial_switch` action (free, immediate plan change during the trial) with its own confirmation sheet; post-change verification covers it.
+- Signup screen: removed the developer note about OTP/payment "in the next phase"; explains that an existing customer links with their current password.
+- `exceptions.dart`: Arabic messages for network/429/5xx; validation errors without raw field keys; server's own sentence shown for 5xx when present.

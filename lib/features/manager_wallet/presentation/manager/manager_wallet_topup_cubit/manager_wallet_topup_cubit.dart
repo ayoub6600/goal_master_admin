@@ -7,20 +7,25 @@ class ManagerWalletTopUpCubit extends Cubit<ManagerWalletTopUpState> {
 
   ManagerWalletTopUpCubit(this.repo) : super(const ManagerWalletTopUpInitial());
 
-  Future<void> confirmTopUp(
-    String amount, {
-    required String status,
-    String? reference,
-  }) async {
+  /// Asks the server to open a top-up for [amount].
+  Future<void> start(String amount) async {
     emit(const ManagerWalletTopUpLoading());
-    final result = await repo.confirmTopUp(
-      amount,
-      status,
-      reference: reference,
-    );
+    final result = await repo.startTopUp(amount);
     result.fold(
       (failure) => emit(ManagerWalletTopUpFailure(failure.errMessage)),
-      (message) => emit(ManagerWalletTopUpSuccess(message)),
+      (checkout) => emit(ManagerWalletTopUpReady(checkout)),
+    );
+  }
+
+  /// The Lightbox reported success: the server checks with the bank.
+  Future<void> confirm(String reference) async {
+    emit(const ManagerWalletTopUpLoading());
+    final result = await repo.confirmTopUp(reference);
+    result.fold(
+      (failure) => emit(ManagerWalletTopUpFailure(failure.errMessage)),
+      (confirmation) => emit(confirmation.credited
+          ? ManagerWalletTopUpSuccess(confirmation.message)
+          : ManagerWalletTopUpPending(confirmation.message)),
     );
   }
 }

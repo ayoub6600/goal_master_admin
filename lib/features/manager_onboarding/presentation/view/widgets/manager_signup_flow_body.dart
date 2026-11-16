@@ -127,7 +127,7 @@ class _ManagerSignupFlowBodyState extends State<ManagerSignupFlowBody> {
                           Text(
                             _step == 0
                                 ? 'اختر الباقة المناسبة لملعبك، ثم تابع لإنشاء حساب المدير.'
-                                : 'أدخل بيانات مدير الملعب لإنشاء الحساب. تفعيل الدفع والـ OTP سنضيفه في المرحلة التالية فوق نفس الهيكل.',
+                                : 'أدخل بيانات مدير الملعب لإنشاء الحساب. إذا كان لديك حساب زبون في Goal Master بنفس الرقم، أدخل كلمة مرور حسابك الحالي ليُربط به حساب المدير.',
                             style: AppTextStyles.font14Regular.copyWith(
                               color: Colors.white.withValues(alpha: 0.85),
                               height: 1.5,

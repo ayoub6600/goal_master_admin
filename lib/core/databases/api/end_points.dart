@@ -88,6 +88,7 @@ class EndPoints {
   static String managerWalletSummary = 'manager/wallet/summary';
   static String managerWalletTransactions = 'manager/wallet/transactions';
   static String managerWalletConfirmTopUp = 'manager/wallet/confirm-topup';
+  static String managerWalletStartTopUp = 'manager/wallet/topup/start';
   static String managerWalletLocalPaymentSetting =
       'manager/wallet/local-payment-setting';
   static String managerCancellationPolicy = 'manager/cancellation-policy';

@@ -70,7 +70,9 @@ class _ManagerTopUpSheetVisaState extends State<ManagerTopUpSheetVisa> {
               );
 
               if (!context.mounted) return;
-              if (res == 'success') {
+              // 'pending' is paid too — the server credits it once the bank
+              // confirms — so the wallet screen refreshes either way.
+              if (res == 'success' || res == 'pending') {
                 Navigator.pop(context, true);
               }
             },

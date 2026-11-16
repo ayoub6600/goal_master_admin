@@ -7,22 +7,22 @@ class ServerFailure extends Failure {
   factory ServerFailure.fromDioException(DioException dioException) {
     switch (dioException.type) {
       case DioExceptionType.connectionTimeout:
-        return ServerFailure(errMessage: 'Connection timeout with ApiServer');
+        return ServerFailure(errMessage: 'انتهت مهلة الاتصال بالخادم. تحقق من الإنترنت وحاول مرة أخرى.');
       case DioExceptionType.sendTimeout:
-        return ServerFailure(errMessage: 'Send timeout with ApiServer');
+        return ServerFailure(errMessage: 'انتهت مهلة إرسال الطلب. حاول مرة أخرى.');
       case DioExceptionType.receiveTimeout:
-        return ServerFailure(errMessage: 'Receive timeout with ApiServer');
+        return ServerFailure(errMessage: 'تأخر رد الخادم. حاول مرة أخرى.');
       case DioExceptionType.badCertificate:
-        return ServerFailure(errMessage: 'Bad Certificate with ApiServer');
+        return ServerFailure(errMessage: 'تعذر التحقق من أمان الاتصال بالخادم.');
       case DioExceptionType.badResponse:
         return ServerFailure.fromBadResponse(
             dioException.response!.statusCode!, dioException.response!.data);
       case DioExceptionType.cancel:
-        return ServerFailure(errMessage: 'Request to ApiServer was canceled');
+        return ServerFailure(errMessage: 'تم إلغاء الطلب.');
       case DioExceptionType.connectionError:
-        return ServerFailure(errMessage: 'Connection error, Please try again!');
+        return ServerFailure(errMessage: 'تعذر الاتصال بالخادم. تحقق من الإنترنت وحاول مرة أخرى.');
       case DioExceptionType.unknown:
-        return ServerFailure(errMessage: 'Unexpected error, Please try again!');
+        return ServerFailure(errMessage: 'حدث خطأ غير متوقع. حاول مرة أخرى.');
       default:
         return ServerFailure(
             errMessage: dioException.response?.data ??
@@ -51,10 +51,11 @@ class ServerFailure extends Failure {
             return ServerFailure(errMessage: passwordError);
           }
 
-          // General case for multiple errors
-          final errorMessages = errors.entries
-              .map((entry) =>
-                  '${entry.key}: ${(entry.value as List).join(', ')}')
+          // General case for multiple errors. The server's sentences only —
+          // a raw field key like `phone_number:` in front means nothing to a
+          // manager.
+          final errorMessages = errors.values
+              .map((value) => value is List ? value.join('، ') : '$value')
               .join('\n');
           return ServerFailure(errMessage: errorMessages);
         }
@@ -72,7 +73,7 @@ class ServerFailure extends Failure {
       }
 
       return ServerFailure(
-          errMessage: 'Validation failed. Please check your input.');
+          errMessage: 'تحقق من البيانات المدخلة ثم حاول مرة أخرى.');
     } else if (statusCode == 404) {
       if (response is Map<String, dynamic> &&
           response['message'] is String &&
@@ -81,12 +82,30 @@ class ServerFailure extends Failure {
       }
       return ServerFailure(
           errMessage: 'لم يتم العثور على الحملة. حدّث القائمة وحاول مجددًا.');
-    } else if (statusCode == 500) {
+    } else if (statusCode >= 500) {
+      // The server's own sentence when it wrote one (e.g. «لم يتم خصم أي
+      // مبلغ»), never an exception dump.
+      if (response is Map &&
+          response['data'] is String &&
+          (response['data'] as String).trim().isNotEmpty &&
+          !(response['data'] as String).contains('Exception')) {
+        return ServerFailure(errMessage: response['data'] as String);
+      }
+      if (response is Map &&
+          response['message'] is String &&
+          (response['message'] as String).trim().isNotEmpty &&
+          !(response['message'] as String).contains('Exception') &&
+          response['message'] != 'Server Error') {
+        return ServerFailure(errMessage: response['message'] as String);
+      }
       return ServerFailure(
-          errMessage: 'Internal server error. Please try again later.');
+          errMessage: 'حدث خطأ في الخادم. حاول مرة أخرى بعد قليل.');
+    } else if (statusCode == 429) {
+      return ServerFailure(
+          errMessage: 'محاولات كثيرة خلال وقت قصير. انتظر قليلًا ثم حاول مرة أخرى.');
     } else {
       return ServerFailure(
-          errMessage: 'An unexpected error occurred. Status: $statusCode');
+          errMessage: 'حدث خطأ غير متوقع ($statusCode). حاول مرة أخرى.');
     }
   }
 }

@@ -72,7 +72,11 @@ enum PlanAction {
 
   /// Flips marketplace access. Neither higher nor lower, so it waits for the
   /// next cycle and is never called an upgrade to the manager.
-  scheduleSwitch;
+  scheduleSwitch,
+
+  /// Any other plan while the free trial is running: immediate and free. The
+  /// trial keeps its end date and the chosen plan is what is billed then.
+  trialSwitch;
 
   static PlanAction parse(String? raw) => switch (raw) {
         'current' => PlanAction.current,
@@ -80,6 +84,7 @@ enum PlanAction {
         'upgrade' => PlanAction.upgrade,
         'schedule_downgrade' => PlanAction.scheduleDowngrade,
         'schedule_switch' => PlanAction.scheduleSwitch,
+        'trial_switch' => PlanAction.trialSwitch,
         _ => PlanAction.subscribe,
       };
 
@@ -90,6 +95,7 @@ enum PlanAction {
         PlanAction.upgrade => 'ترقية الآن',
         PlanAction.scheduleDowngrade => 'التغيير عند نهاية الدورة',
         PlanAction.scheduleSwitch => 'تغيير الباقة عند نهاية الدورة',
+        PlanAction.trialSwitch => 'التحويل لهذه الباقة مجانًا',
         PlanAction.subscribe => 'اشترك',
       };
 
@@ -100,6 +106,10 @@ enum PlanAction {
   bool get chargesNow => this == PlanAction.renew ||
       this == PlanAction.upgrade ||
       this == PlanAction.subscribe;
+
+  /// Whether the plan should already have moved once the server says yes —
+  /// what the cubit checks before celebrating.
+  bool get takesEffectNow => chargesNow || this == PlanAction.trialSwitch;
 
   /// Whether this takes effect when the paid period runs out.
   bool get isScheduled =>
@@ -115,6 +125,7 @@ class PlanLifecycle {
     this.effectivePrice = 0,
     this.isCurrent = false,
     this.upgradePreview,
+    this.trialEndsAt,
   });
 
   final int planId;
@@ -134,6 +145,9 @@ class PlanLifecycle {
   /// Present only for an upgrade. Every figure is the server's.
   final UpgradePreview? upgradePreview;
 
+  /// Present only for a trial switch: when the free trial ends.
+  final DateTime? trialEndsAt;
+
   factory PlanLifecycle.fromJson(Map<String, dynamic> json) {
     final preview = json['upgrade_preview'];
 
@@ -147,6 +161,7 @@ class PlanLifecycle {
       upgradePreview: preview is Map
           ? UpgradePreview.fromJson(Map<String, dynamic>.from(preview))
           : null,
+      trialEndsAt: DateTime.tryParse(json['trial_ends_at']?.toString() ?? ''),
     );
   }
 }

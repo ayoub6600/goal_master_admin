@@ -4,6 +4,7 @@ import 'package:goal_master_admin/core/databases/api/api_consumer_extension.dart
 import 'package:goal_master_admin/core/databases/api/end_points.dart';
 import 'package:goal_master_admin/core/errors/failure.dart';
 import 'package:goal_master_admin/features/manager_wallet/data/model/manager_wallet_response.dart';
+import 'package:goal_master_admin/features/manager_wallet/data/model/topup_checkout.dart';
 import 'package:goal_master_admin/features/manager_wallet/data/repo/manager_wallet_repo.dart';
 
 class ManagerWalletRepoImp extends ManagerWalletRepo {
@@ -44,21 +45,24 @@ class ManagerWalletRepoImp extends ManagerWalletRepo {
   }
 
   @override
-  Future<Either<Failure, String>> confirmTopUp(
-    String amount,
-    String status, {
-    String? reference,
-  }) {
+  Future<Either<Failure, TopUpCheckout>> startTopUp(String amount) {
+    return consumer.handleRequest(
+      () => consumer.post(
+        EndPoints.managerWalletStartTopUp,
+        data: {'amount': amount},
+      ),
+      (res) => TopUpCheckout.fromJson(Map<String, dynamic>.from(res['data'] as Map)),
+    );
+  }
+
+  @override
+  Future<Either<Failure, TopUpConfirmation>> confirmTopUp(String reference) {
     return consumer.handleRequest(
       () => consumer.post(
         EndPoints.managerWalletConfirmTopUp,
-        data: {
-          'amount': amount,
-          'status': status,
-          if (reference != null && reference.isNotEmpty) 'reference': reference,
-        },
+        data: {'reference': reference},
       ),
-      (res) => res['message']?.toString() ?? 'تمت العملية بنجاح',
+      (res) => TopUpConfirmation.fromJson(Map<String, dynamic>.from(res as Map)),
     );
   }
 

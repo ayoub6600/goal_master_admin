@@ -389,7 +389,7 @@ void main() {
       reason: 'the plan never moved, so this is not a success',
     );
     expect(
-      find.textContaining('تعذر تأكيد ترقية الباقة'),
+      find.textContaining('تعذر تأكيد تغيير الباقة'),
       findsWidgets,
     );
 

@@ -612,7 +612,8 @@ class _ManagerSubscriptionBodyState extends State<ManagerSubscriptionBody> {
             PlanAction.upgrade => 'ترقية الباقة',
             PlanAction.renew => 'تجديد الاشتراك',
             PlanAction.scheduleDowngrade ||
-            PlanAction.scheduleSwitch =>
+            PlanAction.scheduleSwitch ||
+            PlanAction.trialSwitch =>
               'تغيير الباقة',
             _ => 'تأكيد الاشتراك',
           }),
@@ -673,6 +674,24 @@ class _ManagerSubscriptionBodyState extends State<ManagerSubscriptionBody> {
             bold: true),
         SizedBox(height: 8.h),
         Text('لن تبدأ دورة جديدة. سيبقى تاريخ انتهاء اشتراكك كما هو.',
+            style: AppTextStyles.font12Regular
+                .copyWith(color: AppColors.fontColor)),
+      ];
+    }
+
+    if (action == PlanAction.trialSwitch) {
+      return [
+        Text('ستتحول إلى $planName فورًا، بكل مزاياها.'),
+        SizedBox(height: 8.h),
+        if (info?.trialEndsAt != null)
+          _confirmRow('فترتك التجريبية مستمرة حتى',
+              arabicDayAndDateOf(info!.trialEndsAt!)),
+        _confirmRow('المبلغ المطلوب الآن', money(0), bold: true),
+        if (info != null)
+          _confirmRow('السعر بعد نهاية الفترة التجريبية',
+              money(info.effectivePrice)),
+        SizedBox(height: 8.h),
+        Text('لن يتم خصم أي مبلغ الآن.',
             style: AppTextStyles.font12Regular
                 .copyWith(color: AppColors.fontColor)),
       ];

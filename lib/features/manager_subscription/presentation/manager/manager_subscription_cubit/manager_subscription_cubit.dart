@@ -100,7 +100,7 @@ class ManagerSubscriptionCubit extends Cubit<ManagerSubscriptionState> {
     // Captured before the request: a downgrade or a plan switch is SUPPOSED to
     // leave the current plan alone, so only an immediate change is checked
     // against it afterwards.
-    final wasImmediate = actionFor(subscriptionPlanId).chargesNow;
+    final wasImmediate = actionFor(subscriptionPlanId).takesEffectNow;
 
     final plans = _plansOf(state);
     final current = _currentOf(state);
@@ -162,7 +162,7 @@ class ManagerSubscriptionCubit extends Cubit<ManagerSubscriptionState> {
 
         if (wasImmediate && !tookEffect) {
           emit(ManagerSubscriptionFailure(
-            'تعذر تأكيد ترقية الباقة. لم تتغير باقتك الحالية.',
+            'تعذر تأكيد تغيير الباقة. لم تتغير باقتك الحالية.',
             current: _currentOf(state),
             plans: _plansOf(state),
           ));

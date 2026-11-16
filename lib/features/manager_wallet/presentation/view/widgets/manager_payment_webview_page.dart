@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master_admin/core/components/bottom_sheet/base_bottom_sheet.dart';
+import 'package:goal_master_admin/features/manager_wallet/data/model/topup_checkout.dart';
 import 'package:goal_master_admin/features/manager_wallet/presentation/manager/manager_wallet_topup_cubit/manager_wallet_topup_cubit.dart';
 import 'package:goal_master_admin/features/manager_wallet/presentation/manager/manager_wallet_topup_cubit/manager_wallet_topup_state.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -21,7 +22,10 @@ class ManagerPaymentScreen extends StatefulWidget {
 
 class _ManagerPaymentScreenState extends State<ManagerPaymentScreen> {
   late final WebViewController webViewController;
-  late final String _merchantReference;
+
+  /// The server's checkout: reference, amount and signature all come from
+  /// it. Null until the server has opened the top-up.
+  TopUpCheckout? _checkout;
   bool isPageLoading = true;
   bool _resultHandled = false;
   bool _isLeaving = false;
@@ -29,7 +33,6 @@ class _ManagerPaymentScreenState extends State<ManagerPaymentScreen> {
   @override
   void initState() {
     super.initState();
-    _merchantReference = 'ORDER_${DateTime.now().millisecondsSinceEpoch}';
 
     webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -45,19 +48,19 @@ class _ManagerPaymentScreenState extends State<ManagerPaymentScreen> {
             if (status == 'success') {
               _onSuccess();
             } else if (status == 'error') {
-              _showError('Payment failed: ${data["details"]}');
+              _showError('لم تتم عملية الدفع. لم يُخصم أي مبلغ من المحفظة.');
             } else if (status == 'cancel') {
-              _showError('Payment cancelled');
+              _showError('تم إلغاء عملية الدفع.');
             } else {
-              _showError('Unknown status: $raw');
+              _showError();
             }
           } catch (_) {
             if (raw == 'success') {
               _onSuccess();
             } else if (raw == 'error') {
-              _showError('Payment failed');
+              _showError('لم تتم عملية الدفع. لم يُخصم أي مبلغ من المحفظة.');
             } else if (raw == 'cancel') {
-              _showError('Payment cancelled');
+              _showError('تم إلغاء عملية الدفع.');
             }
           }
         },
@@ -68,42 +71,65 @@ class _ManagerPaymentScreenState extends State<ManagerPaymentScreen> {
           onPageFinished: (_) => setState(() => isPageLoading = false),
           onWebResourceError: (_) {
             setState(() => isPageLoading = false);
-            _showError('Failed to load page');
+            _showError('تعذر تحميل صفحة الدفع. تحقق من الإنترنت وحاول مرة أخرى.');
           },
         ),
-      )
-      ..loadHtmlString(_buildPaymentHtml());
+      );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => _prepare());
+  }
+
+  /// Asks the server to open the top-up, then shows the Lightbox it signed.
+  Future<void> _prepare() async {
+    final cubit = context.read<ManagerWalletTopUpCubit>();
+    await cubit.start(widget.amount);
+    if (!mounted) return;
+
+    final state = cubit.state;
+    if (state is ManagerWalletTopUpReady) {
+      _checkout = state.checkout;
+      await webViewController.loadHtmlString(_buildPaymentHtml(state.checkout));
+      return;
+    }
+
+    await _showError(state is ManagerWalletTopUpFailure
+        ? state.message
+        : 'تعذر بدء عملية الدفع. حاول مرة أخرى.');
   }
 
   Future<void> _onSuccess() async {
-    if (_resultHandled) return;
+    if (_resultHandled || _checkout == null) return;
     _resultHandled = true;
 
     final cubit = context.read<ManagerWalletTopUpCubit>();
-    await cubit.confirmTopUp(
-      widget.amount,
-      status: 'true',
-      reference: _merchantReference,
-    );
+    await cubit.confirm(_checkout!.merchantReference);
 
     if (!mounted) return;
 
     final state = cubit.state;
-    if (state is ManagerWalletTopUpSuccess) {
+    if (state is ManagerWalletTopUpSuccess || state is ManagerWalletTopUpPending) {
+      final pending = state is ManagerWalletTopUpPending;
       await baseBottomSheet(
         context: context,
         hideNavBar: true,
         showDragHandle: false,
-        child: const _ManagerPaymentResultSheet(success: true),
+        child: _ManagerPaymentResultSheet(
+          success: true,
+          pending: pending,
+          title: pending
+              ? (state as ManagerWalletTopUpPending).message
+              : null,
+        ),
       );
       if (!mounted) return;
-      Navigator.pop(context, 'success');
+      Navigator.pop(context, pending ? 'pending' : 'success');
       return;
     }
 
     final errorMessage = state is ManagerWalletTopUpFailure
         ? state.message
         : 'حدث خطأ أثناء تثبيت عملية الشحن';
+    _resultHandled = false;
     await _showError(errorMessage);
   }
 
@@ -157,84 +183,48 @@ class _ManagerPaymentScreenState extends State<ManagerPaymentScreen> {
     }
   }
 
-  String _buildPaymentHtml() {
-    const mID = '10765981238';
-    const tID = '34152540';
-    const merchantKey = 'effed1712b370f7d8011092861879bc7';
-    final amount = double.tryParse(widget.amount) ?? 0.0;
-    final merchRef = _merchantReference;
+  String _buildPaymentHtml(TopUpCheckout c) {
+    // Every value is the server's, already signed. No key, no hashing here.
+    final config = jsonEncode({
+      'MID': c.mid,
+      'TID': c.tid,
+      'AmountTrxn': c.amountTrxn,
+      'MerchantReference': c.merchantReference,
+      'TrxDateTime': c.trxDateTime,
+      'SecureHash': c.secureHash,
+    });
 
     return """
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Moamalat Payment</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  <script src="https://npg.moamalat.net:6006/js/lightbox.js"></script>
+  <script src="${c.lightboxUrl}"></script>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; background: #f9f9f9; }
   </style>
 </head>
 <body>
-  <h3>Processing Payment...</h3>
+  <h3>جارٍ فتح صفحة الدفع...</h3>
   <script>
     function callLightbox() {
-      var mID = '$mID';
-      var tID = '$tID';
-      var amount = $amount;
-      var merchRef = '$merchRef';
-      var merchantKey = "$merchantKey";
-      var keyBytes = CryptoJS.enc.Hex.parse(merchantKey);
-      var dt = new Date().YYYYMMDDHHMMSS();
-
-      var strToHash = 'Amount=' + amount + '000' +
-                      '&DateTimeLocalTrxn=' + dt +
-                      '&MerchantId=' + mID +
-                      '&MerchantReference=' + merchRef +
-                      '&TerminalId=' + tID;
-
-      var secureHash = CryptoJS.HmacSHA256(strToHash, keyBytes)
-                               .toString(CryptoJS.enc.Hex)
-                               .toUpperCase();
-
-      Lightbox.Checkout.configure = {
-        MID: mID,
-        TID: tID,
-        AmountTrxn: amount + '000',
-        MerchantReference: merchRef,
-        TrxDateTime: dt,
-        SecureHash: secureHash,
-        showCloseButton: true,
-        allowCancel: true,
-        completeCallback: function () {
-          PaymentChannel.postMessage("success");
-        },
-        errorCallback: function (data) {
-          PaymentChannel.postMessage(JSON.stringify({
-            status: "error",
-            details: data
-          }));
-        },
-        cancelCallback: function () {
-          PaymentChannel.postMessage("cancel");
-        }
+      var config = $config;
+      config.showCloseButton = true;
+      config.allowCancel = true;
+      config.completeCallback = function () {
+        PaymentChannel.postMessage("success");
       };
-
+      config.errorCallback = function (data) {
+        PaymentChannel.postMessage(JSON.stringify({ status: "error", details: data }));
+      };
+      config.cancelCallback = function () {
+        PaymentChannel.postMessage("cancel");
+      };
+      Lightbox.Checkout.configure = config;
       Lightbox.Checkout.showLightbox();
     }
-
-    Object.defineProperty(Date.prototype, 'YYYYMMDDHHMMSS', {
-      value: function () {
-        function pad2(n) { return (n < 10 ? '0' : '') + n; }
-        return this.getFullYear().toString() +
-          pad2(this.getMonth() + 1) +
-          pad2(this.getDate()) +
-          pad2(this.getHours()) +
-          pad2(this.getMinutes()) +
-          pad2(this.getSeconds());
-      }
-    });
 
     window.onload = function() {
       callLightbox();
@@ -279,11 +269,15 @@ class _ManagerPaymentScreenState extends State<ManagerPaymentScreen> {
 class _ManagerPaymentResultSheet extends StatelessWidget {
   const _ManagerPaymentResultSheet({
     required this.success,
+    this.pending = false,
     this.title,
     this.buttonText,
   });
 
   final bool success;
+
+  /// Paid, waiting for the bank's confirmation.
+  final bool pending;
   final String? title;
   final String? buttonText;
 
@@ -295,8 +289,16 @@ class _ManagerPaymentResultSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            success ? Icons.check_circle_rounded : Icons.cancel_rounded,
-            color: success ? Colors.green : Colors.red,
+            pending
+                ? Icons.hourglass_top_rounded
+                : success
+                    ? Icons.check_circle_rounded
+                    : Icons.cancel_rounded,
+            color: pending
+                ? Colors.orange
+                : success
+                    ? Colors.green
+                    : Colors.red,
             size: 72,
           ),
           const SizedBox(height: 16),
