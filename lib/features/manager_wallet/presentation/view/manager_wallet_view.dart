@@ -16,6 +16,8 @@ import 'package:goal_master_admin/features/manager_wallet/presentation/manager/m
 import 'package:goal_master_admin/features/manager_wallet/presentation/view/widgets/manager_top_up_sheet_card.dart';
 import 'package:goal_master_admin/features/manager_wallet/presentation/view/widgets/manager_top_up_sheet_visa.dart';
 import 'package:goal_master_admin/features/manager_wallet/presentation/view/widgets/manager_wallet_payment_methods_sheet.dart';
+import 'package:goal_master_admin/features/lypay/lypay_repo.dart';
+import 'package:goal_master_admin/features/lypay/lypay_topup_view.dart';
 
 class ManagerWalletView extends StatelessWidget {
   const ManagerWalletView({super.key});
@@ -51,6 +53,24 @@ class _ManagerWalletBody extends StatelessWidget {
         title: 'شحن المحفظة',
         child: const ManagerTopUpSheetVisa(),
       );
+    } else if (method == 'lypay') {
+      // Reviewed by an admin; the wallet reloads when the sheet closes, so
+      // an approval that came in meanwhile shows at once.
+      var approved = false;
+      await baseBottomSheet<void>(
+        context: context,
+        hideNavBar: true,
+        title: 'تحويل مصرفي عبر LYPay',
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 16.h),
+          child: LypayTopUpView(
+            repo: LypayRepo(basePath: 'manager/wallet/lypay'),
+            onApproved: () => approved = true,
+          ),
+        ),
+      );
+      shouldReload = approved;
+      if (context.mounted) context.read<ManagerWalletCubit>().load();
     } else if (method == 'card') {
       shouldReload = await baseBottomSheet<bool>(
         context: context,

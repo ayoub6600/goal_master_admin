@@ -232,3 +232,8 @@ pending a successful build.
 - A `session_revoked` 401 (password changed / account deleted elsewhere) — and a failed refresh — now opens the login screen; it used to clear the session and stay on a failing screen.
 - `usesCleartextTraffic` moved to the debug manifest only.
 - Venue profile counts bookable pitches only (a stopped pitch made it «3 ملاعب»); fixes the long-failing `venue_profile_test`.
+
+## 2026-11-17 — LYPay transfer top-up for the manager wallet
+
+- «خدمات المحفظة» adds «تحويل مصرفي (LYPay)»: the same transfer → receipt → review flow as the customer app (`lib/features/lypay/`), against `manager/wallet/lypay`, crediting the manager wallet. The wallet reloads when the sheet closes.
+- Version 1.7.2+13.

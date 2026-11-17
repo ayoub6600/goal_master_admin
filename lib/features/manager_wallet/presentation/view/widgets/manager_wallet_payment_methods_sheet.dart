@@ -22,6 +22,13 @@ class ManagerWalletPaymentMethodsSheet extends StatelessWidget {
           ),
           HeightSpace(12.h),
           ButtonApp(
+            text: 'تحويل مصرفي (LYPay)',
+            backGround: Colors.white,
+            textColor: AppColors.primary,
+            onTap: () => Navigator.pop(context, 'lypay'),
+          ),
+          HeightSpace(12.h),
+          ButtonApp(
             text: 'شحن بالكرت',
             backGround: Colors.white,
             textColor: AppColors.primary,
