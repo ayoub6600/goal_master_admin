@@ -14,6 +14,7 @@ import 'package:goal_master_admin/features/booking/data/repo/booking_repo_imp.da
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/reschedule_booking_sheet.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/series_deposit_sheet.dart';
 import 'package:goal_master_admin/features/monthly_booking/data/repo/monthly_booking_repo_imp.dart';
+import 'package:goal_master_admin/core/components/skeletons.dart';
 
 /// Everything the venue needs to decide on a recurring booking.
 ///
@@ -186,7 +187,7 @@ class _ManagerSeriesDetailsState extends State<ManagerSeriesDetails> {
   }
 
   Widget _body() {
-    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_loading) return const SkeletonDetails(headerHeight: 140);
 
     if (_error != null) {
       return Center(
@@ -243,7 +244,7 @@ class _ManagerSeriesDetailsState extends State<ManagerSeriesDetails> {
         if (_deciding)
           Container(
             color: Colors.black.withOpacity(0.3),
-            child: const Center(child: CircularProgressIndicator()),
+            child: const Center(child: SoftSpinner(size: 34, color: Colors.white)),
           ),
       ],
     );

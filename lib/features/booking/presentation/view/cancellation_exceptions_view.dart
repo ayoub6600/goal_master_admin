@@ -7,6 +7,7 @@ import 'package:goal_master_admin/core/styles/app_text_styles.dart';
 import 'package:goal_master_admin/core/styles/spaces.dart';
 import 'package:goal_master_admin/features/booking/data/model/cancellation_case.dart';
 import 'package:goal_master_admin/features/booking/data/repo/booking_repo_imp.dart';
+import 'package:goal_master_admin/core/components/skeletons.dart';
 
 /// Appeals waiting on this venue.
 ///
@@ -60,7 +61,7 @@ class _CancellationExceptionsViewState
       title: 'طلبات مراجعة الإلغاء',
       allowBack: true,
       child: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const SkeletonList(count: 5)
           : _error != null
               ? Center(child: Text(_error!))
               : _cases.isEmpty

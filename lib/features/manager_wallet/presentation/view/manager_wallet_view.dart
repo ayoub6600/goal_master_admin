@@ -18,6 +18,7 @@ import 'package:goal_master_admin/features/manager_wallet/presentation/view/widg
 import 'package:goal_master_admin/features/manager_wallet/presentation/view/widgets/manager_wallet_payment_methods_sheet.dart';
 import 'package:goal_master_admin/features/lypay/lypay_repo.dart';
 import 'package:goal_master_admin/features/lypay/lypay_topup_view.dart';
+import 'package:goal_master_admin/core/components/skeletons.dart';
 
 class ManagerWalletView extends StatelessWidget {
   const ManagerWalletView({super.key});
@@ -119,7 +120,7 @@ class _ManagerWalletBody extends StatelessWidget {
       child: BlocBuilder<ManagerWalletCubit, ManagerWalletState>(
         builder: (context, state) {
           if (state is ManagerWalletLoading || state is ManagerWalletInitial) {
-            return const Center(child: CircularProgressIndicator());
+            return const SkeletonDetails(headerHeight: 170);
           }
 
           if (state is ManagerWalletFailure) {

@@ -7,6 +7,7 @@ import 'package:goal_master_admin/features/booking/data/repo/booking_repo_imp.da
 import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/core/utils/arabic_dates.dart';
 import 'package:goal_master_admin/features/home/data/model/booking_drilldown_item.dart';
+import 'package:goal_master_admin/core/components/skeletons.dart';
 
 enum BookingDrilldownKind { paidOnline, paidCash, due }
 
@@ -54,7 +55,7 @@ class _BookingDrilldownViewState extends State<BookingDrilldownView> {
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
+            return const SkeletonList(count: 6);
           }
 
           final result = snapshot.data;

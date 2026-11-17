@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master_admin/core/components/page_wrapper.dart';
 import 'package:goal_master_admin/core/services/service_locator.dart';
 import 'package:goal_master_admin/features/manager_marketing/data/repo/manager_marketing_campaign_repo.dart';
+import 'package:goal_master_admin/core/components/skeletons.dart';
 
 class ManagerMarketingCampaignsView extends StatefulWidget {
   const ManagerMarketingCampaignsView({super.key});
@@ -195,7 +196,7 @@ class _ManagerMarketingCampaignsViewState
   Widget build(BuildContext context) => PageWrapper(
         title: 'العروض والخصومات',
         child: _loading
-            ? const Center(child: CircularProgressIndicator())
+            ? const SkeletonCardList(count: 3, imageHeight: 90)
             : ListView(
                 padding: EdgeInsets.all(16.w),
                 children: [

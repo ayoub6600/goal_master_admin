@@ -12,6 +12,7 @@ import 'package:goal_master_admin/features/home/presentation/view/widgets/bookin
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 import '../../../data/model/booking_slots_response.dart';
+import 'package:goal_master_admin/core/components/skeletons.dart';
 
 class ShowAllResulatFiltter extends StatelessWidget {
   const ShowAllResulatFiltter({super.key});
@@ -45,9 +46,9 @@ class ShowAllResulatFiltter extends StatelessWidget {
                 );
               },
               firstPageProgressIndicatorBuilder: (context) =>
-                  const CustomLoadingWidget(),
+                  const SkeletonCardList(count: 3, padding: EdgeInsets.zero, shrinkWrap: true),
               newPageProgressIndicatorBuilder: (context) =>
-                  const CustomLoadingWidget(),
+                  const SkeletonList(count: 1, padding: EdgeInsets.symmetric(vertical: 8), shrinkWrap: true),
               noItemsFoundIndicatorBuilder: (context) => EmptyLoading(
                 image: Assets.imagesPngImagePaper,
                 title: "لا يوجد حجوزات",
@@ -64,7 +65,7 @@ class ShowAllResulatFiltter extends StatelessWidget {
           );
         }
 
-        return const CustomLoadingWidget();
+        return const SkeletonCardList(count: 3);
       },
     );
   }

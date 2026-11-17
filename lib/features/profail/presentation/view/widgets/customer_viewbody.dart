@@ -21,6 +21,7 @@ import 'package:goal_master_admin/features/profail/presentation/manager/customer
 import 'package:goal_master_admin/features/profail/presentation/view/widgets/items_user_call.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
+import 'package:goal_master_admin/core/components/skeletons.dart';
 
 class CustomerViewbody extends StatefulWidget {
   const CustomerViewbody({super.key});
@@ -170,7 +171,7 @@ class _CustomerViewbodyState extends State<CustomerViewbody> {
                             },
                             builder: (context, state) {
                               if (state is AddCustomerLoading) {
-                                return CircularProgressIndicator();
+                                return const SoftSpinner();
                               }
 
                               return ButtonApp(

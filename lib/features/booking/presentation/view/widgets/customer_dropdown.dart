@@ -4,6 +4,7 @@ import 'package:goal_master_admin/core/styles/app_colors.dart';
 import 'package:goal_master_admin/features/profail/data/model/customer_list_response.dart';
 import 'package:goal_master_admin/features/profail/presentation/manager/customer_cubit/customer_cubit.dart';
 import 'package:searchable_paginated_dropdown/searchable_paginated_dropdown.dart';
+import 'package:goal_master_admin/core/components/skeletons.dart';
 
 class CustomerDropdownWidget extends StatelessWidget {
   const CustomerDropdownWidget({Key? key, required this.onCustomerSelected})
@@ -65,7 +66,7 @@ class CustomerDropdownWidget extends StatelessWidget {
         }
 
         if (state is CustomerLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const Skeleton(child: SkeletonBox(height: 52, width: double.infinity, radius: 12));
         }
         if (state is CustomerError) {
           return Center(child: Text('حدث خطأ: ${state.message}'));

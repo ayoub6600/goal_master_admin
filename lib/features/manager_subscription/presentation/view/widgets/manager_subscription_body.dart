@@ -16,6 +16,7 @@ import 'package:goal_master_admin/features/manager_subscription/presentation/man
 import 'package:goal_master_admin/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
 import 'package:goal_master_admin/core/utils/arabic_dates.dart';
 import 'package:goal_master_admin/features/manager_subscription/data/model/subscription_lifecycle.dart';
+import 'package:goal_master_admin/core/components/skeletons.dart';
 
 class ManagerSubscriptionBody extends StatefulWidget {
   const ManagerSubscriptionBody({super.key});
@@ -92,7 +93,7 @@ class _ManagerSubscriptionBodyState extends State<ManagerSubscriptionBody> {
         return PageWrapper(
           title: 'الاشتراك',
           child: isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? const SkeletonDetails(headerHeight: 160)
               : SingleChildScrollView(
                   padding: EdgeInsets.all(16.w),
                   child: Column(

@@ -16,6 +16,7 @@ import 'package:goal_master_admin/features/booking/presentation/view/widgets/dep
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/reschedule_booking_sheet.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/update_booking_status_view.dart';
 import 'package:goal_master_admin/features/monthly_booking/data/repo/monthly_booking_repo_imp.dart';
+import 'package:goal_master_admin/core/components/skeletons.dart';
 
 class BookingItemsDetails extends StatefulWidget {
   const BookingItemsDetails({super.key});
@@ -111,7 +112,7 @@ class _BookingItemsDetailsState extends State<BookingItemsDetails> {
         child: BlocBuilder<BookingDetailsCubit, BookingDetailsState>(
           builder: (context, state) {
             if (state is BookingDetailsLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return const SkeletonDetails(headerHeight: 160);
             }
 
             if (state is BookingDetailsError) {

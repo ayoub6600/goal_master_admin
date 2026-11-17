@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master_admin/features/manager_setup/data/model/manager_setup_bootstrap_response.dart';
 import 'package:goal_master_admin/features/manager_setup/presentation/manager/manager_setup_cubit/manager_setup_cubit.dart';
 import 'package:goal_master_admin/features/manager_setup/presentation/view/widgets/manager_sport_images_sheet.dart';
+import 'package:goal_master_admin/core/components/skeletons.dart';
 
 class ManagerFieldsView extends StatelessWidget {
   const ManagerFieldsView({super.key});
@@ -42,9 +43,7 @@ class ManagerFieldsView extends StatelessWidget {
             };
 
             if (bootstrap == null) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const SkeletonCardList(count: 3, imageHeight: 120);
             }
 
             final groups = <int, List<SetupServiceItem>>{};

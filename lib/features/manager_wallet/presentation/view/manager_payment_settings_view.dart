@@ -10,6 +10,7 @@ import 'package:goal_master_admin/features/manager_wallet/data/model/manager_wal
 import 'package:goal_master_admin/features/manager_wallet/data/repo/manager_wallet_repo_imp.dart';
 import 'package:goal_master_admin/features/manager_wallet/presentation/manager/manager_wallet_cubit/manager_wallet_cubit.dart';
 import 'package:goal_master_admin/features/manager_wallet/presentation/manager/manager_wallet_cubit/manager_wallet_state.dart';
+import 'package:goal_master_admin/core/components/skeletons.dart';
 
 class ManagerPaymentSettingsView extends StatelessWidget {
   const ManagerPaymentSettingsView({super.key});
@@ -54,7 +55,7 @@ class _ManagerPaymentSettingsBody extends StatelessWidget {
       child: BlocBuilder<ManagerWalletCubit, ManagerWalletState>(
         builder: (context, state) {
           if (state is ManagerWalletLoading || state is ManagerWalletInitial) {
-            return const Center(child: CircularProgressIndicator());
+            return const SkeletonList(count: 4, trailing: false);
           }
 
           if (state is ManagerWalletFailure) {

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/booking_cubit/booking_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/employee_cubit/employee_cubit.dart';
+import 'package:goal_master_admin/core/components/skeletons.dart';
 
 class EmployeeDropdownSelection extends StatefulWidget {
   final BuildContext cubitContext;
@@ -51,7 +52,7 @@ class _EmployeeDropdownSelectionState extends State<EmployeeDropdownSelection> {
                 },
               ),
             if (state is EmployeeLoading)
-              const Center(child: CircularProgressIndicator()),
+              const Skeleton(child: Wrap(spacing: 10, runSpacing: 10, children: [SkeletonBox(width: 90, height: 38, radius: 19), SkeletonBox(width: 110, height: 38, radius: 19), SkeletonBox(width: 80, height: 38, radius: 19)])),
             if (state is EmployeeFailure) Text('خطأ: ${state.message}'),
           ],
         );

@@ -22,6 +22,7 @@ import 'package:goal_master_admin/features/notification/manager/notification_cub
 import 'package:goal_master_admin/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
 import 'package:hexcolor/hexcolor.dart';
+import 'package:goal_master_admin/core/components/skeletons.dart';
 
 class HomeViewBody extends StatelessWidget {
   const HomeViewBody({super.key});
@@ -153,10 +154,10 @@ class HomeViewBody extends StatelessWidget {
                         }
                       },
                       builder: (context, state) {
-                        print(
-                            '[🔁 Builder] Notification state: $state'); // ✅ هيتطبع كل 15 ثانية لما يحصل poll
-
-                        int unreadCount = 0;
+                        // Any other state (marking, failure…) keeps the
+                        // real count instead of flashing the badge away.
+                        int unreadCount =
+                            context.read<NotificationCubit>().unreadCount;
 
                         if (state is NotificationLoadSuccess) {
                           unreadCount = state.unreadCount;
@@ -489,7 +490,17 @@ class HomeViewBody extends StatelessWidget {
                 return BlocBuilder<AnalysisCubit, AnalysisState>(
                   builder: (context, state) {
                     if (state is AnalysisLoading) {
-                      return const Center(child: CircularProgressIndicator());
+                      return const Skeleton(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: Wrap(spacing: 12, runSpacing: 12, children: [
+                            SkeletonBox(width: 160, height: 90, radius: 16),
+                            SkeletonBox(width: 160, height: 90, radius: 16),
+                            SkeletonBox(width: 160, height: 90, radius: 16),
+                            SkeletonBox(width: 160, height: 90, radius: 16),
+                          ]),
+                        ),
+                      );
                     } else if (state is AnalysisError) {
                       return AppErrorView(
                         message: state.message,

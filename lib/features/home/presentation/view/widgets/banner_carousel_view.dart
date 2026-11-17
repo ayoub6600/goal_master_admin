@@ -11,6 +11,7 @@ import 'package:goal_master_admin/features/home/presentation/manager/banner_cubi
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:goal_master_admin/core/components/skeletons.dart';
 
 class BannerCarouselScreen extends StatefulWidget {
   const BannerCarouselScreen({super.key});
@@ -113,10 +114,8 @@ class _BannerCarouselScreenState extends State<BannerCarouselScreen> {
                     CachedNetworkImage(
                       imageUrl: slide.image ?? "",
                       fit: BoxFit.contain,
-                      placeholder: (context, url) => Container(
-                        color: Colors.grey[200],
-                        child: const Center(child: CircularProgressIndicator()),
-                      ),
+                      placeholder: (context, url) =>
+                          const SizedBox.expand(child: SkeletonFill()),
                       errorWidget: (context, url, error) => Container(
                         color: Colors.grey[200],
                         child: const Center(child: Icon(Icons.broken_image)),

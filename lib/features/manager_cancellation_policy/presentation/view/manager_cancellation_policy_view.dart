@@ -10,6 +10,7 @@ import 'package:goal_master_admin/features/manager_cancellation_policy/data/mode
 import 'package:goal_master_admin/features/manager_cancellation_policy/data/repo/manager_cancellation_policy_repo_imp.dart';
 import 'package:goal_master_admin/features/manager_cancellation_policy/presentation/manager/manager_cancellation_policy_cubit/manager_cancellation_policy_cubit.dart';
 import 'package:goal_master_admin/features/manager_cancellation_policy/presentation/manager/manager_cancellation_policy_cubit/manager_cancellation_policy_state.dart';
+import 'package:goal_master_admin/core/components/skeletons.dart';
 
 class ManagerCancellationPolicyView extends StatelessWidget {
   const ManagerCancellationPolicyView({super.key});
@@ -83,7 +84,7 @@ class _ManagerCancellationPolicyBodyState
         builder: (context, state) {
           if (state is ManagerCancellationPolicyLoading ||
               state is ManagerCancellationPolicyInitial) {
-            return const Center(child: CircularProgressIndicator());
+            return const SkeletonList(count: 6, trailing: false);
           }
 
           if (state is ManagerCancellationPolicyFailure) {

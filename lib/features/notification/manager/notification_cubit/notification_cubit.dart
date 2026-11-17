@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:goal_master_admin/features/notification/manager/notification_cubit/notification_announce.dart';
 import 'package:goal_master_admin/features/notification/data/model/notification_response.dart';
 import 'package:goal_master_admin/features/notification/data/repo/notifaction_repo.dart';
 import 'package:goal_master_admin/utils/notification_dedup_store.dart';
@@ -14,7 +16,8 @@ import 'package:equatable/equatable.dart';
 
 part 'notification_state.dart';
 
-class NotificationCubit extends Cubit<NotificationState> {
+class NotificationCubit extends Cubit<NotificationState>
+    with WidgetsBindingObserver {
   final NotificationRepo notificationRepo;
   final void Function(NotificationItem)? onVisualNotification;
   final int userId;
@@ -25,6 +28,12 @@ class NotificationCubit extends Cubit<NotificationState> {
   StreamSubscription<RemoteMessage>? _fcmForegroundSubscription;
 
   bool _isDisposed = false;
+
+  /// When the app last came to the foreground: polling only alerts on
+  /// something created after it (see [notificationsToAnnounce]) — the
+  /// latest item found after a long background stay was already shown by
+  /// the system as a push notification.
+  DateTime _visibleSince = DateTime.now();
 
   PagingController<int, NotificationItem> get pagingController =>
       _pagingController;
@@ -89,11 +98,17 @@ class NotificationCubit extends Cubit<NotificationState> {
   void startSocket() {
     if (_isDisposed) return;
     _socketService.initialize();
+    WidgetsBinding.instance.addObserver(this);
 
     _pollingTimer = Timer.periodic(const Duration(seconds: 15), (_) {
       print('[\u23F1\uFE0F Polling] التحقق من وجود إشعارات جديدة...');
       _checkForNewNotification();
     });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _visibleSince = DateTime.now();
   }
 
   Future<void> _checkForNewNotification() async {
@@ -111,7 +126,10 @@ class NotificationCubit extends Cubit<NotificationState> {
         // alert, which is how it ended up alerting twice.
         final latest = response.data.data.firstOrNull;
         if (latest != null) {
-          handleNotificationReceived(latest);
+          final fresh = notificationsToAnnounce([latest],
+                  visibleSince: _visibleSince)
+              .isNotEmpty;
+          handleNotificationReceived(latest, announce: fresh);
         }
       },
     );
@@ -131,7 +149,8 @@ class NotificationCubit extends Cubit<NotificationState> {
   /// it directly without a live socket connection — not meant to be called
   /// from outside this cubit's own wiring otherwise.
   @visibleForTesting
-  Future<void> handleNotificationReceived(NotificationItem notification) async {
+  Future<void> handleNotificationReceived(NotificationItem notification,
+      {bool announce = true}) async {
     if (_isDisposed) return;
 
     final current = _pagingController.itemList ?? [];
@@ -156,6 +175,9 @@ class NotificationCubit extends Cubit<NotificationState> {
     // polling fallback above funnel through this same method, so there is
     // exactly one place left that can decide to alert.
     if (!NotificationDedupStore.markIfNew(notification.id)) return;
+    // An old item (a backlog found by polling) is recorded as seen above
+    // but not alerted on.
+    if (!announce) return;
 
     print('[🔔 إشعار جديد]: ${notification.data.message}');
 
@@ -236,6 +258,22 @@ class NotificationCubit extends Cubit<NotificationState> {
     );
   }
 
+  /// The notifications screen marked everything read (it has its own list):
+  /// drop the badge here too, without asking the server again.
+  void syncAllRead() {
+    if (_isDisposed) return;
+    final items = _pagingController.itemList;
+    if (items != null) {
+      final now = DateTime.now().toIso8601String();
+      _pagingController.itemList = items
+          .map((i) => (i.readAt == null || i.readAt!.isEmpty)
+              ? i.copyWith(readAt: now)
+              : i)
+          .toList();
+    }
+    emit(NotificationUnreadUpdated(unreadCount));
+  }
+
   int get unreadCount {
     return _pagingController.itemList
             ?.where((item) => item.readAt == null || item.readAt!.isEmpty)
@@ -272,6 +310,7 @@ class NotificationCubit extends Cubit<NotificationState> {
   @override
   Future<void> close() {
     _isDisposed = true;
+    WidgetsBinding.instance.removeObserver(this);
     _socketService.dispose();
     _fcmForegroundSubscription?.cancel();
     _pagingController.dispose();

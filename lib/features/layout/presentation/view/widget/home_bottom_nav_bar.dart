@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master_admin/core/styles/assets.dart';
 import 'package:goal_master_admin/features/layout/presentation/view/widget/nav_bar_item.dart';
+import 'package:goal_master_admin/features/support/support_repo.dart';
+import 'package:goal_master_admin/features/support/support_unread_watcher.dart';
 
 import '../../manager/layout_state.dart';
 
@@ -17,19 +19,26 @@ class HomeBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return SupportUnreadWatcher(child: _bar(context));
+  }
+
+  Widget _bar(BuildContext context) {
     return BottomAppBar(
       shape: const CircularNotchedRectangle(),
       notchMargin: 8.0,
       color: Color(0xffF4F6F9),
       child: Row(
         children: [
-          NavBarItem(
-            title: "حسابك",
-
-            icon: Assets.imagesPngImageProfile,
-            // selectedIcon: AssetsData.profileSelected,
-            isActive: activeElement == NavBarElement.profile,
-            onTap: () => changeElement(NavBarElement.profile),
+          // The red count = unread customer-service replies.
+          ValueListenableBuilder<int>(
+            valueListenable: SupportRepo.unread,
+            builder: (context, unread, _) => NavBarItem(
+              title: "حسابك",
+              icon: Assets.imagesPngImageProfile,
+              badge: unread,
+              isActive: activeElement == NavBarElement.profile,
+              onTap: () => changeElement(NavBarElement.profile),
+            ),
           ),
           SizedBox(
             width: 50.w,

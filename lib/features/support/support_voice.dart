@@ -291,9 +291,16 @@ class _VoiceBubbleState extends State<VoiceBubble> {
   double _rate = 1;
   bool _failed = false;
 
+  /// The source is loaded once and kept (ReleaseMode.stop), and a tap while
+  /// the player is still working is ignored: loading the source twice at
+  /// the same time crashed the native player on a quick double tap.
+  bool _loaded = false;
+  bool _busy = false;
+
   @override
   void initState() {
     super.initState();
+    _player.setReleaseMode(ReleaseMode.stop);
     _subs.add(_player.onPositionChanged
         .listen((p) => mounted ? setState(() => _position = p) : null));
     _subs.add(_player.onDurationChanged
@@ -316,24 +323,34 @@ class _VoiceBubbleState extends State<VoiceBubble> {
   }
 
   Future<void> _toggle() async {
-    if (_state == PlayerState.playing) {
-      await _player.pause();
-      return;
-    }
-    if (_playing != null && _playing != this) await _playing!._player.pause();
-    _playing = this;
+    if (_busy) return;
+    _busy = true;
     try {
-      setState(() => _failed = false);
-      if (_state == PlayerState.paused) {
-        await _player.resume();
-      } else {
-        await _player.play(widget.filePath != null
+      if (_state == PlayerState.playing) {
+        await _player.pause();
+        return;
+      }
+      if (_playing != null && _playing != this) {
+        await _playing!._player.pause();
+      }
+      _playing = this;
+      if (mounted) setState(() => _failed = false);
+      if (!_loaded) {
+        await _player.setSource(widget.filePath != null
             ? DeviceFileSource(widget.filePath!)
             : UrlSource(widget.url!));
-        await _player.setPlaybackRate(_rate);
+        _loaded = true;
+      } else if (_state == PlayerState.completed ||
+          _state == PlayerState.stopped) {
+        await _player.seek(Duration.zero);
       }
+      await _player.setPlaybackRate(_rate);
+      await _player.resume();
     } catch (_) {
+      _loaded = false;
       if (mounted) setState(() => _failed = true);
+    } finally {
+      _busy = false;
     }
   }
 

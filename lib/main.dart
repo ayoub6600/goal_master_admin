@@ -38,6 +38,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'core/components/no_internet_page.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/manager_customers_cubit/manager_customers_cubit.dart';
+import 'package:goal_master_admin/core/components/skeletons.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -220,7 +221,7 @@ class MyApp extends StatelessWidget {
               debugShowCheckedModeBanner: false,
               home: Scaffold(
                 backgroundColor: Colors.white,
-                body: Center(child: CircularProgressIndicator()),
+                body: Center(child: SoftSpinner(size: 28)),
               ),
             );
           }

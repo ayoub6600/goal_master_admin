@@ -10,6 +10,7 @@ import 'package:goal_master_admin/features/booking/presentation/manager/category
 import 'package:goal_master_admin/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/service_cubit/service_cubit.dart';
 import 'package:goal_master_admin/features/booking/presentation/view/widgets/step_title.dart';
+import 'package:goal_master_admin/core/components/skeletons.dart';
 
 class CategorySelection extends StatelessWidget {
   final PageController controller;
@@ -85,7 +86,7 @@ class CategorySelection extends StatelessWidget {
                     },
                   )),
             if (state is CategoryLoading)
-              Center(child: CircularProgressIndicator()),
+              const Skeleton(child: Wrap(spacing: 10, runSpacing: 10, children: [SkeletonBox(width: 90, height: 38, radius: 19), SkeletonBox(width: 110, height: 38, radius: 19), SkeletonBox(width: 80, height: 38, radius: 19)])),
             if (state is CategoryFailure) Text('خطأ: ${state.message}'),
           ],
         );

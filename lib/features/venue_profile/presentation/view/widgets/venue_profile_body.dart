@@ -10,6 +10,7 @@ import 'package:goal_master_admin/features/manager_setup/domain/opening_hours.da
 import 'package:goal_master_admin/features/manager_setup/presentation/manager/manager_setup_cubit/manager_setup_cubit.dart';
 import 'package:goal_master_admin/features/manager_setup/presentation/view/manager_fields_view.dart';
 import 'package:goal_master_admin/features/venue_profile/presentation/view/widgets/venue_edit_sheet.dart';
+import 'package:goal_master_admin/core/components/skeletons.dart';
 
 /// The venue as its manager knows it: a name, a way to be reached, a place.
 ///
@@ -44,7 +45,7 @@ class VenueProfileBody extends StatelessWidget {
                   onRetry: () =>
                       context.read<ManagerSetupCubit>().loadBootstrap(),
                 )
-              : const Center(child: CircularProgressIndicator());
+              : const SkeletonDetails(headerHeight: 180);
         }
 
         final branch = bootstrap.data.setup.branch;
