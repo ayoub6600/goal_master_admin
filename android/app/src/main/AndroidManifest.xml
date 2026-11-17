@@ -6,6 +6,9 @@
     <!-- صلاحية الإشعارات لأندرويد 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- الرسائل الصوتية مع خدمة العملاء -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <application
         android:label="مدير الملعب"
         android:name="${applicationName}"
