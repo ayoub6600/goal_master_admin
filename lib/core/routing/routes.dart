@@ -77,6 +77,7 @@ import 'package:goal_master_admin/features/profail/presentation/view/update_prof
 import 'package:goal_master_admin/features/profail/presentation/view/widgets/items_user_detains_view.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/allowed_amount_view.dart';
 import 'app_router.dart';
+import 'package:goal_master_admin/features/support/support_chat_view.dart';
 import 'package:goal_master_admin/features/booking/presentation/manager/monthly_series_cubit/monthly_series_cubit.dart';
 
 List<RouteBase> appRoutes = [
@@ -95,6 +96,16 @@ List<RouteBase> appRoutes = [
   GoRoute(
     path: RoutesKeys.kHome,
     builder: (context, state) => const HomeLayoutView(),
+  ),
+  //SupportChatView — customer service chat with the Goal Master team.
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kSupportChat,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const SupportChatView(),
+    ),
   ),
   // //kLogin
   GoRoute(

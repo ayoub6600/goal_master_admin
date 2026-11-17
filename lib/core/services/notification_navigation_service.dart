@@ -7,7 +7,14 @@ import 'package:goal_master_admin/core/routing/routes_keys.dart';
 /// `booking_id` the backend already attaches to the notification's data
 /// payload (see `SendPushNotification()` in goal-master-web).
 class NotificationNavigationService {
+  /// A reply from customer service.
+  static const supportChat = 'support_chat';
+
   static void handleMessageTap(RemoteMessage message) {
+    if (message.data['type']?.toString() == supportChat) {
+      AppRouter.router.push(RoutesKeys.kSupportChat);
+      return;
+    }
     final bookingIdStr = message.data['booking_id'];
     if (bookingIdStr == null) return;
 

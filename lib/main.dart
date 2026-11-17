@@ -8,6 +8,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master_admin/features/support/support_chat_view.dart';
+import 'package:goal_master_admin/features/support/support_repo.dart';
+import 'package:goal_master_admin/features/support/support_reply_banner.dart';
 import 'package:goal_master_admin/core/app_update/app_update_gate.dart';
 import 'package:goal_master_admin/core/databases/api/end_points.dart';
 import 'package:goal_master_admin/core/components/keys_values.dart';
@@ -83,6 +86,25 @@ Future<void> main() async {
     // App opened by tapping a notification while backgrounded (not terminated).
     FirebaseMessaging.onMessageOpenedApp
         .listen(NotificationNavigationService.handleMessageTap);
+
+    // A customer-service reply while the app is open: the open thread just
+    // fetches it; anywhere else a banner leads to it.
+    FirebaseMessaging.onMessage.listen((message) {
+      if (message.data['type']?.toString() !=
+          NotificationNavigationService.supportChat) {
+        return;
+      }
+      if (SupportChatView.refreshIfOpen()) return;
+      SupportRepo.unread.value = SupportRepo.unread.value + 1;
+      showSupportReplyBanner(
+        message.notification?.body ?? 'لديك رد جديد',
+        () {
+          if (AppRouter.hasRouter) {
+            AppRouter.router.push(RoutesKeys.kSupportChat);
+          }
+        },
+      );
+    });
 
     runApp(const MyApp());
 

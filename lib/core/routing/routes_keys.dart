@@ -34,4 +34,5 @@ class RoutesKeys {
   static const kHtmlViewerScreen = '/kHtmlViewerScreen';
   static const kManagerSeriesDetails = '/kManagerSeriesDetails';
   static const kCancellationExceptions = '/kCancellationExceptions';
+  static const kSupportChat = '/kSupportChat';
 }

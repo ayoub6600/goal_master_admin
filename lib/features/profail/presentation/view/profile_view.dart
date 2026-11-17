@@ -16,6 +16,7 @@ import 'package:goal_master_admin/features/home/presentation/view/widgets/manage
 import 'package:goal_master_admin/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/widgets/profile_header.dart';
 import 'package:goal_master_admin/features/profail/presentation/view/widgets/profile_item.dart';
+import 'package:goal_master_admin/features/support/support_repo.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -105,6 +106,13 @@ class ProfileView extends StatelessWidget {
                     height: 1.h,
                   ),
                   HeightSpace(8.h),
+                  const _SupportEntry(),
+                  Container(
+                    width: double.infinity,
+                    color: Color(0xffDADEE3),
+                    height: 1.h,
+                  ),
+                  HeightSpace(8.h),
                   ProfileItem(
                     title: "خروج",
                     icon: Assets.imagesPngImageLogout,
@@ -186,6 +194,35 @@ class ProfileView extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// «خدمة العملاء» with the unread-replies badge, refreshed once per visit.
+class _SupportEntry extends StatefulWidget {
+  const _SupportEntry();
+
+  @override
+  State<_SupportEntry> createState() => _SupportEntryState();
+}
+
+class _SupportEntryState extends State<_SupportEntry> {
+  @override
+  void initState() {
+    super.initState();
+    SupportRepo().refreshUnread();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<int>(
+      valueListenable: SupportRepo.unread,
+      builder: (context, unread, _) => ProfileItem(
+        title: "خدمة العملاء",
+        icon: Assets.imagesPngImageSms,
+        badge: unread,
+        onTap: () => push(RoutesKeys.kSupportChat, context),
       ),
     );
   }
